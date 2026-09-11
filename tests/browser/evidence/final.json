@@ -1,0 +1,25 @@
+{
+  "version": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/152.0.7977.82",
+    "revision": "@d04cdb24d67b081f6cf80200ffc5233f44b61109",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36",
+    "jsVersion": "15.2.124.21"
+  },
+  "extensions": {
+    "extensions": [
+      {
+        "id": "gndkmajngklgjkcmbolddaodljgoabma",
+        "name": "PearPlay",
+        "version": "0.1.0",
+        "path": "/home/scott/Projects/PearPlay/extension",
+        "enabled": true
+      }
+    ]
+  },
+  "afterUninstall": "Specified native messaging host not found.",
+  "sandbox": "Sandbox Status\nLayer 1 Sandbox\tNamespace\nPID namespaces\tYes\nNetwork namespaces\tYes\nSeccomp-BPF sandbox\tYes\nSeccomp-BPF sandbox supports TSYNC\tYes\nPtrace Protection with Yama LSM (Broker)\tYes\nPtrace Protection with Yama LSM (Non-broker)\tNo\n\nYou are adequately sandboxed.",
+  "extensionsAfter": {
+    "extensions": []
+  }
+}

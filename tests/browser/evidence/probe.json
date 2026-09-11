@@ -1,0 +1,175 @@
+{
+  "identity": "gndkmajngklgjkcmbolddaodljgoabma",
+  "native": {
+    "results": [
+      {
+        "v": 1,
+        "id": "probe_0",
+        "ok": true,
+        "state": "idle",
+        "evidence": "none",
+        "capabilities": [
+          "hello",
+          "discover",
+          "start",
+          "status",
+          "stop"
+        ]
+      },
+      {
+        "v": 1,
+        "id": "probe_1",
+        "ok": true,
+        "state": "idle",
+        "evidence": "none",
+        "capabilities": [
+          "hello",
+          "discover",
+          "start",
+          "status",
+          "stop"
+        ]
+      },
+      {
+        "v": 1,
+        "id": "probe_2",
+        "ok": false,
+        "state": "idle",
+        "evidence": "none",
+        "capabilities": [
+          "hello",
+          "discover",
+          "start",
+          "status",
+          "stop"
+        ],
+        "error": "unsupported"
+      },
+      {
+        "v": 1,
+        "id": "probe_3",
+        "ok": false,
+        "state": "idle",
+        "evidence": "none",
+        "capabilities": [
+          "hello",
+          "discover",
+          "start",
+          "status",
+          "stop"
+        ],
+        "error": "unsupported"
+      }
+    ]
+  },
+  "worker": {
+    "hello": {
+      "state": "idle",
+      "evidence": "none",
+      "capabilities": [
+        "hello",
+        "discover",
+        "start",
+        "status",
+        "stop"
+      ],
+      "receivers": [],
+      "error": null
+    },
+    "status": {
+      "state": "idle",
+      "evidence": "none",
+      "capabilities": [
+        "hello",
+        "discover",
+        "start",
+        "status",
+        "stop"
+      ],
+      "receivers": [],
+      "error": null
+    },
+    "pause": {
+      "ok": false,
+      "error": "ACTION_FAILED"
+    },
+    "resume": {
+      "ok": false,
+      "error": "ACTION_FAILED"
+    },
+    "view": {
+      "enabled": false,
+      "selected": null,
+      "candidates": [],
+      "native": {
+        "state": "error",
+        "evidence": "none",
+        "capabilities": [
+          "hello",
+          "discover",
+          "start",
+          "status",
+          "stop"
+        ],
+        "receivers": [],
+        "error": "HELPER_ERROR"
+      },
+      "receiver": null,
+      "localAvailable": false
+    }
+  },
+  "ui": [
+    "onUserSiteSettingsChanged",
+    "onProfileStateChanged",
+    "onItemStateChanged",
+    "addHostPermission",
+    "addUserSpecifiedSites",
+    "autoUpdate",
+    "choosePath",
+    "deleteExtensionErrors",
+    "dismissSafetyHubExtensionsMenuNotification",
+    "getExtensionInfo",
+    "getExtensionSize",
+    "getExtensionsInfo",
+    "getMatchingExtensionsForSite",
+    "getProfileConfiguration",
+    "getUserAndExtensionSitesByEtld",
+    "getUserSiteSettings",
+    "inspect",
+    "installDroppedFile",
+    "loadDirectory",
+    "loadUnpacked",
+    "notifyDragInstallInProgress",
+    "openDevTools",
+    "packDirectory",
+    "reload",
+    "removeHostPermission",
+    "removeMultipleExtensions",
+    "removeUserSpecifiedSites",
+    "repairExtension",
+    "requestFileSource",
+    "setShortcutHandlingSuspended",
+    "showOptions",
+    "showPath",
+    "showSiteSettings",
+    "updateExtensionCommand",
+    "updateExtensionConfiguration",
+    "updateProfileConfiguration",
+    "updateSiteAccess",
+    "uploadExtensionToAccount",
+    "CommandScope",
+    "ErrorLevel",
+    "ErrorType",
+    "EventType",
+    "ExtensionState",
+    "ExtensionType",
+    "FileType",
+    "HostAccess",
+    "Location",
+    "PackStatus",
+    "SafetyCheckWarningReason",
+    "SelectType",
+    "SiteSet",
+    "ViewType"
+  ]
+}

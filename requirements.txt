@@ -1,0 +1,3 @@
+# Transport runtime; install only inside the Linux project virtual environment.
+pyatv==0.18.0
+# Tests use stdlib unittest; pytest is optional.

@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>PearPlay</title></head>
+<body><h1>PearPlay</h1>
+<p>Only the enabled tab is observed, for 10 minutes. URLs stay in memory, not storage or logs. No main-stream guessing; candidates may be ads, segments, or unsupported DRM streams.</p>
+<button id="enable">Enable this tab / fresh session</button><button id="disable">End collection</button>
+<p>Current-site access does not cover other-origin frames or CDNs. Optional all-sites access allows these, but collection still only runs in enabled tabs. Permission grants do not recover earlier requests: reload, play the video, then rescan. Browser settings can revoke grants.</p>
+<button id="grantSite">Allow current site network observation</button><button id="grantAll">Allow all HTTP(S) sites / frames / CDNs</button>
+<button id="reload">Reload this page (may lose page state)</button><button id="rescan">Rescan permitted frames</button>
+<p id="notice" role="status"></p>
+<label>Candidate <select id="candidate"></select></label>
+<p>Blob URLs are excluded. A network candidate is not linked to a local video; local pause is only available for a video-element candidate.</p>
+<label>Optional receiver IP <input id="host" placeholder="Literal IP only"></label><button id="discover">Discover receivers</button>
+<label>Receiver <select id="receiver"></select></label>
+<button id="start">Send selected candidate</button>
+<p id="state" role="status"></p>
+<button id="hello">Connect helper</button><button id="status">Refresh TV status</button>
+<button id="pause">Pause TV</button><button id="resume">Resume TV</button><button id="stop">End helper session</button>
+<p>Ending the helper session closes its connection; it does not confirm that the TV stopped. Use the physical remote if playback continues. TV pause/resume are unavailable in this prototype.</p>
+<p>Helper state is not visual or audible confirmation. Local playback is never automatically paused.</p>
+<button id="confirmTV">I confirm TV video and audio — pause selected local video</button><button id="localResume">Resume local video</button>
+<p>Helper and CLI pairing must be installed separately. No cookies or credentials are forwarded. No media proxy or transcoding.</p>
+<script src="popup.js"></script></body></html>

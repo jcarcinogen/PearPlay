@@ -1,0 +1,68 @@
+{
+  "xdg": {
+    "installed": {
+      "manifest": {
+        "path": "/home/scott/.cache/pearplay-browser.ONYwEh/xdg/google-chrome/NativeMessagingHosts/com.pearplay.helper.json",
+        "exists": true,
+        "exact": true,
+        "mode": "0o600"
+      },
+      "launcher": {
+        "path": "/home/scott/.cache/pearplay-browser.ONYwEh/xdg/google-chrome/NativeMessagingHosts/com.pearplay.helper.launcher",
+        "exists": true,
+        "exact": true,
+        "mode": "0o700"
+      }
+    },
+    "uninstall_preserved": [],
+    "removed": {
+      "manifest": true,
+      "launcher": true
+    },
+    "unknown_file_preserved": "/home/scott/.cache/pearplay-browser.ONYwEh/xdg/google-chrome/NativeMessagingHosts/pearplay-test-unknown.keep"
+  },
+  "lookup": {
+    "installed": {
+      "manifest": {
+        "path": "/home/scott/.cache/pearplay-browser.ONYwEh/lookup/google-chrome/NativeMessagingHosts/com.pearplay.helper.json",
+        "exists": true,
+        "exact": true,
+        "mode": "0o600"
+      },
+      "launcher": {
+        "path": "/home/scott/.cache/pearplay-browser.ONYwEh/lookup/google-chrome/NativeMessagingHosts/com.pearplay.helper.launcher",
+        "exists": true,
+        "exact": true,
+        "mode": "0o700"
+      }
+    },
+    "uninstall_preserved": [],
+    "removed": {
+      "manifest": true,
+      "launcher": true
+    },
+    "unknown_file_preserved": "/home/scott/.cache/pearplay-browser.ONYwEh/lookup/google-chrome/NativeMessagingHosts/pearplay-test-unknown.keep"
+  },
+  "browser": {
+    "installed": {
+      "manifest": {
+        "path": "/home/scott/.cache/pearplay-browser.ONYwEh/browser/google-chrome/NativeMessagingHosts/com.pearplay.helper.json",
+        "exists": true,
+        "exact": true,
+        "mode": "0o600"
+      },
+      "launcher": {
+        "path": "/home/scott/.cache/pearplay-browser.ONYwEh/browser/google-chrome/NativeMessagingHosts/com.pearplay.helper.launcher",
+        "exists": true,
+        "exact": true,
+        "mode": "0o700"
+      }
+    },
+    "uninstall_preserved": [],
+    "removed": {
+      "manifest": true,
+      "launcher": true
+    },
+    "unknown_file_preserved": "/home/scott/.cache/pearplay-browser.ONYwEh/browser/google-chrome/NativeMessagingHosts/pearplay-test-unknown.keep"
+  }
+}

@@ -1,0 +1,168 @@
+{
+  "requests": [
+    "/",
+    "/dom.mp4",
+    "/favicon.ico",
+    "/network.m3u8",
+    "/network.mp4"
+  ],
+  "grant": true,
+  "optionalRequest": true,
+  "permissions": {
+    "origins": [
+      "http://127.0.0.1/*"
+    ],
+    "permissions": [
+      "activeTab",
+      "alarms",
+      "nativeMessaging",
+      "webNavigation",
+      "webRequest",
+      "scripting"
+    ]
+  },
+  "before": {
+    "enabled": false,
+    "selected": null,
+    "candidates": [],
+    "native": {
+      "state": "error",
+      "evidence": "none",
+      "capabilities": [
+        "hello",
+        "discover",
+        "start",
+        "status",
+        "stop"
+      ],
+      "receivers": [],
+      "error": "HELPER_ERROR"
+    },
+    "receiver": null,
+    "localAvailable": false
+  },
+  "enable": {
+    "scanned": 1,
+    "total": 1
+  },
+  "currentSrc": "http://127.0.0.1:39913/dom.mp4",
+  "dom": {
+    "enabled": true,
+    "selected": null,
+    "candidates": [
+      {
+        "id": "c1",
+        "label": "127.0.0.1 · MP4 (unverified) · c1 · frame 0 · video element",
+        "videoId": "v1"
+      }
+    ],
+    "native": {
+      "state": "error",
+      "evidence": "none",
+      "capabilities": [
+        "hello",
+        "discover",
+        "start",
+        "status",
+        "stop"
+      ],
+      "receivers": [],
+      "error": "HELPER_ERROR"
+    },
+    "receiver": null,
+    "localAvailable": false
+  },
+  "fetchHls": 200,
+  "hls": {
+    "enabled": true,
+    "selected": null,
+    "candidates": [
+      {
+        "id": "c1",
+        "label": "127.0.0.1 · MP4 (unverified) · c1 · frame 0 · video element",
+        "videoId": "v1"
+      },
+      {
+        "id": "c2",
+        "label": "127.0.0.1 · HLS (unverified) · c2 · frame 0 · network (unattributed to a video)",
+        "videoId": null
+      }
+    ],
+    "native": {
+      "state": "error",
+      "evidence": "none",
+      "capabilities": [
+        "hello",
+        "discover",
+        "start",
+        "status",
+        "stop"
+      ],
+      "receivers": [],
+      "error": "HELPER_ERROR"
+    },
+    "receiver": null,
+    "localAvailable": false
+  },
+  "fetchMp4": 200,
+  "mp4": {
+    "enabled": true,
+    "selected": null,
+    "candidates": [
+      {
+        "id": "c1",
+        "label": "127.0.0.1 · MP4 (unverified) · c1 · frame 0 · video element",
+        "videoId": "v1"
+      },
+      {
+        "id": "c2",
+        "label": "127.0.0.1 · HLS (unverified) · c2 · frame 0 · network (unattributed to a video)",
+        "videoId": null
+      },
+      {
+        "id": "c3",
+        "label": "127.0.0.1 · MP4 (unverified) · c3 · frame 0 · network (unattributed to a video)",
+        "videoId": null
+      }
+    ],
+    "native": {
+      "state": "error",
+      "evidence": "none",
+      "capabilities": [
+        "hello",
+        "discover",
+        "start",
+        "status",
+        "stop"
+      ],
+      "receivers": [],
+      "error": "HELPER_ERROR"
+    },
+    "receiver": null,
+    "localAvailable": false
+  },
+  "disable": {
+    "ok": true
+  },
+  "after": {
+    "enabled": false,
+    "selected": null,
+    "candidates": [],
+    "native": {
+      "state": "error",
+      "evidence": "none",
+      "capabilities": [
+        "hello",
+        "discover",
+        "start",
+        "status",
+        "stop"
+      ],
+      "receivers": [],
+      "error": "HELPER_ERROR"
+    },
+    "receiver": null,
+    "localAvailable": false
+  },
+  "passed": true
+}

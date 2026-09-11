@@ -1,0 +1,29 @@
+{
+  "match": true,
+  "mini": {
+    "contract/v1.md": "d8b30a7a8d4c43154a47a54626cbb9638d8e795448e6ebb910828b1210bab35b",
+    "extension/content.js": "3b10e4130fa88a0097de87fd98347b3f991f0fc0b38798cc79a492318978cba9",
+    "extension/core.mjs": "7934cbab94cc0fd70fcac74acc3fa1fc6900daeae43e4839e2c825f30c1ea1a1",
+    "extension/manifest.json": "1a1db5f9c3bbd0b7dc6ff0ae8328ff0c1d941271891e0dca55f465ba9ea62269",
+    "extension/native.mjs": "869e4b1df2e3e99934c764691369b5e9f8e484cd1d6e0023c6be7ba309da8290",
+    "extension/popup.html": "f36bf10c09455389d8dfb6513edffd1e86720cb95ebf2e04aaadc7d2e592a57d",
+    "extension/popup.js": "f4ecd0e22e58706f7b7ef93914839d69c82968ecd2a5cc9c50d845cf6c5080ab",
+    "extension/worker.mjs": "235858da9e45c322e13163a41a3b214ceadf7701c11644059485fdf183754676",
+    "helper/README.md": "23598d9abbfbe04118ed2cc7163f5daa40323860dc53175d4c69c5de4774a707",
+    "helper/install.py": "e56fb9998af007e903703d5c368866e0618c6170a0043cc10a33d08773930af8",
+    "helper/native.py": "bd4500b17bc27fb1e87c87240d64d2bd27525bc473d49746356221249f9d15d7"
+  },
+  "acer": {
+    "contract/v1.md": "d8b30a7a8d4c43154a47a54626cbb9638d8e795448e6ebb910828b1210bab35b",
+    "extension/content.js": "3b10e4130fa88a0097de87fd98347b3f991f0fc0b38798cc79a492318978cba9",
+    "extension/core.mjs": "7934cbab94cc0fd70fcac74acc3fa1fc6900daeae43e4839e2c825f30c1ea1a1",
+    "extension/manifest.json": "1a1db5f9c3bbd0b7dc6ff0ae8328ff0c1d941271891e0dca55f465ba9ea62269",
+    "extension/native.mjs": "869e4b1df2e3e99934c764691369b5e9f8e484cd1d6e0023c6be7ba309da8290",
+    "extension/popup.html": "f36bf10c09455389d8dfb6513edffd1e86720cb95ebf2e04aaadc7d2e592a57d",
+    "extension/popup.js": "f4ecd0e22e58706f7b7ef93914839d69c82968ecd2a5cc9c50d845cf6c5080ab",
+    "extension/worker.mjs": "235858da9e45c322e13163a41a3b214ceadf7701c11644059485fdf183754676",
+    "helper/README.md": "23598d9abbfbe04118ed2cc7163f5daa40323860dc53175d4c69c5de4774a707",
+    "helper/install.py": "e56fb9998af007e903703d5c368866e0618c6170a0043cc10a33d08773930af8",
+    "helper/native.py": "bd4500b17bc27fb1e87c87240d64d2bd27525bc473d49746356221249f9d15d7"
+  }
+}

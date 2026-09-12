@@ -4,6 +4,12 @@ export function httpURL(url) {
   if (!authority || authority.includes('@')) return false;
   try { const u = new URL(url); return !!u.hostname && !u.username && !u.password; } catch { return false; }
 }
+export function safeTitle(text) {
+  if (typeof text !== 'string') return '';
+  const t = text.replace(/\s+/g, ' ').trim().slice(0, 80);
+  if (!t || /https?:\/\//i.test(t) || /\bwww\./i.test(t) || /[?#]/.test(t)) return '';
+  return t;
+}
 // Evidence of a plausible source, not a codec/DRM/receiver compatibility claim.
 function sourceType(e) {
   const path = new URL(e.url).pathname;
@@ -20,7 +26,8 @@ export class Sessions {
   constructor({now=()=>Date.now(),ttl=600000,maxCandidates=100,maxTabs=8}={}) { Object.assign(this,{now,ttl,maxCandidates,maxTabs}); this.tabs = new Map(); this.next = 0; }
   sweep() { for(const [id,s] of this.tabs) if(this.now()-s.at>=this.ttl) this.tabs.delete(id); }
   disable(id) { this.tabs.delete(id); }
-  enable(tabId) { this.sweep(); this.tabs.delete(tabId); if(this.tabs.size>=this.maxTabs) this.tabs.delete(this.tabs.keys().next().value); this.tabs.set(tabId, {revision:0,at:this.now(),requests:new Map(),parents:new Map(),frames:new Map(), candidates:[], selected:null}); }
+  enable(tabId) { this.sweep(); this.tabs.delete(tabId); if(this.tabs.size>=this.maxTabs) this.tabs.delete(this.tabs.keys().next().value); this.tabs.set(tabId, {revision:0,at:this.now(),requests:new Map(),parents:new Map(),frames:new Map(), candidates:[], selected:null, pageTitle:''}); }
+  pageTitle(tabId, text) { const s=this.tabs.get(tabId); if(s) s.pageTitle=safeTitle(text); }
   commit({tabId, frameId, documentId, parentFrameId=-1}) {
     this.sweep();const s=this.tabs.get(tabId);if(!s||!documentId)return;s.revision++;s.requests.clear();
     if(frameId===0){s.frames.clear();s.parents.clear();s.candidates=[];}
@@ -41,7 +48,7 @@ export class Sessions {
     this.sweep();const s=this.tabs.get(e.tabId);if(!s||!e.documentId||s.frames.get(e.frameId)!==e.documentId)return;
     const safe=items.slice(0,100).filter(v=>typeof v.videoId==='string'&&/^v\d{1,10}$/.test(v.videoId)&&httpURL(v.url));
     s.candidates=s.candidates.filter(c=>c.frameId!==e.frameId||!c.videoId||safe.some(v=>v.videoId===c.videoId&&v.url===c.url));
-    for(const v of safe)this.observe({...e,videoId:v.videoId,url:v.url,type:'media'});
+    for(const v of safe)this.observe({...e,videoId:v.videoId,url:v.url,title:v.title,type:'media'});
   }
   observe(e) {
     this.sweep(); const s=this.tabs.get(e.tabId);
@@ -49,10 +56,26 @@ export class Sessions {
     const format=sourceType(e);
     if (!format) return;
     if (s.candidates.some(c=>c.url===e.url && c.frameId===e.frameId && c.videoId===(e.videoId??null))) return;
-    s.candidates.push({format,url:e.url,frameId:e.frameId,documentId:e.documentId,videoId:e.videoId??null,id:`c${++this.next}`});
+    if (!e.videoId && format==='HLS' && s.candidates.some(c=>!c.videoId && c.format==='HLS' && new URL(c.url).hostname===new URL(e.url).hostname)) return;
+    s.candidates.push({format,url:e.url,frameId:e.frameId,documentId:e.documentId,videoId:e.videoId??null,title:safeTitle(e.title),id:`c${++this.next}`});
     if(s.candidates.length>this.maxCandidates) s.candidates.shift();
   }
-  view(tabId) { this.sweep(); const s=this.tabs.get(tabId); return {enabled:!!s,selected:s?.selected??null,candidates:(s?.candidates??[]).map(c=>({id:c.id,label:`${new URL(c.url).hostname} · ${c.format} (unverified) · ${c.id} · frame ${c.frameId} · ${c.videoId?'video element':'network (unattributed to a video)'}`,videoId:c.videoId??null}))}; }
+  view(tabId) {
+    this.sweep();
+    const s=this.tabs.get(tabId);
+    return {
+      enabled:!!s,
+      selected:s?.selected??null,
+      candidates:(s?.candidates??[]).map((c,i,all)=>{
+        const name=c.title||s.pageTitle||'';
+        const used=all.map(x=>x.title||s.pageTitle||'');
+        let label=name;
+        if(!label) label=all.length===1?"This page's video":`Video ${i+1}`;
+        else if(used.filter(t=>t===name).length>1) label=`${name} · ${used.slice(0,i+1).filter(t=>t===name).length}`;
+        return {id:c.id,label,videoId:c.videoId??null};
+      })
+    };
+  }
   select(tabId,id) { this.sweep(); const s=this.tabs.get(tabId); if (!s?.candidates.some(c=>c.id===id)) throw Error('NO_CANDIDATE'); s.selected=id; }
   selected(tabId) { this.sweep(); const s=this.tabs.get(tabId); const c=s?.candidates.find(c=>c.id===s.selected); if(!c) throw Error('NO_CANDIDATE'); return c; }
 }

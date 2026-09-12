@@ -41,6 +41,31 @@ class TransportTests(unittest.IsolatedAsyncioTestCase):
             with self.assertRaisesRegex(m.HelperError,'pairing_required'):
                 await transport.run(dict(receiver='11:22:33:44:55:66',host='127.0.0.1',url='https://a/'),lambda *x:None)
 
+    async def test_empty_discover_uses_mdns_hosts_when_multicast_scan_is_empty(self):
+        m=load(); command=m.spike()
+        device=SimpleNamespace(identifier='AA:BB:CC:DD:EE:FF', address='10.0.0.8', name='SECRET',get_service=lambda p:SimpleNamespace(port=7000))
+        scanned=[]
+        async def scan(*a,**kw):
+            hosts=kw.get('hosts')
+            scanned.append(hosts)
+            return [device] if hosts==['10.0.0.8'] else []
+        api=SimpleNamespace(scan=scan,Protocol=SimpleNamespace(AirPlay=1))
+        async def mdns(): return ['10.0.0.8']
+        transport=m.Transport(api=api, command=command, mdns=mdns, connect=lambda *a: None, parse=lambda c:c, timeout=.1)
+        receivers=await transport.discover(None)
+        self.assertEqual(scanned,[None,['10.0.0.8']])
+        self.assertEqual(receivers,[{'identifier':device.identifier,'address':'10.0.0.8','label':'Apple TV'}])
+
+    def test_avahi_parse_uses_resolved_ipv4_apple_tv_only(self):
+        m=load()
+        text='\n'.join([
+            '+;wlan0;IPv4;Living Room;_airplay._tcp;local',
+            '=;wlan0;IPv4;Living Room;_airplay._tcp;local;x.local;10.0.0.8;7000;"model=AppleTV14,1"',
+            '=;wlan0;IPv4;Speaker;_airplay._tcp;local;s.local;10.0.0.20;7000;"model=Move"',
+            '=;wlan0;IPv6;Living Room;_airplay._tcp;local;x.local;10.0.0.8;7000;"model=AppleTV14,1"',
+        ])
+        self.assertEqual(m.parse_avahi_hosts(text),['10.0.0.8'])
+
     async def test_lock_is_exclusive_reusable_and_rejects_symlink(self):
         m=load()
         with tempfile.TemporaryDirectory() as directory:

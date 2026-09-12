@@ -1,10 +1,10 @@
 import test from 'node:test';import assert from 'node:assert/strict';import vm from 'node:vm';import {readFile} from 'node:fs/promises';
 test('injected discovery scans dynamic open shadows and only confirmed exact video pauses',async()=>{
- let handler,tick;const sent=[];const video={tagName:'VIDEO',currentSrc:'https://x/v?sig=%2F',isConnected:true,paused:false,pause(){this.paused=true;},async play(){this.paused=false;}};
+ let handler,tick;const sent=[];const video={tagName:'VIDEO',currentSrc:'https://x/v?sig=%2F',isConnected:true,paused:false,title:'Morning News',getAttribute(name){return name==='aria-label'?'':'';},pause(){this.paused=true;},async play(){this.paused=false;}};
  const root={querySelectorAll:()=>[video]};const doc={querySelectorAll:()=>[{shadowRoot:root}]};
  const context={document:doc,chrome:{runtime:{sendMessage:async m=>{sent.push(m);return {enabled:true};},onMessage:{addListener:f=>handler=f}}},setInterval:f=>{tick=f;return 1;},clearInterval(){},setTimeout,Date,Map,WeakMap,Promise};context.globalThis=context;
  await vm.runInNewContext(await readFile(new URL('../../extension/content.js',import.meta.url),'utf8'),context);
- await tick();assert.equal(sent.at(-1).videos[0].url,video.currentSrc);const videoId=sent.at(-1).videos[0].videoId;
+ await tick();assert.equal(sent.at(-1).videos[0].url,video.currentSrc);assert.equal(sent.at(-1).videos[0].title,'Morning News');const videoId=sent.at(-1).videos[0].videoId;
  const message=m=>new Promise(resolve=>handler(m,{},resolve));
  assert.equal((await message({op:'localPause',videoId,url:video.currentSrc})).ok,false);assert.equal(video.paused,false);
  assert.equal((await message({op:'localPause',videoId,url:video.currentSrc,confirmed:true})).ok,true);assert.equal(video.paused,true);

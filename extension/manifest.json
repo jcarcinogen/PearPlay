@@ -1,11 +1,26 @@
 {
   "manifest_version": 3,
   "name": "PearPlay",
-  "version": "0.1.0",
+  "version": "0.1.4",
   "minimum_chrome_version": "106",
   "description": "Explicit video URL handoff to a user-selected AirPlay receiver through a local helper.",
-  "permissions": ["activeTab", "scripting", "webRequest", "webNavigation", "nativeMessaging", "alarms"],
+  "permissions": ["activeTab", "scripting", "webRequest", "webNavigation", "nativeMessaging", "alarms", "storage"],
   "optional_host_permissions": ["http://*/*", "https://*/*"],
   "background": {"service_worker": "worker.mjs", "type": "module"},
-  "action": {"default_popup": "popup.html", "default_title": "PearPlay"}
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "PearPlay",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  }
 }

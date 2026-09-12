@@ -4,7 +4,7 @@
  async function scan(){
   if(Date.now()>until){clearInterval(timer);live.clear();return;}
   const videos=[];live=new Map();const roots=[document];let budget=20000;
-  while(roots.length && budget>0 && videos.length<100){const root=roots.pop();for(const el of root.querySelectorAll('*')){if(--budget<=0||videos.length>=100)break;if(el.shadowRoot)roots.push(el.shadowRoot);if(el.tagName!=='VIDEO')continue;if(!ids.has(el))ids.set(el,`v${++serial}`);const videoId=ids.get(el);live.set(videoId,el);const url=el.currentSrc;if(typeof url==='string'&&/^https?:\/\//i.test(url)&&url.length<=16384)videos.push({videoId,url});}}
+  while(roots.length && budget>0 && videos.length<100){const root=roots.pop();for(const el of root.querySelectorAll('*')){if(--budget<=0||videos.length>=100)break;if(el.shadowRoot)roots.push(el.shadowRoot);if(el.tagName!=='VIDEO')continue;if(!ids.has(el))ids.set(el,`v${++serial}`);const videoId=ids.get(el);live.set(videoId,el);const url=el.currentSrc;if(typeof url==='string'&&/^https?:\/\//i.test(url)&&url.length<=16384){const title=[el.title,el.getAttribute?.('aria-label'),el.getAttribute?.('title'),document.title].find(t=>typeof t==='string'&&t.trim());videos.push({videoId,url,title:typeof title==='string'?title.trim().slice(0,80):''});}}}
   try{const result=await chrome.runtime.sendMessage({op:'videos',videos});if(!result?.enabled){clearInterval(timer);live.clear();}}catch{clearInterval(timer);live.clear();}
  }
  chrome.runtime.onMessage.addListener((m,_sender,reply)=>{

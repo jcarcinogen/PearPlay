@@ -13,6 +13,8 @@ test('worker wires permitted frame discovery, selection, native start and confir
  assert.equal(calls.at(-1).args.url,'https://x/movie?sig=%2f');assert.equal(calls.some(c=>Array.isArray(c)&&c[1]?.op==='localPause'),false);
  await assert.rejects(send({op:'localPause'}));await send({op:'localPause',confirmed:true});assert.equal(calls.at(-1)[2].documentId,'a');
  await send({op:'localResume'});assert.equal(calls.at(-1)[1].op,'localResume');
+ await send({op:'discover'});
+ assert.equal((await send({op:'view'})).receiver,'r');
  await assert.rejects(w.message({op:'stop'},{tab:{id:1},url:'https://evil/'}));
  chrome.webNavigation.onCommitted.emit({tabId:1,frameId:0,documentId:'new'});assert.equal((await send({op:'view'})).candidates.length,0);
  await w.message({op:'videos',videos:[{videoId:'v1',url:'https://x/old'}]},{tab:{id:1},frameId:0,documentId:'a'});assert.equal((await send({op:'view'})).candidates.length,0);

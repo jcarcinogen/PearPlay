@@ -71,6 +71,24 @@ MAX_FRAME = 65536
 OPS = ('hello', 'discover', 'start', 'status', 'stop', 'pause', 'resume')
 IDENTIFIER = r'[0-9a-fA-F:-]{12,64}'
 
+def parse_avahi_hosts(text):
+    hosts = []
+    for line in text.splitlines():
+        parts = line.split(';')
+        if len(parts) < 8 or parts[0] != '=' or parts[2] != 'IPv4':
+            continue
+        if 'model=' in line and 'model=AppleTV' not in line:
+            continue
+        try:
+            ip = str(ipaddress.ip_address(parts[7]))
+        except ValueError:
+            continue
+        if ip not in hosts:
+            hosts.append(ip)
+        if len(hosts) == 64:
+            break
+    return hosts
+
 def spike():
     path = Path(__file__).resolve().parents[1] / 'spikes/002-command/command.py'
     spec = importlib.util.spec_from_file_location('pearplay_command', path)
@@ -205,7 +223,7 @@ class Lease:
         if self.fd is not None: os.close(self.fd); self.fd = None
 
 class Transport:
-    def __init__(self, *, api=None, command=None, store=None, connect=None, parse=None, backend=None, timeout=10):
+    def __init__(self, *, api=None, command=None, store=None, connect=None, parse=None, backend=None, timeout=10, mdns=None):
         self.command = command or spike()
         if api is None:
             self.command.guard()
@@ -224,13 +242,30 @@ class Transport:
         self.backend = backend or self.command.Backend
         self.timeout = timeout
         self.wire = None
+        self.mdns = mdns
 
     async def scan(self, host):
         return await asyncio.wait_for(self.api.scan(asyncio.get_running_loop(), timeout=min(5,self.timeout), protocol=self.api.Protocol.AirPlay, hosts=[host] if host else None), self.timeout)
 
+    async def mdns_hosts(self):
+        if self.mdns is not None:
+            return await self.mdns()
+        try:
+            proc = await asyncio.create_subprocess_exec(
+                'avahi-browse', '-prtk', '_airplay._tcp',
+                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
+            out, _ = await asyncio.wait_for(proc.communicate(), max(8, self.timeout))
+        except (FileNotFoundError, TimeoutError, OSError):
+            return []
+        return parse_avahi_hosts(out.decode('utf-8', 'replace'))
+
     async def discover(self, host):
+        devices = list(await self.scan(host))
+        if not host and not devices:
+            for ip in await self.mdns_hosts():
+                devices.extend(await self.scan(ip))
         result = []
-        for device in (await self.scan(host))[:256]:
+        for device in devices[:256]:
             identifier = device.identifier
             if not isinstance(identifier, str) or not re.fullmatch(IDENTIFIER, identifier): continue
             try: address = str(ipaddress.ip_address(device.address))
@@ -323,7 +358,7 @@ class Host:
         if op not in self.capabilities: return self.response(identifier, 'unsupported')
         try:
             if op == 'discover':
-                self.receivers = await asyncio.wait_for(self.factory().discover(args.get('host')), 10)
+                self.receivers = await asyncio.wait_for(self.factory().discover(args.get('host')), 20)
                 return self.response(identifier, receivers=self.receivers)
             if op == 'start':
                 if self.task and not self.task.done(): return self.response(identifier, 'busy')

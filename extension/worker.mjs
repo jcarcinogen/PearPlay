@@ -13,8 +13,15 @@ export function createWorker(chrome,native=new Native(()=>chrome.runtime.connect
   if(sender.tab||sender.url!==chrome.runtime.getURL('popup.html'))throw Error('UNAUTHORIZED');
   const tabId=m.tabId;
   switch(m.op){
-   case 'view':return {...sessions.view(tabId),native:native.view(),receiver,localAvailable:!!local};
-   case 'enable':sessions.enable(tabId);return scan(tabId,true);
+   case 'view':{
+    try{const tab=await chrome.tabs.get(tabId);sessions.pageTitle(tabId,tab?.title);}catch{}
+    return {...sessions.view(tabId),native:native.view(),receiver,localAvailable:!!local};
+   }
+   case 'enable':{
+    sessions.enable(tabId);
+    try{const tab=await chrome.tabs.get(tabId);sessions.pageTitle(tabId,tab?.title);}catch{}
+    return scan(tabId,true);
+   }
    case 'rescan':if(!sessions.view(tabId).enabled)throw Error('SESSION_EXPIRED');return scan(tabId);
    case 'disable':sessions.disable(tabId);return {ok:true};
    case 'select':sessions.select(tabId,m.id);return {ok:true};
@@ -22,7 +29,12 @@ export function createWorker(chrome,native=new Native(()=>chrome.runtime.connect
    case 'start':{const c=sessions.selected(tabId);const r=native.view().receivers.find(r=>r.identifier===receiver);if(!r)throw Error('NO_RECEIVER');return native.request('start',{receiver:r.identifier,host:r.address,url:c.url});}
    case 'localPause':{if(m.confirmed!==true)throw Error('CONFIRM_TV_FIRST');const c=sessions.selected(tabId);if(!c.videoId)throw Error('NO_EXACT_VIDEO');const result=await chrome.tabs.sendMessage(tabId,{op:'localPause',confirmed:true,videoId:c.videoId,url:c.url},{documentId:c.documentId});if(result?.ok)local={tabId,...c};return result;}
    case 'localResume':{if(!local)throw Error('NO_LOCAL_VIDEO');return chrome.tabs.sendMessage(local.tabId,{op:'localResume',videoId:local.videoId,url:local.url},{documentId:local.documentId});}
-   case 'discover':receiver=null;return native.request('discover',m.host?{host:m.host}:{});
+   case 'discover':{
+    const result=await native.request('discover',m.host?{host:m.host}:{});
+    const list=native.view().receivers;
+    if(list.length===1) receiver=list[0].identifier;
+    else if(receiver&&!list.some(r=>r.identifier===receiver)) receiver=null;
+    return result;}
    case 'hello':case 'status':case 'pause':case 'resume':case 'stop':return native.request(m.op,{});
    default:throw Error('UNKNOWN_OPERATION');
   }

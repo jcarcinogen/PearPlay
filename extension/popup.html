@@ -1,22 +1,99 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><title>PearPlay</title></head>
-<body><h1>PearPlay</h1>
-<p>Only the enabled tab is observed, for 10 minutes. URLs stay in memory, not storage or logs. No main-stream guessing; candidates may be ads, segments, or unsupported DRM streams.</p>
-<button id="enable">Enable this tab / fresh session</button><button id="disable">End collection</button>
-<p>Current-site access does not cover other-origin frames or CDNs. Optional all-sites access allows these, but collection still only runs in enabled tabs. Permission grants do not recover earlier requests: reload, play the video, then rescan. Browser settings can revoke grants.</p>
-<button id="grantSite">Allow current site network observation</button><button id="grantAll">Allow all HTTP(S) sites / frames / CDNs</button>
-<button id="reload">Reload this page (may lose page state)</button><button id="rescan">Rescan permitted frames</button>
-<p id="notice" role="status"></p>
-<label>Candidate <select id="candidate"></select></label>
-<p>Blob URLs are excluded. A network candidate is not linked to a local video; local pause is only available for a video-element candidate.</p>
-<label>Optional receiver IP <input id="host" placeholder="Literal IP only"></label><button id="discover">Discover receivers</button>
-<label>Receiver <select id="receiver"></select></label>
-<button id="start">Send selected candidate</button>
-<p id="state" role="status"></p>
-<button id="hello">Connect helper</button><button id="status">Refresh TV status</button>
-<button id="pause">Pause TV</button><button id="resume">Resume TV</button><button id="stop">End helper session</button>
-<p>Ending the helper session closes its connection; it does not confirm that the TV stopped. Use the physical remote if playback continues. TV pause/resume are unavailable in this prototype.</p>
-<p>Helper state is not visual or audible confirmation. Local playback is never automatically paused.</p>
-<button id="confirmTV">I confirm TV video and audio — pause selected local video</button><button id="localResume">Resume local video</button>
-<p>Helper and CLI pairing must be installed separately. No cookies or credentials are forwarded. No media proxy or transcoding.</p>
-<script src="popup.js"></script></body></html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PearPlay</title>
+<style>
+:root { color-scheme: light dark; }
+body { font: 14px/1.4 system-ui, sans-serif; margin: 12px; width: 360px; }
+header { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+header img { width: 32px; height: 32px; }
+h1 { font-size: 18px; margin: 0; }
+.lead { margin: 0 0 12px; color: CanvasText; opacity: .8; }
+section { border: 1px solid color-mix(in srgb, CanvasText 18%, transparent); border-radius: 8px; padding: 10px; margin: 0 0 10px; }
+section h2 { font-size: 13px; margin: 0 0 8px; }
+.row { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+button, select, input { font: inherit; }
+select, input { width: 100%; box-sizing: border-box; }
+button { cursor: pointer; }
+#start { font-weight: 600; }
+#banner { display: none; margin: 0 0 12px; padding: 10px 12px; border-radius: 8px; font-weight: 650; background: CanvasText; color: Canvas; }
+#banner:not(:empty) { display: block; }
+#notice, #state { min-height: 1.4em; margin: 6px 0 0; }
+.muted { font-size: 12px; opacity: .75; margin: 6px 0 0; }
+details { margin-top: 8px; }
+details > summary { cursor: pointer; font-size: 12px; }
+.hidden { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+</style>
+</head>
+<body>
+<header>
+  <img src="icons/icon48.png" alt="">
+  <h1>PearPlay</h1>
+</header>
+<p class="lead">Play a video from this page on your Apple TV.</p>
+<p id="banner" role="status" aria-live="assertive"></p>
+
+<section>
+  <h2>1. Find videos on this page</h2>
+  <p class="muted">Open the video, press play, then find videos. If the list stays empty, allow this website and reload.</p>
+  <div class="row">
+    <button id="enable">Find videos</button>
+    <button id="disable">Stop looking</button>
+    <button id="rescan">Look again</button>
+    <button id="reload">Reload this page</button>
+  </div>
+  <div class="row">
+    <button id="grantSite">Allow this website</button>
+    <button id="grantAll">Allow all websites</button>
+  </div>
+</section>
+
+<section>
+  <h2>2. Choose a video</h2>
+  <label class="hidden" for="candidate">Choose a video</label>
+  <select id="candidate"></select>
+</section>
+
+<section>
+  <h2>3. Choose an Apple TV</h2>
+  <p class="muted">PearPlay looks on your network. You should not need to type an address. If the helper is not connected, Find Apple TVs and the address box cannot find your Apple TV — click Connect helper first.</p>
+  <div class="row">
+    <button id="discover">Find Apple TVs</button>
+    <button id="hello">Connect helper</button>
+    <button id="status">Refresh TV status</button>
+  </div>
+  <label class="hidden" for="receiver">Choose an Apple TV</label>
+  <select id="receiver"></select>
+  <details id="hostDetails">
+    <summary>TV not listed? Paste its address, then press Find Apple TVs (or Enter)</summary>
+    <label class="muted" for="host">Apple TV address</label>
+    <input id="host" placeholder="Only if Find Apple TVs found nothing">
+  </details>
+</section>
+
+<section>
+  <h2>4. Send it</h2>
+  <div class="row">
+    <button id="start">Send to Apple TV</button>
+    <button id="stop">End helper session</button>
+  </div>
+  <p id="notice" role="status"></p>
+  <p id="state" role="status"></p>
+  <p class="muted">Ending the helper session closes its connection; it does not confirm that the TV stopped. Use the physical remote if playback continues. TV pause/resume are unavailable in this prototype.</p>
+</section>
+
+<section>
+  <h2>After it is playing on the TV</h2>
+  <div class="row">
+    <button id="confirmTV">I confirm TV video and audio — pause selected local video</button>
+    <button id="localResume">Resume local video</button>
+  </div>
+  <p class="muted">Helper state is not visual or audible confirmation. Local playback is never automatically paused.</p>
+</section>
+
+<button id="pause" class="hidden">Pause TV</button>
+<button id="resume" class="hidden">Resume TV</button>
+<script src="popup.js"></script>
+</body>
+</html>

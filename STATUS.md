@@ -5,13 +5,13 @@
 Chrome extension → Linux native helper → command-mode AirPlay on the Living Room Apple TV:
 
 - Initial FOX cast: moving video and audible sound (human-confirmed).
-- No ad observed even with Pi-hole blocking disabled; transition compatibility remains unverified.
+- 2026-09-12 Acer Chrome unpacked popup: pre-roll ads before the FOX stream AirPlayed to the Living Room Apple TV **with Pi-hole blocking still enabled on the Apple TV**. Same-host Fastly HLS; Pi-hole on the TV cannot strip in-stream ads on an allowed CDN. Ad→program transition on this path is human-confirmed for that pre-roll. Do not treat this as a reason to block ads.
 - After Scott physically stopped the TV, leftover helper state was `error`/`unverified`. Popup stop then reported `stopped`/`unverified`.
 - Recast `c35` (equivalent live masters sharing the same 720p–270p ladder): video and sound confirmed.
 - Helper End session: Scott confirmed the Apple TV actually stopped.
 - Recast `c39` after that stop: Scott confirmed video playing. He then restored Pi-hole blocking and deleted the temporary UDP 49170 rule while that stream was still playing.
 
-Isolated Chrome PID 7736 / root `/home/scott/.cache/pearplay-live.tt628lkk` may still be running. Do not claim Brave, ad transitions, or invalid/expired-stream behavior. Pause/resume remain unsupported.
+Isolated Chrome PID 7736 / root `/home/scott/.cache/pearplay-live.tt628lkk` may still be running. Do not claim Brave or invalid/expired-stream behavior. Pause/resume remain unsupported. FOX pre-roll ads on AirPlay with ATV Pi-hole on are confirmed 2026-09-12.
 
 ## Previous verification — Chrome integration passed, TV gate was pending
 

@@ -47,19 +47,26 @@ test('network candidates require HLS or MP4 evidence, never segments or unsuppor
  ]) {s.observe({...e,url,responseHeaders:[{name:'Content-Type',value:mime}]});assert.equal(s.view(1).candidates.length,0,url);}
  for(const [url,mime] of [['https://x/master.m3u8',''],['https://x/movie.mp4','application/octet-stream'],['https://x/hls','Application/X-MpegURL; charset=utf-8'],['https://x/mp4','video/mp4']])
   s.observe({...e,url,type:'xmlhttprequest',responseHeaders:[{name:'Content-Type',value:mime}]});
- assert.equal(s.view(1).candidates.length,4);
+ assert.equal(s.view(1).candidates.length,3);
  s.videos(e,[{videoId:'v1',url:'https://x/movie.webm'},{videoId:'v2',url:'https://x/segment.ts'},{videoId:'v3',url:'https://x/opaque-video'}]);
- assert.equal(s.view(1).candidates.length,5); // exact opaque currentSrc remains explicitly unverified
+ assert.equal(s.view(1).candidates.length,4); // exact opaque currentSrc remains explicitly unverified
+});
+test('same-host HLS masters collapse to one short label with no CDN hostname',async()=>{
+ const {Sessions}=await load();const s=new Sessions();s.enable(1);const e={tabId:1,frameId:0,documentId:'a'};s.commit(e);
+ s.pageTitle(1,'FOX 13 Seattle Live');
+ for (const path of ['a.m3u8','b.m3u8','c.m3u8','d.m3u8']) s.observe({...e,url:`https://foxvideo-fts.global.ssl.fastly.net/${path}`,type:'xmlhttprequest'});
+ const view=s.view(1);
+ assert.equal(view.candidates.length,1);
+ assert.equal(view.candidates[0].label,'FOX 13 Seattle Live');
+ assert.doesNotMatch(JSON.stringify(view),/fastly|foxvideo|m3u8|https:/);
 });
 test('source labels expose only hostname, format and attribution, never signed paths',async()=>{
  const {Sessions}=await load();const s=new Sessions();s.enable(1);const e={tabId:1,frameId:0,documentId:'a'};s.commit(e);
- s.observe({...e,url:'https://cdn.test/private-token/master.m3u8?sig=secret#fragment',type:'xmlhttprequest'});
- s.videos(e,[{videoId:'v1',url:'https://media.test/private/movie.mp4?sig=secret'},{videoId:'v2',url:'https://opaque.test/private?sig=secret'}]);
+ s.observe({...e,url:'https://cdn.test/private-token/master.m3u8?sig=secret#fragment',type:'xmlhttprequest',title:'https://evil/x?sig=secret'});
+ s.videos(e,[{videoId:'v1',url:'https://media.test/private/movie.mp4?sig=secret',title:'Studio A'},{videoId:'v2',url:'https://opaque.test/private?sig=secret',title:'Studio B'}]);
  const labels=s.view(1).candidates.map(c=>c.label);
- assert.match(labels[0],/cdn\.test.*HLS.*unverified.*frame 0.*network/);
- assert.match(labels[1],/media\.test.*MP4.*unverified.*video element/);
- assert.match(labels[2],/opaque\.test.*Unknown format.*unverified.*video element/);
- assert.doesNotMatch(JSON.stringify(s.view(1)),/private|secret|sig=|fragment|https:/);
+ assert.deepEqual(labels,['Video 1','Studio A','Studio B']);
+ assert.doesNotMatch(JSON.stringify(s.view(1)),/private|secret|sig=|fragment|https:|unverified|frame |network |video element|Candidate|cdn\.test|media\.test|evil/);
 });
 test('URL validation rejects parser repair while keeping accepted signed strings exact',async()=>{
  const {httpURL,Sessions}=await load();

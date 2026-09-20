@@ -1,6 +1,6 @@
 # PearPlay
 
-[![Tip with X Money](tip-with-x-money.png)](https://x.com/scottito22)
+[![Tip with X Money](tip-with-x-money.svg)](https://x.com/scottito22)
 
 Linux-first website video AirPlay sender. **FOX 13 Seattle live video+audio have been confirmed on the Living Room Apple TV through the Chrome extension and Linux helper, including helper stop and recast.** Public HLS was previously confirmed via the CLI spike. An actual ad/program transition and Brave remain unverified. PearPlay is a working name, not trademark-cleared.
 

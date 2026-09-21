@@ -9,6 +9,7 @@
   const explain = error => {
     const code = error?.message;
     if (code === 'NATIVE_DISCONNECTED' || code === 'NATIVE_TIMEOUT') return 'Connect the PearPlay helper first. Until that works, Find Apple TVs and typing the TV address will not work.';
+    if (code === 'pairing_required') return 'Look at the Apple TV. Type the 4 digits it shows in step 4. They stay hidden.';
     if (code === 'ACTION_FAILED') return 'Connect the helper first if it still says not connected. Then choose the video and an Apple TV.';
     return 'Connect the helper, find videos, find Apple TVs, then send.';
   };
@@ -56,6 +57,29 @@
       $('discover').disabled = disconnected;
       $('host').disabled = disconnected;
       $('start').disabled = disconnected || !c || !s.receiver;
+      const allowed = await allWebsitesAllowed();
+      $('grantAll').disabled = allowed;
+      $('enable').disabled = !allowed;
+      $('rescan').disabled = !allowed;
+      $('accessState').textContent = allowed
+        ? 'All websites allowed. Next: press Find videos.'
+        : 'Allow all websites first. Find videos stays off until you do.';
+      const needsPin = s.native.error === 'pairing_required';
+      if (needsPin && !pinStarted) {
+        pinStarted = true;
+        $('pairBox').hidden = true;
+        showTVs('Starting pairing. Look at the Apple TV for a 4-digit PIN.');
+        send('pairBegin').then(() => {
+          pinReady = true;
+          $('pairBox').hidden = false;
+          showTVs('The PIN is on the Apple TV. Type those 4 digits below. They stay hidden.');
+        }).catch(() => {
+          pinStarted = false;
+          showTVs('Could not start pairing. Press Send to Apple TV again.');
+        });
+      } else if (pinReady) $('pairBox').hidden = false;
+      else $('pairBox').hidden = true;
+      if (!needsPin && !pinReady && !tvMessage) showTVs(tvStatus(s.native));
       $('confirmTV').disabled = !c?.videoId;
       $('localResume').disabled = !s.localAvailable;
       for (const op of ['pause', 'resume', 'stop']) $(op).disabled = !s.native.capabilities.includes(op);
@@ -70,14 +94,16 @@
       await fn();
       await refresh();
     } catch (error) {
-      notice(explain(error));
+      const text = explain(error);
+      notice(text);
+      if (fn === findTVs) showTVs(text);
     }
   };
   for (const op of ['enable', 'disable', 'rescan']) {
     $(op).onclick = act(async () => {
       const r = await send(op);
       notice(r.total !== undefined
-        ? (r.scanned ? `Found videos in ${r.scanned} part${r.scanned === 1 ? '' : 's'} of this page.` : 'No videos yet. Press play, allow this website if needed, reload, then look again.')
+        ? (r.scanned ? `Found videos in ${r.scanned} part${r.scanned === 1 ? '' : 's'} of this page.` : 'No videos yet. Allow all websites, reload this page, press play, then Find videos.')
         : 'Stopped looking on this page.');
     });
   }
@@ -86,14 +112,35 @@
   for (const op of ['hello', 'start', 'status', 'stop', 'pause', 'resume', 'localResume']) {
     $(op).onclick = act(() => send(op));
   }
+  let tvMessage = '';
+  let pinStarted = false;
+  let pinReady = false;
+  const showTVs = text => {
+    tvMessage = text;
+    $('tvStatus').textContent = text;
+  };
   const findTVs = async () => {
-    notice('Looking for Apple TVs…');
+    showTVs('Looking for Apple TVs…');
     const host = $('host').value.trim();
     const r = await send('discover', host ? { host } : {});
     const n = r.receivers?.length ?? 0;
-    notice(n === 1 ? 'Apple TV found and selected. Press Send to Apple TV.' : n ? `Found ${n} Apple TVs. Choose one, then send.` : 'No Apple TVs found on their own. Paste the TV address below, then press Find Apple TVs or Enter.');
+    showTVs(n === 1 ? 'Apple TV found and selected. Press Send to Apple TV.' : n ? `Found ${n} Apple TVs. Choose one, then send.` : 'No Apple TV found on the network. Leave the address blank and press Find Apple TVs again.');
   };
   $('discover').onclick = act(findTVs);
+  $('pair').onclick = async () => {
+    const pin = $('pin').value;
+    $('pin').value = '';
+    try {
+      await send('pair', { pin });
+      pinReady = false;
+      pinStarted = false;
+      showTVs('Paired. Press Send to Apple TV.');
+      $('pairBox').hidden = true;
+      await refresh();
+    } catch {
+      showTVs('Pairing did not finish. Check the PIN on the TV and try again.');
+    }
+  };
   $('host').addEventListener('keydown', event => {
     if (event.key === 'Enter') {
       event.preventDefault();
@@ -103,7 +150,7 @@
   $('confirmTV').onclick = act(() => send('localPause', { confirmed: true }));
   $('grantAll').onclick = act(async () => {
     const granted = await chrome.permissions.request({ origins: ['http://*/*', 'https://*/*'] });
-    notice(granted ? 'Allowed. Find videos, press play, then look again.' : 'Not allowed. PearPlay can only see this page if the site permits it.');
+    notice(granted ? 'All websites allowed. Reload this page, press play, then press Find videos.' : 'Not allowed. PearPlay cannot see the video until you allow all websites.');
   });
   $('grantSite').onclick = act(async () => {
     const u = new URL(tab.url);
@@ -112,6 +159,11 @@
     notice(granted ? 'This website is allowed. Reload, press play, then find videos.' : 'Not allowed.');
   });
   $('reload').onclick = act(() => chrome.tabs.reload(tab.id));
+  async function allWebsitesAllowed() {
+    const got = await chrome.permissions.getAll?.();
+    const origins = got?.origins ?? [];
+    return origins.includes('http://*/*') && origins.includes('https://*/*');
+  }
   const saved = await memory?.get(['host']) ?? {};
   if (saved.host) {
     $('host').value = saved.host;
@@ -123,7 +175,9 @@
     await findTVs();
     await refresh();
   } catch (error) {
-    notice(explain(error));
+    const text = explain(error);
+    showTVs(text);
+    notice(text);
   }
   setInterval(refresh, 2000);
 })();

@@ -246,12 +246,14 @@ async def run(args, api, output, stage):
             await asyncio.wait_for(pairing.begin(), args.timeout)
             if not pairing.device_provides_pin:
                 raise ValueError('unsupported PIN direction')
-            import getpass
-            import warnings
-            # getpass must never fall back to echoed stdin.
-            with warnings.catch_warnings():
-                warnings.simplefilter('error', getpass.GetPassWarning)
-                pin = getpass.getpass('TV PIN (hidden): ')
+            pin = getattr(args, 'pin', None)
+            if not (isinstance(pin, str) and len(pin) == 4 and pin.isascii() and pin.isdigit()):
+                import getpass
+                import warnings
+                # getpass must never fall back to echoed stdin.
+                with warnings.catch_warnings():
+                    warnings.simplefilter('error', getpass.GetPassWarning)
+                    pin = getpass.getpass('TV PIN (hidden): ')
             if len(pin) != 4 or not pin.isascii() or not pin.isdigit():
                 raise ValueError('invalid PIN')
             pairing.pin(pin)

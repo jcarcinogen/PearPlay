@@ -16,9 +16,9 @@ section h2 { font-size: 13px; margin: 0 0 8px; }
 button, select, input { font: inherit; }
 select, input { width: 100%; box-sizing: border-box; }
 button { cursor: pointer; }
-#start { font-weight: 600; }
-#banner { display: none; margin: 0 0 12px; padding: 10px 12px; border-radius: 8px; font-weight: 650; background: CanvasText; color: Canvas; }
-#banner:not(:empty) { display: block; }
+#grantAll, #start { font-weight: 600; }
+#tvStatus, #banner { display: none; margin: 0 0 12px; padding: 10px 12px; border-radius: 8px; font-weight: 650; background: CanvasText; color: Canvas; }
+#tvStatus:not(:empty), #banner:not(:empty) { display: block; }
 #notice, #state { min-height: 1.4em; margin: 6px 0 0; }
 .muted { font-size: 12px; opacity: .75; margin: 6px 0 0; }
 details { margin-top: 8px; }
@@ -31,37 +31,54 @@ details > summary { cursor: pointer; font-size: 12px; }
   <img src="icons/icon48.png" alt="">
   <h1>PearPlay</h1>
 </header>
-<p class="lead">Play a video from this page on your Apple TV.</p>
+<p class="lead">First allow all websites, then look for videos.</p>
 <p id="banner" role="status" aria-live="assertive"></p>
 
 <section>
-  <h2>1. Find videos on this page</h2>
-  <p class="muted">Open the video, press play, then find videos. If the list stays empty, allow this website and reload.</p>
+  <h2>1. Allow all websites</h2>
+  <p>PearPlay cannot see the video until you allow all websites. Do that before Find videos.</p>
+  <div class="row">
+    <button id="grantAll">Allow all websites</button>
+  </div>
+  <p id="accessState" class="muted">Allow all websites first. Find videos stays off until you do.</p>
+  <details>
+    <summary>Allow only this website instead</summary>
+    <div class="row">
+      <button id="grantSite">Allow this website</button>
+    </div>
+  </details>
+</section>
+
+<section>
+  <h2>2. Find videos</h2>
+  <p class="muted">After all websites are allowed, open the video, press play, then Find videos. If the list stays empty, reload this page and look again.</p>
   <div class="row">
     <button id="enable">Find videos</button>
     <button id="disable">Stop looking</button>
     <button id="rescan">Look again</button>
     <button id="reload">Reload this page</button>
   </div>
-  <div class="row">
-    <button id="grantSite">Allow this website</button>
-    <button id="grantAll">Allow all websites</button>
-  </div>
 </section>
 
 <section>
-  <h2>2. Choose a video</h2>
+  <h2>3. Choose a video</h2>
   <label class="hidden" for="candidate">Choose a video</label>
   <select id="candidate"></select>
 </section>
 
 <section>
-  <h2>3. Choose an Apple TV</h2>
+  <h2>4. Choose an Apple TV</h2>
   <p class="muted">PearPlay looks on your network. You should not need to type an address. If the helper is not connected, Find Apple TVs and the address box cannot find your Apple TV — click Connect helper first.</p>
   <div class="row">
     <button id="discover">Find Apple TVs</button>
     <button id="hello">Connect helper</button>
     <button id="status">Refresh TV status</button>
+  </div>
+  <p id="tvStatus" role="status"></p>
+  <div id="pairBox" hidden>
+    <label for="pin">TV PIN</label>
+    <input id="pin" type="password" inputmode="numeric" maxlength="4" autocomplete="off" spellcheck="false">
+    <button id="pair" type="button">Pair Apple TV</button>
   </div>
   <label class="hidden" for="receiver">Choose an Apple TV</label>
   <select id="receiver"></select>
@@ -73,7 +90,7 @@ details > summary { cursor: pointer; font-size: 12px; }
 </section>
 
 <section>
-  <h2>4. Send it</h2>
+  <h2>5. Send it</h2>
   <div class="row">
     <button id="start">Send to Apple TV</button>
     <button id="stop">End helper session</button>

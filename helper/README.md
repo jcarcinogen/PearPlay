@@ -1,9 +1,14 @@
-# PearPlay native helper (experimental, Linux)
+# PearPlay native helper (experimental)
+
+Linux command-mode playback is the proven path. macOS support here is the
+native-host installer and discovery adapter for the same unpacked extension.
+No Mac relay, WebKit, AVPlayer, or screen mirroring.
 
 Requires Python **3.11+**, the existing unmodified `pyatv==0.18.0` environment,
 and this checkout in place. No dependency installation is performed. `hello`
 and protocol tests do not import pyatv; discovery/playback fail safely if the
-runtime dependency is absent or has the wrong version.
+runtime dependency is absent or has the wrong version. On the Mini, run helper
+tests with `python3.11`, never Apple CLT `python3` (3.9).
 
 ## Install / uninstall (explicit opt-in)
 
@@ -19,12 +24,43 @@ EXTENSION_ID="replace_with_actual_extension_id"
 ```
 
 `--config-parent` is the browser **configuration parent**, not `Default` or an
-individual profile directory: Chrome gets `google-chrome/NativeMessagingHosts`
-below it; Brave gets `BraveSoftware/Brave-Browser/NativeMessagingHosts`. Ensure
-an isolated browser is actually configured to use that configuration tree;
-this installer does not launch or configure a browser. Production's usual
-parent is `$HOME/.config`, but it is deliberately never selected by default.
-Only `chrome` and `brave` are accepted.
+individual profile directory. The installer chooses the folder from the OS.
+Linux Chrome gets `google-chrome/NativeMessagingHosts`. macOS Chrome gets
+`Google/Chrome/NativeMessagingHosts` (not `google-chrome`). Brave gets
+`BraveSoftware/Brave-Browser/NativeMessagingHosts` on either OS. Ensure an
+isolated browser is actually configured to use that configuration tree; this
+installer does not launch or configure a browser. Linux's usual parent is
+`$HOME/.config`. macOS Chrome's usual parent is `$HOME/Library/Application Support`.
+Neither is selected by default. Only `chrome` and `brave` are accepted.
+
+### macOS Chrome unpacked install
+
+Use the unpacked `[a-p]{32}` id from the Chrome Scott already has. Do not
+install Brave for this check, and do not launch Chrome from the installer.
+
+```sh
+PY="$HOME/.local/share/pearplay/venv/bin/python"
+GRANTED="$HOME/.hermes/hermes-agent/venv/bin/python3.11"
+PYPATH="$HOME/.local/share/pearplay/venv/lib/python3.11/site-packages"
+CONFIG_PARENT="$HOME/Library/Application Support"
+EXTENSION_ID="replace_with_actual_unpacked_id"
+"$PY" helper/install.py install --extension-id "$EXTENSION_ID" \
+  --browser chrome --config-parent "$CONFIG_PARENT" \
+  --python "$GRANTED" --pythonpath "$PYPATH"
+```
+
+`pyatv==0.18.0` stays in the machine-local venv. The launcher must exec the
+Python macOS already allows on the local network (`com.nousresearch.hermes.managed-python`)
+and set `PYTHONPATH` to that venv's site-packages. The uv CPython behind the
+venv has no local-network grant, so Chrome-spawned scans return empty. Do not
+copy that granted binary over the uv Python. Uninstall with the same
+`--python` and `--pythonpath` the install used, or the launcher bytes will not
+match.
+
+Chrome snapshots native hosts at process start. After the first install, quit
+Chrome fully; Reload is not enough. Brave, later, is the same command with
+`--browser brave` once Brave is installed the way a new user would install it.
+No Chrome Web Store step.
 
 Repeat the exact command with `uninstall` instead of `install`. Installation
 creates only a manifest and a shell launcher. Existing unequal files are
@@ -43,7 +79,11 @@ are installed. Missing source/runtime files do not prevent comparison/removal.
 ```
 
 These are documentation-only example addresses. Discovery without `--host`
-uses multicast; a literal-IP unicast scan is usually more reliable. Pairing
+tries pyatv multicast first. If that is empty, Linux uses `avahi-browse` when
+that command exists. If `avahi-browse` is absent, the helper falls back to
+`dns-sd` and keeps Apple TV IPv4 addresses only, then unicast-scans those
+addresses. A pasted literal IP skips browse. Do not hardcode a receiver
+address in source. Pairing
 uses the existing spike's AirPlay pairing implementation and hidden `getpass`
 PIN entry; echoed fallback is forbidden. It writes only the existing secure
 single-receiver `~/.local/state/pearplay/credentials.json` Store (0700 directory,

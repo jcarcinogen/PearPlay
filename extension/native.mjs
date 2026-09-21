@@ -1,5 +1,5 @@
 import {httpURL} from './core.mjs';
-const ops=['hello','discover','start','status','stop','pause','resume'];
+const ops=['hello','discover','start','status','stop','pause','resume','pair','pair_begin'];
 export function literalIP(s) {
  if(typeof s!=='string') return false;
  if(/^\d+\.\d+\.\d+\.\d+$/.test(s)) return s.split('.').every(x=>String(Number(x))===x&&Number(x)<=255);
@@ -12,7 +12,7 @@ export class Native {
  fail(code){this.state={state:'error',evidence:'none',capabilities:[],receivers:[],error:code};for(const p of this.pending.values()){clearTimeout(p.timer);p.reject(Error(code));}this.pending.clear();const old=this.port;this.port=null;old?.disconnect();}
  async request(op,args={}) {
  const keys=Object.keys(args);
- if(!ops.includes(op)|| (op==='start' ? !(keys.length===3&&typeof args.receiver==='string'&&args.receiver.length>0&&args.receiver.length<=1024&&literalIP(args.host)&&httpURL(args.url)) : op==='discover' ? !(keys.length===0 || keys.length===1&&literalIP(args.host)) : keys.length!==0)) throw Error('INVALID_REQUEST');
+ if(!ops.includes(op)|| (op==='start' ? !(keys.length===3&&typeof args.receiver==='string'&&args.receiver.length>0&&args.receiver.length<=1024&&literalIP(args.host)&&httpURL(args.url)) : op==='pair' ? !(keys.length===3&&typeof args.receiver==='string'&&args.receiver.length>0&&literalIP(args.host)&&/^\d{4}$/.test(args.pin)) : op==='pair_begin' ? !(keys.length===2&&typeof args.receiver==='string'&&args.receiver.length>0&&literalIP(args.host)) : op==='discover' ? !(keys.length===0 || keys.length===1&&literalIP(args.host)) : keys.length!==0)) throw Error('INVALID_REQUEST');
  if(this.pending.size>=16) throw Error('NATIVE_BUSY');
  if(!this.port){try{const port=this.connect();this.port=port;port.onDisconnect.addListener(()=>{if(this.port===port)this.fail('NATIVE_DISCONNECTED');});port.onMessage.addListener(m=>{if(this.port===port)this.receive(m);});}catch{this.fail('NATIVE_DISCONNECTED');throw Error('NATIVE_DISCONNECTED');}}
  const id=`p${++this.serial}`;const message={v:1,id,op,args};
@@ -26,7 +26,9 @@ export class Native {
  if(pending&&pending.serial<this.applied){clearTimeout(pending.timer);this.pending.delete(m.id);if(m.ok)pending.resolve(this.view());else pending.reject(Error('HELPER_ERROR'));return;}
  this.applied=pending?.serial??this.serial;
  const receivers=Array.isArray(m.receivers)?m.receivers.slice(0,64).map((r,i)=>({identifier:r.identifier,address:r.address,label:`Receiver ${i+1} (${r.address})` })):this.state.receivers;
- this.state={state:m.ok?m.state:'error',evidence:m.evidence,capabilities:[...m.capabilities],receivers,error:m.ok?null:'HELPER_ERROR'};
- if(pending){clearTimeout(pending.timer);this.pending.delete(m.id);if(m.ok)pending.resolve(this.view());else pending.reject(Error('HELPER_ERROR'));}
+ const codes=['pairing_required','pairing_failed','busy','transport_failed','receiver_not_discovered','receiver_unavailable'];
+ const code=m.ok?null:(codes.includes(m.error)?m.error:'HELPER_ERROR');
+ this.state={state:m.ok?m.state:'error',evidence:m.evidence,capabilities:[...m.capabilities],receivers,error:code};
+ if(pending){clearTimeout(pending.timer);this.pending.delete(m.id);if(m.ok)pending.resolve(this.view());else pending.reject(Error(code));}
  }
 }

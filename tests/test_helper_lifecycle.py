@@ -1,4 +1,5 @@
 import asyncio
+import json
 import unittest
 from test_helper_protocol import load, request
 
@@ -10,7 +11,28 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
         h=m.Host(Transport,events.append)
         await h.playback({})
         self.assertEqual(events[-1]['error'],'pairing_required')
-        self.assertEqual(events[-1]['pairing'], 'Run helper/native.py pair --identifier RECEIVER --host IP in a terminal; PIN is hidden.')
+        self.assertEqual(events[-1]['pairing'], 'Look at the Apple TV and type the 4 digits it shows. They stay hidden.')
+
+    async def test_pair_begin_puts_pin_on_tv_before_the_digits_are_sent(self):
+        m=load(); order=[]
+        class Session:
+            async def finish(self, pin):
+                order.append(('finish', pin))
+        class Transport:
+            async def begin_pair(self, identifier, host):
+                order.append(('begin', identifier, host))
+                return Session()
+            async def pair(self, identifier, host, pin):
+                raise AssertionError('one-shot pair')
+        h=m.Host(Transport, [])
+        begun=await h.handle(request('pair_begin', {'receiver':'AA:BB:CC:DD:EE:FF','host':'192.0.2.10'}))
+        self.assertTrue(begun['ok'])
+        self.assertEqual(order, [('begin','AA:BB:CC:DD:EE:FF','192.0.2.10')])
+        pin='0148'
+        done=await h.handle(request('pair', {'receiver':'AA:BB:CC:DD:EE:FF','host':'192.0.2.10','pin':pin}))
+        self.assertTrue(done['ok'])
+        self.assertEqual(order[-1], ('finish', pin))
+        self.assertNotIn(pin, json.dumps(done))
 
     async def test_persistent_start_event_status_stop_restart_and_disconnect(self):
         m = load(); events=[]; instances=[]
@@ -23,7 +45,7 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
                 try: await asyncio.Event().wait()
                 finally: self.closed=True
         h=m.Host(Transport, events.append)
-        self.assertEqual((await h.handle(request()))['capabilities'], ['hello','discover','start','status','stop'])
+        self.assertEqual((await h.handle(request()))['capabilities'], ['hello','discover','start','status','stop','pair','pair_begin'])
         self.assertEqual((await h.handle(request('pause')))['error'], 'unsupported')
         args={'receiver':'AA:BB:CC:DD:EE:FF','host':'127.0.0.1','url':'https://example.org/SECRET'}
         self.assertEqual((await h.handle(request('start',args)))['error'],'receiver_not_discovered')

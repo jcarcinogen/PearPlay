@@ -68,7 +68,7 @@ def main(argv=None):
             finally: output.close()
 
 MAX_FRAME = 65536
-OPS = ('hello', 'discover', 'start', 'status', 'stop', 'pause', 'resume')
+OPS = ('hello', 'discover', 'start', 'status', 'stop', 'pause', 'resume', 'pair', 'pair_begin')
 IDENTIFIER = r'[0-9a-fA-F:-]{12,64}'
 
 def parse_avahi_hosts(text):
@@ -87,6 +87,48 @@ def parse_avahi_hosts(text):
             hosts.append(ip)
         if len(hosts) == 64:
             break
+    return hosts
+
+def parse_dns_sd_browse(text):
+    names = []
+    for line in text.splitlines():
+        match = re.match(r'^\d+:\d+:\d+\.\d+\s+Add\s+\d+\s+\d+\s+\S+\s+_airplay\._tcp\.?\s+(.*\S)\s*$', line)
+        if not match:
+            continue
+        name = match.group(1)
+        if name not in names:
+            names.append(name)
+        if len(names) == 8:
+            break
+    return names
+
+def parse_dns_sd_lookup(text):
+    if 'model=' in text and 'model=AppleTV' not in text:
+        return None
+    match = re.search(r'can be reached at (\S+?):(\d+)', text)
+    return match.group(1) if match else None
+
+def apple_tv_only(devices):
+    def model_name(device):
+        model = getattr(getattr(device, 'device_info', None), 'model', None)
+        return getattr(model, 'name', '') or ''
+    named = [device for device in devices if 'AppleTV' in model_name(device)]
+    return named or list(devices)
+
+def parse_dns_sd_addresses(text):
+    hosts = []
+    for line in text.splitlines():
+        if not re.match(r'^\d+:\d+:\d+\.\d+\s+Add\b', line):
+            continue
+        for token in line.split():
+            try:
+                ip = ipaddress.ip_address(token)
+            except ValueError:
+                continue
+            if ip.version == 4 and str(ip) not in hosts:
+                hosts.append(str(ip))
+            if len(hosts) == 64:
+                return hosts
     return hosts
 
 def spike():
@@ -115,6 +157,14 @@ def validate(value):
             raise ValueError('invalid_request')
     elif op == 'discover':
         if keys not in (set(), {'host'}): raise ValueError('invalid_request')
+    elif op == 'pair_begin':
+        if keys != {'receiver','host'} or not isinstance(args['receiver'], str) or not re.fullmatch(IDENTIFIER, args['receiver']):
+            raise ValueError('invalid_request')
+    elif op == 'pair':
+        if keys != {'receiver','host','pin'} or not isinstance(args['receiver'], str) or not re.fullmatch(IDENTIFIER, args['receiver']):
+            raise ValueError('invalid_request')
+        if not isinstance(args['pin'], str) or not re.fullmatch(r'\d{4}', args['pin']):
+            raise ValueError('invalid_request')
     elif keys:
         raise ValueError('invalid_request')
     if 'host' in args:
@@ -222,6 +272,23 @@ class Lease:
         import os
         if self.fd is not None: os.close(self.fd); self.fd = None
 
+class OpenPair:
+    def __init__(self, pairing, store, identifier, timeout):
+        self.pairing, self.store, self.identifier, self.timeout = pairing, store, identifier, timeout
+
+    async def finish(self, pin):
+        try:
+            self.pairing.pin(pin)
+            await asyncio.wait_for(self.pairing.finish(), self.timeout)
+            if not getattr(self.pairing, 'has_paired', False):
+                raise HelperError('pairing_failed')
+            self.store.save({'identifier': self.identifier, 'credentials': self.pairing.service.credentials})
+        finally:
+            await self.pairing.close()
+
+    async def close(self):
+        await self.pairing.close()
+
 class Transport:
     def __init__(self, *, api=None, command=None, store=None, connect=None, parse=None, backend=None, timeout=10, mdns=None):
         self.command = command or spike()
@@ -247,23 +314,93 @@ class Transport:
     async def scan(self, host):
         return await asyncio.wait_for(self.api.scan(asyncio.get_running_loop(), timeout=min(5,self.timeout), protocol=self.api.Protocol.AirPlay, hosts=[host] if host else None), self.timeout)
 
+    async def _exec_text(self, argv, timeout, kill_on_timeout):
+        proc = await asyncio.create_subprocess_exec(
+            *argv, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
+        stdout = getattr(proc, 'stdout', None)
+        if stdout is None:
+            try:
+                out, _ = await asyncio.wait_for(proc.communicate(), timeout)
+            except TimeoutError:
+                proc.kill()
+                out, _ = await proc.communicate()
+                if not kill_on_timeout:
+                    raise
+            return out.decode('utf-8', 'replace')
+        if not kill_on_timeout:
+            try:
+                out, _ = await asyncio.wait_for(proc.communicate(), timeout)
+            except TimeoutError:
+                proc.kill()
+                try: await proc.communicate()
+                except Exception: pass
+                raise
+            return out.decode('utf-8', 'replace')
+        # dns-sd never exits and block-buffers on a pipe. SIGKILL drops that buffer.
+        chunks = []
+        try:
+            chunk = await asyncio.wait_for(stdout.read(65536), timeout)
+            if chunk: chunks.append(chunk)
+        except TimeoutError:
+            pass
+        proc.terminate()
+        try:
+            rest = await asyncio.wait_for(stdout.read(), 0.5)
+            if rest: chunks.append(rest)
+        except TimeoutError:
+            proc.kill()
+            try:
+                rest = await asyncio.wait_for(stdout.read(), 0.2)
+                if rest: chunks.append(rest)
+            except TimeoutError:
+                pass
+        try: await proc.wait()
+        except Exception: pass
+        return b''.join(chunks).decode('utf-8', 'replace')
+
     async def mdns_hosts(self):
         if self.mdns is not None:
             return await self.mdns()
         try:
-            proc = await asyncio.create_subprocess_exec(
-                'avahi-browse', '-prtk', '_airplay._tcp',
-                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
-            out, _ = await asyncio.wait_for(proc.communicate(), max(8, self.timeout))
+            text = await self._exec_text(['avahi-browse', '-prtk', '_airplay._tcp'], max(8, self.timeout), False)
+        except FileNotFoundError:
+            return await self.dns_sd_hosts()
+        except (TimeoutError, OSError):
+            return []
+        return parse_avahi_hosts(text)
+
+    async def dns_sd_hosts(self):
+        timeout = min(1.0, self.timeout)
+        try:
+            browse = await self._exec_text(['dns-sd', '-B', '_airplay._tcp', 'local.'], timeout, True)
         except (FileNotFoundError, TimeoutError, OSError):
             return []
-        return parse_avahi_hosts(out.decode('utf-8', 'replace'))
+        hosts = []
+        for name in parse_dns_sd_browse(browse):
+            try:
+                looked = await self._exec_text(['dns-sd', '-L', name, '_airplay._tcp', 'local.'], timeout, True)
+            except (FileNotFoundError, TimeoutError, OSError):
+                continue
+            hostname = parse_dns_sd_lookup(looked)
+            if not hostname:
+                continue
+            try:
+                addressed = await self._exec_text(['dns-sd', '-G', 'v4', hostname], timeout, True)
+            except (FileNotFoundError, TimeoutError, OSError):
+                continue
+            for ip in parse_dns_sd_addresses(addressed):
+                if ip not in hosts:
+                    hosts.append(ip)
+                if len(hosts) == 64:
+                    return hosts
+        return hosts
 
     async def discover(self, host):
         devices = list(await self.scan(host))
         if not host and not devices:
             for ip in await self.mdns_hosts():
                 devices.extend(await self.scan(ip))
+        devices = apple_tv_only(devices)
         result = []
         for device in devices[:256]:
             identifier = device.identifier
@@ -274,6 +411,30 @@ class Transport:
             if receiver not in result: result.append(receiver)
             if len(result) == 64: break
         return result
+
+    async def begin_pair(self, identifier, host):
+        devices = [device for device in await self.scan(host) if getattr(device, 'identifier', None) == identifier]
+        if len(devices) != 1:
+            raise HelperError('receiver_unavailable')
+        pairing = await asyncio.wait_for(self.api.pair(devices[0], self.api.Protocol.AirPlay, asyncio.get_running_loop()), self.timeout)
+        try:
+            await asyncio.wait_for(pairing.begin(), self.timeout)
+        except Exception:
+            await pairing.close()
+            raise
+        if not getattr(pairing, 'device_provides_pin', False):
+            await pairing.close()
+            raise HelperError('pairing_failed')
+        return OpenPair(pairing, self.store, identifier, self.timeout)
+
+    async def pair(self, identifier, host, pin):
+        baseline = self.command.existing()
+        parsed = baseline.arguments(['pair', '--identifier', identifier, '--host', host])
+        parsed.pin = pin
+        with Lease(self.store):
+            code = await baseline.run(parsed, self.api, io.StringIO(), ['pair'])
+        if code != 0:
+            raise HelperError('pairing_failed')
 
     async def run(self, args, notify):
         with Lease(self.store):
@@ -310,20 +471,21 @@ class HelperError(Exception):
     pass
 
 class Host:
-    capabilities = ['hello', 'discover', 'start', 'status', 'stop']
+    capabilities = ['hello', 'discover', 'start', 'status', 'stop', 'pair', 'pair_begin']
 
     def __init__(self, factory, emit):
         self.factory, self.emit = factory, emit
         self.state, self.evidence = 'idle', 'none'
         self.receivers = []
         self.task = None
+        self.open_pair = None
 
     def response(self, identifier, error=None, **fields):
         result = dict(v=1, id=identifier, ok=error is None, state=self.state,
                       evidence=self.evidence, capabilities=list(self.capabilities), **fields)
         if error: result['error'] = error
         if error == 'pairing_required':
-            result['pairing'] = 'Run helper/native.py pair --identifier RECEIVER --host IP in a terminal; PIN is hidden.'
+            result['pairing'] = 'Look at the Apple TV and type the 4 digits it shows. They stay hidden.'
         return result
 
     def changed(self, state, evidence):
@@ -341,7 +503,15 @@ class Host:
             code = str(error) if isinstance(error, HelperError) and str(error) in ('pairing_required','busy') else 'transport_failed'
             self.emit(self.response('event', code))
 
+    async def _drop_pair(self):
+        session = self.open_pair[1] if self.open_pair else None
+        self.open_pair = None
+        close = getattr(session, 'close', None)
+        if close:
+            await close()
+
     async def close(self):
+        await self._drop_pair()
         if self.task:
             self.task.cancel()
             await asyncio.gather(self.task, return_exceptions=True)
@@ -360,6 +530,19 @@ class Host:
             if op == 'discover':
                 self.receivers = await asyncio.wait_for(self.factory().discover(args.get('host')), 20)
                 return self.response(identifier, receivers=self.receivers)
+            if op == 'pair_begin':
+                if self.open_pair:
+                    await self._drop_pair()
+                session = await asyncio.wait_for(self.factory().begin_pair(args['receiver'], args['host']), 30)
+                self.open_pair = (args['receiver'], session)
+                return self.response(identifier)
+            if op == 'pair':
+                if not self.open_pair or self.open_pair[0] != args['receiver']:
+                    return self.response(identifier, 'pairing_required')
+                _, session = self.open_pair
+                self.open_pair = None
+                await asyncio.wait_for(session.finish(args['pin']), 30)
+                return self.response(identifier)
             if op == 'start':
                 if self.task and not self.task.done(): return self.response(identifier, 'busy')
                 if not any(r['identifier'] == args['receiver'] and ipaddress.ip_address(r['address']) == ipaddress.ip_address(args['host']) for r in self.receivers):

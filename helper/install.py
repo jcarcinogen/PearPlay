@@ -17,9 +17,10 @@ def main(argv=None):
     parser.add_argument('--browser',required=True,choices=['chrome','brave'])
     parser.add_argument('--config-parent',required=True,type=Path)
     parser.add_argument('--python',required=True,type=Path)
+    parser.add_argument('--pythonpath',type=Path)
     try:
         args=parser.parse_args(argv)
-        kwargs=dict(extension_id=args.extension_id,browser=args.browser,config_parent=args.config_parent,python=args.python,source=Path(__file__).resolve().parents[1])
+        kwargs=dict(extension_id=args.extension_id,browser=args.browser,config_parent=args.config_parent,python=args.python,source=Path(__file__).resolve().parents[1],pythonpath=args.pythonpath)
         result=install(**kwargs) if args.action=='install' else uninstall(**kwargs)
         print(json.dumps({'ok':True,'action':args.action,'preserved':result if isinstance(result,list) else []}))
         return 0
@@ -30,7 +31,16 @@ def main(argv=None):
 NAME = 'com.pearplay.helper'
 BROWSERS = {'chrome': 'google-chrome', 'brave': 'BraveSoftware/Brave-Browser'}
 
-def plan(*, extension_id, browser, config_parent, python, source, require_runtime=True):
+def browser_dir(browser, platform=None):
+    import sys
+    platform = sys.platform if platform is None else platform
+    if browser == 'chrome':
+        if platform == 'darwin': return 'Google/Chrome'
+        if platform == 'linux': return BROWSERS['chrome']
+        raise ValueError('invalid_install_arguments')
+    return BROWSERS[browser]
+
+def plan(*, extension_id, browser, config_parent, python, source, require_runtime=True, platform=None, pythonpath=None):
     if not isinstance(extension_id, str) or not re.fullmatch(r'[a-p]{32}', extension_id) or browser not in BROWSERS:
         raise ValueError('invalid_install_arguments')
     parent, python, source = Path(config_parent), Path(python), Path(source)
@@ -38,9 +48,15 @@ def plan(*, extension_id, browser, config_parent, python, source, require_runtim
         raise ValueError('absolute_paths_required')
     if require_runtime and (not python.is_file() or not os.access(python, os.X_OK) or not (source/'helper/native.py').is_file() or not (source/'spikes/002-command/command.py').is_file()):
         raise ValueError('missing_runtime')
-    folder = parent/BROWSERS[browser]/'NativeMessagingHosts'
+    folder = parent/browser_dir(browser, platform)/'NativeMessagingHosts'
     paths = {'manifest':folder/(NAME+'.json'), 'launcher':folder/(NAME+'.launcher')}
-    launcher = '#!/bin/sh\n# PearPlay owned launcher v1; URLs only on stdin.\nexec ' + shlex.quote(str(python)) + ' ' + shlex.quote(str(source/'helper/native.py')) + ' native --extension-id ' + extension_id + ' "$@"\n'
+    prefix = ''
+    if pythonpath:
+        pythonpath = Path(pythonpath)
+        if not pythonpath.is_absolute() or '..' in pythonpath.parts:
+            raise ValueError('absolute_paths_required')
+        prefix = 'export PYTHONPATH=' + shlex.quote(str(pythonpath)) + '${PYTHONPATH:+:$PYTHONPATH}\n'
+    launcher = '#!/bin/sh\n# PearPlay owned launcher v1; URLs only on stdin.\n' + prefix + 'exec ' + shlex.quote(str(python)) + ' ' + shlex.quote(str(source/'helper/native.py')) + ' native --extension-id ' + extension_id + ' "$@"\n'
     manifest = json.dumps(dict(name=NAME, description='PearPlay experimental AirPlay helper', path=str(paths['launcher']), type='stdio', allowed_origins=['chrome-extension://'+extension_id+'/']), indent=2)+'\n'
     return paths, {'manifest':(manifest.encode(),0o600), 'launcher':(launcher.encode(),0o700)}
 

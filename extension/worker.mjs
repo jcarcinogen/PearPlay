@@ -27,6 +27,8 @@ export function createWorker(chrome,native=new Native(()=>chrome.runtime.connect
    case 'select':sessions.select(tabId,m.id);return {ok:true};
    case 'receiver':if(!native.view().receivers.some(r=>r.identifier===m.id))throw Error('NO_RECEIVER');receiver=m.id;return {ok:true};
    case 'start':{const c=sessions.selected(tabId);const r=native.view().receivers.find(r=>r.identifier===receiver);if(!r)throw Error('NO_RECEIVER');return native.request('start',{receiver:r.identifier,host:r.address,url:c.url});}
+   case 'pairBegin':{const r=native.view().receivers.find(x=>x.identifier===receiver);if(!r)throw Error('NO_RECEIVER');return native.request('pair_begin',{receiver:r.identifier,host:r.address});}
+   case 'pair':{const r=native.view().receivers.find(x=>x.identifier===receiver);if(!r)throw Error('NO_RECEIVER');if(typeof m.pin!=='string'||!/^\d{4}$/.test(m.pin))throw Error('INVALID_PIN');return native.request('pair',{receiver:r.identifier,host:r.address,pin:m.pin});}
    case 'localPause':{if(m.confirmed!==true)throw Error('CONFIRM_TV_FIRST');const c=sessions.selected(tabId);if(!c.videoId)throw Error('NO_EXACT_VIDEO');const result=await chrome.tabs.sendMessage(tabId,{op:'localPause',confirmed:true,videoId:c.videoId,url:c.url},{documentId:c.documentId});if(result?.ok)local={tabId,...c};return result;}
    case 'localResume':{if(!local)throw Error('NO_LOCAL_VIDEO');return chrome.tabs.sendMessage(local.tabId,{op:'localResume',videoId:local.videoId,url:local.url},{documentId:local.documentId});}
    case 'discover':{

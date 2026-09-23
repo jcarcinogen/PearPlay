@@ -10,7 +10,10 @@ Send a compatible video stream from your browser directly to your Apple TV—wit
 
 [Get started](#get-started) · [Compatibility](#compatibility) · [Limitations](#limitations) · [Documentation](#documentation)
 
-[![Tip with X Money](tip-with-x-money.png)](https://x.com/scottito22) · [Buy me a coffee on Ko-fi](https://ko-fi.com/scottangel)
+<p>
+  <a href="https://x.com/scottito22"><img src="tip-with-x-money.svg" alt="Tip with X Money" width="190" height="30"></a>&nbsp;&nbsp;
+  <a href="https://ko-fi.com/scottangel"><img src="buy-me-a-coffee.svg" alt="Buy me a coffee on Ko-fi" width="190" height="30"></a>
+</p>
 
 <img src="assets/landing/hero.png" width="960" alt="PearPlay branding, an extension popup using example data, and an illustration of a TV">
 

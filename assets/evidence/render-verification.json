@@ -504,7 +504,11 @@
         },
         {
           "tag": "IMG",
-          "ref": "tip-with-x-money.png"
+          "ref": "tip-with-x-money.svg"
+        },
+        {
+          "tag": "IMG",
+          "ref": "buy-me-a-coffee.svg"
         },
         {
           "tag": "IMG",

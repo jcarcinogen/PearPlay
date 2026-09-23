@@ -53,8 +53,8 @@ All new or replaced PNGs from this refresh are regenerated. The pre-existing roo
 ## Checks performed by the renderer
 
 - Every enabled visible popup control is reached with actual Tab key events; a 3px focus ring is checked. Collapsed details are opened for this traversal. Disabled controls are tested when their relevant state enables them.
-- Popup handlers exercise grants, scanning/recovery, selections, helper connection/status, send/end, local confirmation/resume, the masked pairing UI and address Enter. Protocol responses are explicitly synthetic.
-- Real idle/working/empty/error/protocol-playing UI captures. Local pause is asserted absent before explicit confirmation.
+- Popup handlers exercise grants, scanning/recovery, selections, helper connection/status, send/end, the masked pairing UI and address Enter. Protocol responses are explicitly synthetic.
+- Real idle/working/empty/error/protocol-playing UI captures. Browser pause/resume controls are absent from the popup; no automatic browser pause is sent.
 - Screenshots at 360px without horizontal overflow; mobile landing at 390px in both schemes, desktop at 1440px.
 - Runtime errors, console errors, broken images and HTTP(S) page resource requests fail the run. Chrome component background activity is outside the page-network assertion.
 - Copy buttons are checked with injected clipboard success and denial boundaries; denial selects the exact command and tells the user how to copy it. It does not silently claim clipboard success.

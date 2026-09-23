@@ -22,9 +22,9 @@ test('required raster assets have exact dimensions', () => {
     if(file.endsWith('social-preview.png')) assert.ok(png.length < 1_000_000);
   }
 });
-test('popup manifest is unchanged by the visual refresh', () => {
+test('onboarding keeps the established manifest permissions and identity', () => {
   const m=JSON.parse(read('extension/manifest.json'));
-  assert.equal(m.version,'0.1.8');
+  assert.equal(m.version,'0.2.0');
   assert.deepEqual(m.permissions,['activeTab','scripting','webRequest','webNavigation','nativeMessaging','alarms','storage']);
   assert.deepEqual(m.optional_host_permissions,['http://*/*','https://*/*']);
 });

@@ -8,14 +8,15 @@
   };
   const explain = error => {
     const code = error?.message;
-    if (code === 'NATIVE_DISCONNECTED' || code === 'NATIVE_TIMEOUT') return 'Connect the PearPlay helper first. Until that works, Find Apple TVs and typing the TV address will not work.';
+    if (code === 'NATIVE_DISCONNECTED' || code === 'NATIVE_TIMEOUT') return 'This browser cannot connect to PearPlay Helper. Click Finish setup to install it or connect this browser.';
+    if (code === 'busy') return 'PearPlay is busy in another browser or pairing window. End that helper session there, then try again.';
     if (code === 'pairing_required') return 'Look at the Apple TV. Type the 4 digits it shows in step 4. They stay hidden.';
     if (code === 'ACTION_FAILED') return 'Connect the helper first if it still says not connected. Then choose the video and an Apple TV.';
     return 'Connect the helper, find videos, find Apple TVs, then send.';
   };
   const send = async (op, args = {}) => {
     const r = await chrome.runtime.sendMessage({ op, tabId: tab?.id, ...args });
-    if (r?.ok === false) throw Error('ACTION_FAILED');
+    if (r?.ok === false) throw Error(r.error ?? 'ACTION_FAILED');
     return r;
   };
   const options = (id, items, selected, blank) => {
@@ -34,7 +35,8 @@
     el.value = selected ?? '';
   };
   const tvStatus = native => {
-    if (native.error === 'NATIVE_DISCONNECTED') return 'Helper not connected — Find Apple TVs and the address box cannot work yet. Click Connect helper.';
+    if (native.error === 'busy') return 'PearPlay is busy in another browser or pairing window. End that helper session there before trying again.';
+    if (native.error === 'NATIVE_DISCONNECTED') return 'Helper not connected. Click Finish setup to install it or connect this browser.';
     if (!native.receivers?.length) return 'No Apple TVs yet. Click Find Apple TVs.';
     return ({ idle: 'Helper connected. Choose your Apple TV.', connecting: 'Connecting to your Apple TV…', playing: 'Helper reports playing (look at the TV to confirm).', stopped: 'Helper session ended. Check the TV.', stopping: 'Ending the helper session…', error: 'Helper needs attention. Reconnect and try again.' })[native.state] ?? 'Check the TV and refresh its status.';
   };
@@ -70,7 +72,8 @@
       currentView = s;
       updatePhase();
       const c = s.candidates.find(item => item.id === s.selected);
-      const disconnected = s.native.error === 'NATIVE_DISCONNECTED';
+      const disconnected = ['NATIVE_DISCONNECTED','NATIVE_TIMEOUT','INVALID_RESPONSE'].includes(s.native.error) || !s.native.capabilities.length;
+      $('helperSetup').textContent = disconnected ? 'Finish setup' : 'Helper setup';
       $('discover').disabled = disconnected;
       $('host').disabled = disconnected;
       $('start').disabled = disconnected || !c || !s.receiver;
@@ -97,8 +100,6 @@
       } else if (pinReady) $('pairBox').hidden = false;
       else $('pairBox').hidden = true;
       if (!needsPin && !pinReady && (!tvMessage || nativeChanged)) showTVs(tvStatus(s.native));
-      $('confirmTV').disabled = !c?.videoId;
-      $('localResume').disabled = !s.localAvailable;
       for (const op of ['pause', 'resume', 'stop']) $(op).disabled = !s.native.capabilities.includes(op);
       const host = $('host').value.trim();
       await memory?.set({ host, receiver: s.receiver ?? '', candidate: s.selected ?? '' });
@@ -135,9 +136,10 @@
   }
   $('candidate').onchange = act(() => send('select', { id: $('candidate').value }));
   $('receiver').onchange = act(() => send('receiver', { id: $('receiver').value }));
-  for (const op of ['hello', 'start', 'status', 'stop', 'pause', 'resume', 'localResume']) {
+  for (const op of ['hello', 'start', 'status', 'stop', 'pause', 'resume']) {
     $(op).onclick = act(() => send(op));
   }
+  $('helperSetup').onclick = () => send('openSetup').catch(() => notice('Could not open setup. Reopen the popup and try again.'));
   let tvMessage = '';
   let pinStarted = false;
   let pinReady = false;
@@ -173,7 +175,6 @@
       $('discover').click();
     }
   });
-  $('confirmTV').onclick = act(() => send('localPause', { confirmed: true }));
   $('grantAll').onclick = act(async () => {
     const granted = await chrome.permissions.request({ origins: ['http://*/*', 'https://*/*'] });
     notice(granted ? 'All websites allowed. Reload this page, press play, then press Find videos.' : 'Not allowed. PearPlay cannot see the video until you allow all websites.');

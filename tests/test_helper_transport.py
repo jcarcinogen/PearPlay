@@ -142,6 +142,33 @@ class TransportTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(calls,[])
 
 
+    async def test_pairing_holds_shared_lease_until_cancel_or_finish(self):
+        m=load(); command=m.spike()
+        device=SimpleNamespace(identifier='AA:BB:CC:DD:EE:FF')
+        async def scan(*args, **kwargs): return [device]
+        class Pair:
+            device_provides_pin=True; has_paired=True
+            service=SimpleNamespace(credentials='test-only')
+            async def begin(self): pass
+            def pin(self, value): pass
+            async def finish(self): pass
+            async def close(self): pass
+        async def pair(*args): return Pair()
+        api=SimpleNamespace(scan=scan,pair=pair,Protocol=SimpleNamespace(AirPlay=1))
+        with tempfile.TemporaryDirectory() as directory:
+            store=command.existing().Store(); store.root=Path(directory).resolve()/'state'
+            transport=m.Transport(api=api,command=command,store=store,connect=lambda *a:None,parse=lambda c:c)
+            opened=await transport.begin_pair(device.identifier,'127.0.0.1')
+            try:
+                with self.assertRaisesRegex(m.HelperError,'busy'):
+                    with m.Lease(store): pass
+            finally: await opened.close()
+            with m.Lease(store): pass
+            opened=await transport.begin_pair(device.identifier,'127.0.0.1')
+            await opened.finish('1234')
+            with m.Lease(store): pass
+            self.assertEqual(store.load()['identifier'],device.identifier)
+
     async def test_lock_is_exclusive_reusable_and_rejects_symlink(self):
         m=load()
         with tempfile.TemporaryDirectory() as directory:

@@ -4,6 +4,12 @@ import unittest
 from test_helper_protocol import load, request
 
 class LifecycleTests(unittest.IsolatedAsyncioTestCase):
+    async def test_hello_reports_version_without_creating_transport(self):
+        m=load()
+        def forbidden(): raise AssertionError('hello must not contact the network')
+        result=await m.Host(forbidden, lambda value: None).handle(request())
+        self.assertEqual(result.get('helperVersion'), '0.2.0')
+
     async def test_pairing_required_event_has_static_cli_guidance(self):
         m=load(); events=[]
         class Transport:

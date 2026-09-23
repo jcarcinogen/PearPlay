@@ -10,9 +10,15 @@ export function createWorker(chrome,native=new Native(()=>chrome.runtime.connect
    if(enabled&&Array.isArray(m.videos)) sessions.videos({tabId,frameId:sender.frameId,documentId:sender.documentId},m.videos);
    return {enabled};
   }
+  if(sender.url===chrome.runtime.getURL('setup.html')&&sender.frameId===0){
+   if(m?.op==='setupCheck')return native.request('hello',{});
+   if(m?.op==='setupFind')return native.request('discover',{});
+   throw Error('UNAUTHORIZED');
+  }
   if(sender.tab||sender.url!==chrome.runtime.getURL('popup.html'))throw Error('UNAUTHORIZED');
   const tabId=m.tabId;
   switch(m.op){
+   case 'openSetup':await chrome.tabs.create({url:chrome.runtime.getURL('setup.html')});return {ok:true};
    case 'view':{
     try{const tab=await chrome.tabs.get(tabId);sessions.pageTitle(tabId,tab?.title);}catch{}
     return {...sessions.view(tabId),native:native.view(),receiver,localAvailable:!!local};
@@ -57,7 +63,8 @@ export function createWorker(chrome,native=new Native(()=>chrome.runtime.connect
  chrome.webNavigation.onCommitted.addListener(navigation);chrome.webNavigation.onHistoryStateUpdated.addListener(navigation);
  chrome.tabs.onRemoved.addListener(id=>{sessions.disable(id);if(local?.tabId===id)local=null;});
  chrome.alarms.create('expire',{periodInMinutes:1});chrome.alarms.onAlarm.addListener(()=>{sessions.sweep();if(local&&!sessions.view(local.tabId).enabled)local=null;});
- chrome.runtime.onMessage.addListener((m,sender,reply)=>{message(m,sender).then(reply,()=>reply({ok:false,error:'ACTION_FAILED'}));return true;});
+ chrome.runtime.onInstalled?.addListener(details=>{if(details.reason==='install')void chrome.tabs.create({url:chrome.runtime.getURL('setup.html')}).catch(()=>{});});
+ chrome.runtime.onMessage.addListener((m,sender,reply)=>{message(m,sender).then(reply,error=>reply({ok:false,error:['NATIVE_DISCONNECTED','NATIVE_TIMEOUT','INVALID_RESPONSE','busy','pairing_required'].includes(error?.message)?error.message:'ACTION_FAILED'}));return true;});
  return {message};
 }
 if(globalThis.chrome?.runtime?.id)createWorker(globalThis.chrome);

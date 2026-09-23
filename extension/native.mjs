@@ -28,7 +28,7 @@ export class Native {
  const receivers=Array.isArray(m.receivers)?m.receivers.slice(0,64).map((r,i)=>({identifier:r.identifier,address:r.address,label:`Receiver ${i+1} (${r.address})` })):this.state.receivers;
  const codes=['pairing_required','pairing_failed','busy','transport_failed','receiver_not_discovered','receiver_unavailable'];
  const code=m.ok?null:(codes.includes(m.error)?m.error:'HELPER_ERROR');
- this.state={state:m.ok?m.state:'error',evidence:m.evidence,capabilities:[...m.capabilities],receivers,error:code};
+ this.state={state:m.ok?m.state:'error',evidence:m.evidence,capabilities:[...m.capabilities],receivers,error:code,helperVersion:typeof m.helperVersion==='string'&&/^\d{1,4}\.\d{1,4}\.\d{1,4}$/.test(m.helperVersion)?m.helperVersion:null};
  if(pending){clearTimeout(pending.timer);this.pending.delete(m.id);if(m.ok)pending.resolve(this.view());else pending.reject(Error(code));}
  }
 }

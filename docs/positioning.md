@@ -14,7 +14,7 @@ Always pair this promise with: “Compatible streams, sent directly. Linux playb
 
 1. **The TV fetches the stream.** Native Messaging carries control, not media. PearPlay does not relay or re-encode the stream or transfer browser cookies. This preserves the source stream rather than guaranteeing any resolution. Evidence: `contract/v1.md:3`, `STATUS.md:28`.
 2. **A Linux route to Apple TV.** Chrome → Linux helper → Apple TV has human-confirmed FOX video and audio, including an observed pre-roll-to-program transition. This is a bounded result, not universal site support. Evidence: `STATUS.md:3–14`.
-3. **A deliberate handoff, local to your devices.** You initiate access and sending, choose a video/receiver, and explicitly confirm TV video/audio before pausing local video. Pairing credentials stay in a local 0700 directory / 0600 file. Evidence: `contract/v1.md:26–41`, `STATUS.md:38–49`, `extension/popup.js:150–165`.
+3. **A deliberate handoff, local to your devices.** You initiate access and sending, choose a video/receiver, and control browser playback with the website’s own player. Pairing credentials stay in a local 0700 directory / 0600 file. Evidence: `contract/v1.md:26–41`, `STATUS.md:38–49`, `extension/popup.js:150–165`.
 
 ## Three honest limitations
 
@@ -31,7 +31,7 @@ Prefer “no account or cloud service required” over “no server”: there is
 ## Tone and visual direction
 
 - Plain, specific, calm. Sentence case headings; no superlatives, hype, exclamation marks, or implied universal compatibility.
-- Distinguish “helper reports playing” from “playing on your TV.” Keep the physical-remote warning and explicit local-pause confirmation visible.
+- Distinguish “helper reports playing” from “playing on your TV.” Keep the physical-remote warning visible; do not add automatic browser pausing.
 - The popup is an **Operate** surface: video and TV selection lead; setup and recovery remain clear and reachable.
 - The landing page is a **Decide / Learn** surface: one promise, a real product capture, a direct-fetch explanation, then evidence and installation.
 - Pear silhouette retained; broad leaf and play aperture, no Apple/AirPlay symbol. A two-tone mark rather than a glossy app tile.

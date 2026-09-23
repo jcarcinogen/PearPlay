@@ -1,6 +1,20 @@
-# Install PearPlay locally
+# Install PearPlay
 
-PearPlay is experimental and manually installed. Linux Chrome playback is the verified path. macOS has a native-host installer and discovery adapter; end-to-end playback remains unverified. Brave and Edge are not verified targets.
+## Packaged setup — development preview
+
+The extension opens a setup tab on first installation. Use **Helper setup** in the popup to reopen it. A successful connection check is a real local helper handshake; it does not contact the TV. Choose **Find my TV** only when you want network discovery.
+
+The packaged installer supplies Python and the helper dependencies. Open **PearPlay Setup**, choose **Connect or repair browsers**, and select Chrome, Brave and/or Chromium. One installed payload serves those registrations. After adding a browser, fully quit and reopen it, then click **Check connection**. Website permissions remain separate; pairing state is shared under the same OS user.
+
+**Public installers are not published yet.** The setup page intentionally offers no download until the release catalog contains a verified asset for the platform, architecture and permanent extension ID. Local development packages exist for macOS Apple Silicon and Arch/Omarchy x86_64; they are not consumer releases. See [build instructions and release gates](helper-onboarding.md).
+
+For updates, end casting, quit browsers and install the newer package at the same location. Chrome Web Store updates do not update the helper. To remove it, use PearPlay Setup to disconnect browsers, then move the Mac app to Trash or remove the Linux package through your software manager. Credentials are preserved. Modified or unknown registration files are never overwritten or deleted. A legacy source installation must be removed with its original installer before switching to a packaged helper.
+
+Sandboxed Snap/Flatpak browsers are not supported by this installer. Browser beta/dev channels and custom configuration layouts need separate testing. **Brave playback, Chromium playback and packaged macOS playback remain unverified.**
+
+## Source installation — developer fallback
+
+PearPlay is experimental and manually installed. Linux Chrome playback is the verified path. macOS has a native-host installer and discovery adapter; end-to-end playback remains unverified. Brave playback and Chromium playback are not verified targets; Edge is not an installer option.
 
 ## Before you start
 
@@ -60,6 +74,18 @@ That machine-specific workaround is documented in [helper/README.md](../helper/R
 
 The discovery adapter falls back to `dns-sd` when Avahi is absent. It filters for Apple TV IPv4 addresses. This does not establish macOS playback support.
 
+### Other registered browsers
+
+Repeat the registration command with `--browser brave` or `--browser chromium`, using the same Python environment. Unpacked extension IDs may differ by browser or path; use that browser’s actual ID. A published Web Store install uses the listing’s stable ID.
+
+| Browser | Linux directory beneath configuration parent | macOS directory beneath configuration parent |
+|---|---|---|
+| Chrome | `google-chrome` | `Google/Chrome` |
+| Brave | `BraveSoftware/Brave-Browser` | `BraveSoftware/Brave-Browser` |
+| Chromium | `chromium` | `Chromium` |
+
+A browser installed later can be connected by reopening PearPlay Setup; installing another copy of the helper is unnecessary. If another browser is casting or pairing, end its helper session there first. No browser can stop another browser’s session through its own helper process.
+
 ### Restart Chrome
 
 Fully quit and reopen Chrome after the initial native-host registration. Reloading the extension alone is not enough. For later extension-only edits, reload the extension and then the webpage.
@@ -72,7 +98,7 @@ The configuration parent is not Chrome’s `Default` profile folder. Custom `--u
 2. Play the video, choose **Find videos**, then choose a video. If needed, expand **Video not showing up?** and reload/look again.
 3. Choose **Connect helper**, then **Find Apple TVs**. Select a receiver. The connection/address details include an optional literal address fallback.
 4. Press **Send to Apple TV**. If pairing is requested, look at the TV and enter its PIN in the masked popup field. Do not put PINs, credentials or media URLs in bug reports.
-5. Confirm moving video and audible sound yourself. Only then choose the optional local-pause confirmation.
+5. Confirm moving video and audible sound yourself. Then use the website’s own controls if you want to pause the browser video.
 
 TV pause/resume are unavailable. **End helper session** closes local transport and **does not confirm that the TV stopped**. Use the **physical remote** if playback continues.
 

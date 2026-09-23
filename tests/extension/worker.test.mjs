@@ -3,9 +3,19 @@ const signal=()=>({listeners:[],addListener(f){this.listeners.push(f);},emit(...
 test('worker wires permitted frame discovery, selection, native start and confirmed exact local pause',async()=>{
  const {createWorker}=await import('../../extension/worker.mjs');const calls=[];
  const request=Object.assign(signal(),{removeListener(){},filters:[]});
- const chrome={runtime:{id:'ext',getURL:p=>`chrome-extension://ext/${p}`,onMessage:signal()},tabs:{onRemoved:signal(),sendMessage:async(...a)=>{calls.push(a);return {ok:true};}},webNavigation:{onCommitted:signal(),onHistoryStateUpdated:signal(),getAllFrames:async()=>[{frameId:0,documentId:'a'},{frameId:4,documentId:'b'}]},webRequest:{onBeforeRequest:request,onResponseStarted:Object.assign(signal(),{removeListener(){}})},permissions:{getAll:async()=>({origins:['http://*/*','https://*/*']}),onAdded:signal(),onRemoved:signal()},scripting:{executeScript:async o=>{calls.push(o);if(o.target.documentIds[0]==='b')throw Error('denied');}},alarms:{create(){},onAlarm:signal()}};
+ const chrome={runtime:{id:'ext',getURL:p=>`chrome-extension://ext/${p}`,onMessage:signal(),onInstalled:signal()},tabs:{create:async options=>{calls.push({created:options});},onRemoved:signal(),sendMessage:async(...a)=>{calls.push(a);return {ok:true};}},webNavigation:{onCommitted:signal(),onHistoryStateUpdated:signal(),getAllFrames:async()=>[{frameId:0,documentId:'a'},{frameId:4,documentId:'b'}]},webRequest:{onBeforeRequest:request,onResponseStarted:Object.assign(signal(),{removeListener(){}})},permissions:{getAll:async()=>({origins:['http://*/*','https://*/*']}),onAdded:signal(),onRemoved:signal()},scripting:{executeScript:async o=>{calls.push(o);if(o.target.documentIds[0]==='b')throw Error('denied');}},alarms:{create(){},onAlarm:signal()}};
  const native={view:()=>({state:'playing',evidence:'unverified',capabilities:['start'],receivers:[{identifier:'r',address:'192.168.1.9',label:'TV'}]}),request:async(op,args)=>{calls.push({op,args});return native.view();}};
  const w=createWorker(chrome,native);const send=m=>w.message({...m,tabId:1},{url:'chrome-extension://ext/popup.html'});
+ chrome.runtime.onInstalled.emit({reason:'install'});await new Promise(r=>setImmediate(r));
+ assert.deepEqual(calls.filter(c=>c.created),[{created:{url:'chrome-extension://ext/setup.html'}}]);
+ chrome.runtime.onInstalled.emit({reason:'update'});await new Promise(r=>setImmediate(r));
+ assert.equal(calls.filter(c=>c.created).length,1);
+ const setupSender={url:'chrome-extension://ext/setup.html',tab:{id:2},frameId:0};
+ await w.message({op:'setupCheck'},setupSender);
+ assert.equal(calls.at(-1).op,'hello');
+ await assert.rejects(w.message({op:'start'},setupSender));
+ await assert.rejects(w.message({op:'setupCheck'},{...setupSender,frameId:1}));
+ await assert.rejects(w.message({op:'setupCheck'},{url:'https://evil/',tab:{id:2}}));
  assert.equal((await send({op:'enable'})).scanned,1);
  await w.message({op:'videos',videos:[{videoId:'v1',url:'https://x/movie?sig=%2f'}]},{tab:{id:1},frameId:0,documentId:'a'});
  const state=await send({op:'view'});assert.equal(state.candidates.length,1);

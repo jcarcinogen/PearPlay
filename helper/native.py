@@ -273,10 +273,12 @@ class Lease:
         if self.fd is not None: os.close(self.fd); self.fd = None
 
 class OpenPair:
-    def __init__(self, pairing, store, identifier, timeout):
+    def __init__(self, pairing, store, identifier, timeout, lease):
         self.pairing, self.store, self.identifier, self.timeout = pairing, store, identifier, timeout
+        self.lease, self.closed = lease, False
 
     async def finish(self, pin):
+        if self.closed: raise HelperError('pairing_required')
         try:
             self.pairing.pin(pin)
             await asyncio.wait_for(self.pairing.finish(), self.timeout)
@@ -284,10 +286,13 @@ class OpenPair:
                 raise HelperError('pairing_failed')
             self.store.save({'identifier': self.identifier, 'credentials': self.pairing.service.credentials})
         finally:
-            await self.pairing.close()
+            await self.close()
 
     async def close(self):
-        await self.pairing.close()
+        if self.closed: return
+        self.closed = True
+        try: await self.pairing.close()
+        finally: self.lease.__exit__(None, None, None)
 
 class Transport:
     def __init__(self, *, api=None, command=None, store=None, connect=None, parse=None, backend=None, timeout=10, mdns=None):
@@ -413,19 +418,20 @@ class Transport:
         return result
 
     async def begin_pair(self, identifier, host):
-        devices = [device for device in await self.scan(host) if getattr(device, 'identifier', None) == identifier]
-        if len(devices) != 1:
-            raise HelperError('receiver_unavailable')
-        pairing = await asyncio.wait_for(self.api.pair(devices[0], self.api.Protocol.AirPlay, asyncio.get_running_loop()), self.timeout)
+        lease = Lease(self.store).__enter__()
+        pairing = None
         try:
+            devices = [device for device in await self.scan(host) if getattr(device, 'identifier', None) == identifier]
+            if len(devices) != 1: raise HelperError('receiver_unavailable')
+            pairing = await asyncio.wait_for(self.api.pair(devices[0], self.api.Protocol.AirPlay, asyncio.get_running_loop()), self.timeout)
             await asyncio.wait_for(pairing.begin(), self.timeout)
-        except Exception:
-            await pairing.close()
+            if not getattr(pairing, 'device_provides_pin', False): raise HelperError('pairing_failed')
+            return OpenPair(pairing, self.store, identifier, self.timeout, lease)
+        except BaseException:
+            try:
+                if pairing is not None: await pairing.close()
+            finally: lease.__exit__(None, None, None)
             raise
-        if not getattr(pairing, 'device_provides_pin', False):
-            await pairing.close()
-            raise HelperError('pairing_failed')
-        return OpenPair(pairing, self.store, identifier, self.timeout)
 
     async def pair(self, identifier, host, pin):
         baseline = self.command.existing()
@@ -482,7 +488,7 @@ class Host:
 
     def response(self, identifier, error=None, **fields):
         result = dict(v=1, id=identifier, ok=error is None, state=self.state,
-                      evidence=self.evidence, capabilities=list(self.capabilities), **fields)
+                      evidence=self.evidence, capabilities=list(self.capabilities), helperVersion='0.2.0', **fields)
         if error: result['error'] = error
         if error == 'pairing_required':
             result['pairing'] = 'Look at the Apple TV and type the 4 digits it shows. They stay hidden.'
@@ -554,6 +560,9 @@ class Host:
                 await self.close()
                 self.changed('stopped', 'unverified')
             return self.response(identifier)
+        except HelperError as error:
+            code = str(error) if str(error) in ('busy','pairing_required','pairing_failed','receiver_unavailable') else 'transport_failed'
+            return self.response(identifier, code)
         except Exception:
             return self.response(identifier, 'transport_failed')
 

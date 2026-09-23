@@ -73,7 +73,7 @@ class InstallerTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             parent=Path(temporary).resolve()/'config'
             kwargs=dict(extension_id='a'*32,browser='brave',config_parent=parent,python=Path(sys.executable),source=ROOT)
-            for change in [dict(extension_id='A'*32),dict(extension_id='a'*31),dict(browser='chromium')]:
+            for change in [dict(extension_id='A'*32),dict(extension_id='a'*31),dict(browser='unknown')]:
                 with self.assertRaises(ValueError): m.install(**(kwargs|change))
             parent.symlink_to(Path(temporary).resolve())
             with self.assertRaises((ValueError,OSError)): m.install(**kwargs)

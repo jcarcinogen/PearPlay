@@ -1,0 +1,15 @@
+# Assessment of first independent review
+
+The first reviewer returned `passed: false`. Parent inspection of the referenced source did not substantiate its seven claimed defects. A second independent review subsequently reported no security concerns, logic errors or must-fix defects. Its `passed` field was a list of reviewed areas rather than a boolean; the explicit prose verdict and empty finding lists are recorded here, not presented as a schema-validated automated approval.
+
+| Claim | Source-grounded assessment |
+|---|---|
+| Direct root invocation is privilege escalation | `helper/app.py` rejects root registration. Native execution does not elevate privileges or install a setuid service; a root caller already has root privileges. Rejecting root native execution could be additional policy, but the report supplied no privilege-escalation path. |
+| Registration follows unsafe symlinks and ignores ownership | `helper/setup.py:manage` delegates to `helper/install.py`. Its `directory` opens every component relative to a held directory descriptor with `O_NOFOLLOW`, checks final-directory UID and write bits, and its file operations enforce ownership, modes and exclusive creation. The review omitted these existing safeguards. |
+| Local build JSON and native manifests lack individual signatures | These are local build inputs/output, not a remote executable-update trust channel. Consumer package signing/notarization remains an explicit release gate. No demonstrated bypass was supplied. |
+| Missing/invalid build metadata is accepted | `helper/app.py:main` catches read/parse failure, calls `valid_build`, and returns 2 for invalid IDs. `helper/native.py:allowed_origin` requires the exact pinned extension origin. A fallback would weaken this fail-closed behavior. |
+| Browser names can inject commas/quotes into selector parsing | The choices are fixed constants: Google Chrome, Brave and Chromium. Linux uses a pipe delimiter and fixed browser IDs. No user-controlled browser labels enter the parser. |
+| Development packages bypass release license/store-ID gates | Explicit `--development` is intentional and produces development-labeled artifacts. Non-development builds enforce the license/store-ID gate. Development builds are not claimed to be consumer releases. |
+| Setup assumes PATH registration and lacks missing-host recovery | `extension/setup.mjs` performs `setupCheck`; `setup-model.mjs` supplies missing/broken/update states and installation/repair/restart guidance. The native manifest stores an absolute executable path; it does not require PATH lookup. Actual missing/connected/removal cases passed in macOS Chrome and Linux Chrome/Chromium. |
+
+The review's suggested final-directory UID check already exists. Different OS users are intentionally separate pairing/session domains; the lease belongs to per-user storage. Debian/Fedora, store ID, project license, signing and unsupported integration claims remain open release gates rather than silently satisfied requirements.

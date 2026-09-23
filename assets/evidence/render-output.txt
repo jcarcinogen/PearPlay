@@ -15,8 +15,6 @@ $ ./scripts/render-brand-assets.sh
     "candidate",
     "receiver",
     "start",
-    "confirmTV",
-    "localResume",
     "stop",
     "pair",
     "host Enter"

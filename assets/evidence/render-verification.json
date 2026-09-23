@@ -15,8 +15,6 @@
     "candidate",
     "receiver",
     "start",
-    "confirmTV",
-    "localResume",
     "stop",
     "pair",
     "host Enter"
@@ -25,7 +23,7 @@
     {
       "file": "assets/store/popup-light.png",
       "width": 360,
-      "height": 1220
+      "height": 1131
     },
     {
       "file": "assets/store/popup-light-viewport.png",
@@ -35,7 +33,7 @@
     {
       "file": "assets/store/popup-dark.png",
       "width": 360,
-      "height": 1220
+      "height": 1131
     },
     {
       "file": "assets/store/popup-dark-viewport.png",
@@ -45,22 +43,22 @@
     {
       "file": "assets/evidence/popup-playing.png",
       "width": 360,
-      "height": 1338
+      "height": 1249
     },
     {
       "file": "assets/evidence/popup-working.png",
       "width": 360,
-      "height": 1338
+      "height": 1249
     },
     {
       "file": "assets/evidence/popup-empty.png",
       "width": 360,
-      "height": 1356
+      "height": 1267
     },
     {
       "file": "assets/evidence/popup-error.png",
       "width": 360,
-      "height": 1391
+      "height": 1267
     },
     {
       "file": "assets/brand/icon-legibility.png",
@@ -105,12 +103,12 @@
     {
       "file": "assets/evidence/landing-mobile-light.png",
       "width": 390,
-      "height": 7742
+      "height": 7766
     },
     {
       "file": "assets/evidence/landing-mobile-dark.png",
       "width": 390,
-      "height": 7742
+      "height": 7766
     }
   ],
   "pages": [
@@ -122,11 +120,18 @@
           "ref": "icons/icon48.png"
         },
         {
+          "tag": "IMG",
+          "ref": "tip-with-x-money.png"
+        },
+        {
           "tag": "SCRIPT",
           "ref": "popup.js"
         }
       ],
-      "navigation": [],
+      "navigation": [
+        "https://x.com/scottito22",
+        "https://ko-fi.com/scottangel"
+      ],
       "metadata": [],
       "width": 360,
       "scrollWidth": 360,
@@ -142,11 +147,18 @@
           "ref": "icons/icon48.png"
         },
         {
+          "tag": "IMG",
+          "ref": "tip-with-x-money.png"
+        },
+        {
           "tag": "SCRIPT",
           "ref": "popup.js"
         }
       ],
-      "navigation": [],
+      "navigation": [
+        "https://x.com/scottito22",
+        "https://ko-fi.com/scottangel"
+      ],
       "metadata": [],
       "width": 360,
       "scrollWidth": 360,
@@ -162,11 +174,18 @@
           "ref": "icons/icon48.png"
         },
         {
+          "tag": "IMG",
+          "ref": "tip-with-x-money.png"
+        },
+        {
           "tag": "SCRIPT",
           "ref": "popup.js"
         }
       ],
-      "navigation": [],
+      "navigation": [
+        "https://x.com/scottito22",
+        "https://ko-fi.com/scottangel"
+      ],
       "metadata": [],
       "width": 360,
       "scrollWidth": 360,
@@ -496,6 +515,7 @@
         "#what-is-verified-today",
         "#how-it-works",
         "docs/index.html",
+        "docs/helper-onboarding.md",
         "STATUS.md",
         "docs/claims.md",
         "docs/install.md",
@@ -609,13 +629,13 @@
     "candidate",
     "discover",
     "hello",
+    "helperSetup",
     "receiver",
     "Connection and address",
     "status",
     "host",
     "start",
-    "stop",
-    "confirmTV"
+    "stop"
   ],
   "clipboard": "Exact-command copy and denied-permission selection fallback passed (clipboard boundary injected).",
   "cleanup": "Unpacked extension uninstalled; owned browser closed and disposable profile removed by finally."

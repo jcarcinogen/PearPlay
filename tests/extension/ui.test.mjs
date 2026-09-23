@@ -3,6 +3,29 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 const read = p => readFile(new URL(`../../extension/${p}`, import.meta.url), 'utf8');
+test('popup ends with a local X Money badge linking to the requested profile', async () => {
+  const html = await read('popup.html');
+  assert.match(html, /<footer[\s\S]*href="https:\/\/x\.com\/scottito22"[\s\S]*rel="noopener noreferrer"[\s\S]*src="tip-with-x-money.png"[\s\S]*alt="Tip with X Money"/);
+  assert.ok(html.indexOf('<footer') > html.indexOf('id="stop"'));
+  const image = await readFile(new URL('../../extension/tip-with-x-money.png', import.meta.url));
+  const original = await readFile(new URL('../../tip-with-x-money.png', import.meta.url));
+  assert.deepEqual(image, original);
+});
+test('popup offers a Ko-fi coffee badge beside X Money without remote assets', async () => {
+  const html = await read('popup.html');
+  const footer = html.match(/<footer[\s\S]*?<\/footer>/)?.[0] ?? '';
+  const links = [...footer.matchAll(/<a\b[^>]*>/g)].map(match => match[0]);
+  assert.equal(links.length, 2);
+  assert.match(links[0], /href="https:\/\/x\.com\/scottito22"/);
+  assert.match(links[1], /href="https:\/\/ko-fi\.com\/scottangel"/);
+  for (const link of links) {
+    assert.match(link, /target="_blank"/);
+    assert.match(link, /rel="noopener noreferrer"/);
+  }
+  assert.match(footer, /Buy me a coffee/);
+  assert.match(links[1], /aria-label="[^"]*Ko-fi/);
+  assert.doesNotMatch(footer, /(?:src|srcset)="https?:|<script|<iframe/);
+});
 test('local-only stop is not labeled as confirmed TV control', async () => {
   const html = await read('popup.html');
   assert.match(html, /<button id="stop">End helper session<\/button>/);
@@ -31,7 +54,8 @@ test('MV3 popup requests optional access on clicks, never renders URLs, explicit
   assert.ok(html.indexOf('id="discover"') < html.indexOf('id="tvStatus"') && html.indexOf('id="tvStatus"') < html.indexOf('id="hostDetails"'));
   assert.doesNotMatch(html, />Candidate</);
   assert.match(html, /reload/i);
-  assert.match(html, /TV video and audio/i);
+  assert.doesNotMatch(html, /id="(?:confirmTV|localResume)"/);
+  assert.doesNotMatch(await read('popup.js'), /localPause|localResume|confirmTV/);
   assert.ok(html.indexOf('id="grantAll"') < html.indexOf('id="enable"'));
   assert.match(html, /1\. Allow all websites/);
   assert.match(html, /2\. Find videos/);
@@ -52,8 +76,7 @@ test('MV3 popup requests optional access on clicks, never renders URLs, explicit
   assert.deepEqual(Array.from(actions.find(a => a.origins).origins), ['http://*/*', 'https://*/*']);
   assert.equal(elements.get('candidate').value, 'c1');
   assert.equal(elements.get('receiver').value, '');
-  await elements.get('confirmTV').onclick();
-  assert.ok(actions.some(a => a.op === 'localPause' && a.confirmed === true));
+  assert.equal(actions.some(a => ['localPause', 'localResume'].includes(a.op)), false);
   assert.equal([...elements.values()].some(e => String(e.textContent).includes('secret')), false);
 });
 test('popup exposes idle/working/empty/error/playing states with live regions and focusable controls', async () => {

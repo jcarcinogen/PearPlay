@@ -14,7 +14,7 @@ def main(argv=None):
     parser=Parser(description='No-overwrite PearPlay user native host installer')
     parser.add_argument('action',choices=['install','uninstall'])
     parser.add_argument('--extension-id',required=True)
-    parser.add_argument('--browser',required=True,choices=['chrome','brave'])
+    parser.add_argument('--browser',required=True,choices=['chrome','brave','chromium'])
     parser.add_argument('--config-parent',required=True,type=Path)
     parser.add_argument('--python',required=True,type=Path)
     parser.add_argument('--pythonpath',type=Path)
@@ -29,7 +29,7 @@ def main(argv=None):
         return 1
 
 NAME = 'com.pearplay.helper'
-BROWSERS = {'chrome': 'google-chrome', 'brave': 'BraveSoftware/Brave-Browser'}
+BROWSERS = {'chrome': 'google-chrome', 'brave': 'BraveSoftware/Brave-Browser', 'chromium': 'chromium'}
 
 def browser_dir(browser, platform=None):
     import sys
@@ -38,12 +38,26 @@ def browser_dir(browser, platform=None):
         if platform == 'darwin': return 'Google/Chrome'
         if platform == 'linux': return BROWSERS['chrome']
         raise ValueError('invalid_install_arguments')
+    if browser == 'chromium' and platform == 'darwin': return 'Chromium'
+    if platform not in ('darwin', 'linux'): raise ValueError('invalid_install_arguments')
     return BROWSERS[browser]
 
-def plan(*, extension_id, browser, config_parent, python, source, require_runtime=True, platform=None, pythonpath=None):
+def plan(*, extension_id, browser, config_parent, python=None, source=None, require_runtime=True, platform=None, pythonpath=None, executable=None):
     if not isinstance(extension_id, str) or not re.fullmatch(r'[a-p]{32}', extension_id) or browser not in BROWSERS:
         raise ValueError('invalid_install_arguments')
-    parent, python, source = Path(config_parent), Path(python), Path(source)
+    parent = Path(config_parent)
+    if executable is not None:
+        executable = Path(executable)
+        if not all(p.is_absolute() and '..' not in p.parts for p in (parent, executable)):
+            raise ValueError('absolute_paths_required')
+        if require_runtime and (not executable.is_file() or not os.access(executable, os.X_OK)):
+            raise ValueError('missing_runtime')
+        folder = parent/browser_dir(browser, platform)/'NativeMessagingHosts'
+        paths = {'manifest': folder/(NAME+'.json')}
+        manifest = json.dumps(dict(name=NAME, description='PearPlay Helper', path=str(executable), type='stdio',
+                                   allowed_origins=['chrome-extension://'+extension_id+'/']), indent=2)+'\n'
+        return paths, {'manifest': (manifest.encode(), 0o600)}
+    python, source = Path(python), Path(source)
     if not all(p.is_absolute() and '..' not in p.parts for p in (parent, python, source)):
         raise ValueError('absolute_paths_required')
     if require_runtime and (not python.is_file() or not os.access(python, os.X_OK) or not (source/'helper/native.py').is_file() or not (source/'spikes/002-command/command.py').is_file()):
@@ -91,7 +105,7 @@ def install(**kwargs):
     try:
         for key,path in paths.items():
             if matches(fd,path.name,*payloads[key]) is False: raise ValueError('existing_file_not_owned')
-        for key in ('launcher','manifest'):
+        for key in reversed(paths):
             path=paths[key];content,mode=payloads[key]
             if matches(fd,path.name,content,mode): continue
             file=os.open(path.name,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,mode,dir_fd=fd)

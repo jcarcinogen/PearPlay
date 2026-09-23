@@ -13,12 +13,13 @@
 <li>No PearPlay account. Pairing credentials stay on your machine.</li>
 <li>An explicit handoff: grant access, choose what to send and where, then press Send. Local video does not pause automatically.</li>
 </ul>
-<p>This is experimental software with manual setup, not a Chrome Web Store release or an “every website” sender.</p>
+<p>This is experimental software, not a Chrome Web Store release or an “every website” sender. <strong>The extension requires a separate PearPlay Helper.</strong> Its first-run setup tab checks the connection and explains installation or repair. Packaged installers are currently local development builds, not published downloads.</p>
+<p>One packaged helper can be registered for Chrome, Brave and Chromium under the same OS user. Install the extension separately in each browser. Registration support is not a blanket playback compatibility claim; see the <a href="docs/helper-onboarding.md">onboarding verification and release gates</a>.</p>
 <h2>How it works</h2>
 <ol>
 <li><strong>Allow and find.</strong> On the video’s page, grant access on a click, play the video and choose <strong>Find videos</strong>. This version requires all-sites access for discovery.</li>
 <li><strong>Choose the video and TV.</strong> Select the stream, connect the helper and find Apple TVs on your network. Choose the receiver and pair if asked.</li>
-<li><strong>Send and confirm.</strong> Press <strong>Send to Apple TV</strong>. Check the TV for moving video and audible sound before using the optional local-pause confirmation.</li>
+<li><strong>Send and confirm.</strong> Press <strong>Send to Apple TV</strong>. Check the TV for moving video and audible sound before pausing the browser video with the website’s own controls.</li>
 </ol>
 <h2>What is verified today</h2>
 <table>
@@ -55,13 +56,13 @@
 <h3>What is not done yet</h3>
 <ul>
 <li><strong>macOS playback:</strong> the native-host installer and discovery adapter are built; there is no recorded end-to-end playback verdict in <code>STATUS.md</code>.</li>
-<li><strong>Other browsers:</strong> Brave and Edge are unverified. Chrome is the baseline.</li>
+<li><strong>Other browsers:</strong> Linux Chromium has packaged-helper handshake/uninstall evidence, not TV playback evidence. Brave integration remains a release gate. Edge is not an installer target. Chrome is the playback baseline.</li>
 <li><strong>Broader failure/lifecycle trials:</strong> invalid or expired streams and receiver lifecycle behavior are not fully live-verified.</li>
 <li><strong>Site-only discovery:</strong> a per-site grant exists in the popup, but Find videos remains disabled without all-sites access.</li>
 </ul>
 <h2>Honest limits</h2>
 <p>The Apple TV must be able to fetch an HTTP(S) media URL directly. A <code>blob:</code> URL is not a usable handoff; browser cookies are not transferred. PearPlay does not bypass DRM, geography or access controls, and does not block ads. Use media you are authorized to access. A source URL is not a promise of a particular resolution or compatibility.</p>
-<p><strong>TV pause/resume are unavailable.</strong> <strong>End helper session</strong> closes the helper connection and <strong>does not confirm that the TV stopped</strong>. Use the <strong>physical remote</strong> if playback continues. Local video pauses only after you explicitly confirm TV video and audio.</p>
+<p><strong>TV pause/resume are unavailable.</strong> <strong>End helper session</strong> closes the helper connection and <strong>does not confirm that the TV stopped</strong>. Use the <strong>physical remote</strong> if playback continues. Use the website’s own controls for browser playback. PearPlay does not pause it automatically.</p>
 <h2>Install</h2>
 <p>You need Chrome, Python 3.11+, <code>uv</code>, an Apple TV on the same network, and a checkout kept in place. These commands are instructions for a new installation; running them downloads the source and pinned runtime dependency.</p>
 <pre><code class="language-sh">git clone https://github.com/jcarcinogen/PearPlay.git

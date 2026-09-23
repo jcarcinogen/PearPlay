@@ -18,7 +18,7 @@ The legibility sheet shows actual 16/32/48/128 PNGs on white, gray, dark and sat
 
 ### Phase 2 — Popup and code quality
 
-The real 360px popup now uses consistent typography, light/dark tokens, primary and secondary actions, collapsible troubleshooting and visible idle/working/empty/error/helper-playing states. Existing IDs, handlers, live regions and job order remain. Safety text, explicit local-pause confirmation and unsupported TV pause/resume are retained.
+The real 360px popup now uses consistent typography, light/dark tokens, primary and secondary actions, collapsible troubleshooting and visible idle/working/empty/error/helper-playing states. Live regions and job order remain. In the follow-up simplification, the browser pause/resume section and its popup handlers were removed at the owner’s request. TV safety text remains; browser playback is controlled on the website, with no automatic pausing.
 
 Behavior-preserving code improvements are deliberately narrow:
 
@@ -140,8 +140,6 @@ $ ./scripts/render-brand-assets.sh
     "candidate",
     "receiver",
     "start",
-    "confirmTV",
-    "localResume",
     "stop",
     "pair",
     "host Enter"
@@ -156,7 +154,7 @@ Exit code: 0
 
 The two schemes and working/empty/error/helper-playing states render from **the real unpacked extension document**. Browser/native responses are injected before the real popup script; the screenshot UI itself is not fabricated. These are handler/render tests, not an actual action-popup → worker → native-host handshake or a TV playback trial.
 
-Keyboard traversal reaches enabled visible controls; focus rings are 3px. Handler checks exercise grants, discovery, candidate/receiver selection, send/end, helper status, explicit local confirmation/resume, address Enter and the masked pairing interface using no real code. `localPause` is absent until confirmation. Unsupported hidden pause/resume controls are not keyboard stops. No browser console errors, broken images, horizontal overflow or HTTP(S) **page-resource** requests were observed. Browser component background traffic is outside that assertion.
+Keyboard traversal reaches enabled visible controls; focus rings are 3px. Handler checks exercise grants, discovery, candidate/receiver selection, send/end, helper status, address Enter and the masked pairing interface using no real code. `localPause` and `localResume` are never sent by the popup. Unsupported hidden pause/resume controls are not keyboard stops. No browser console errors, broken images, horizontal overflow or HTTP(S) **page-resource** requests were observed. Browser component background traffic is outside that assertion.
 
 Copy-button checks validate exact command text with synthetic clipboard success and denied-permission boundaries. The fallback selects the command and reports that it needs manual copying; this is not a claim of testing every OS clipboard policy.
 

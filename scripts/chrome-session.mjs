@@ -1,15 +1,19 @@
 import {spawn} from 'node:child_process';
-import {existsSync, mkdtempSync, readFileSync, rmSync} from 'node:fs';
+import {existsSync, mkdtempSync, readFileSync, realpathSync, rmSync} from 'node:fs';
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
 import {setTimeout as delay} from 'node:timers/promises';
 
 // Dedicated disposable profile; never attach to an existing browser or native host.
-export async function chromeSession() {
+export async function chromeSession({profileDirectory='',prepare=()=>{},isolateHome=false}={}) {
   const binary = process.env.CHROME || ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome','/opt/google/chrome/chrome','/usr/bin/google-chrome'].find(existsSync);
   if (!binary) throw Error('Installed Google Chrome required; set CHROME. No download is performed.');
-  const root=mkdtempSync(join(tmpdir(),'pearplay-brand-'));
-  const child=spawn(binary,['--headless=new','--disable-gpu',`--user-data-dir=${root}`,'--remote-debugging-address=127.0.0.1','--remote-debugging-port=0','--enable-unsafe-extension-debugging','--no-first-run','--no-default-browser-check','--disable-background-networking','--disable-component-update','--disable-sync','--hide-scrollbars','about:blank'],{stdio:'ignore'});
+  const root=realpathSync(mkdtempSync(join(tmpdir(),'pearplay-brand-')));
+  if(profileDirectory.split('/').includes('..')||profileDirectory.startsWith('/'))throw Error('Profile must remain inside owned root');
+  const profile=join(root,profileDirectory);
+  try {await prepare(root);}catch(error){rmSync(root,{recursive:true,force:true});throw error;}
+  const child=spawn(binary,['--headless=new','--disable-gpu',`--user-data-dir=${profile}`,'--remote-debugging-address=127.0.0.1','--remote-debugging-port=0','--enable-unsafe-extension-debugging','--no-first-run','--no-default-browser-check','--disable-background-networking','--disable-component-update','--disable-sync','--hide-scrollbars','about:blank'],{stdio:['ignore','ignore','pipe'],env:isolateHome?{...process.env,HOME:join(root,'home'),XDG_CONFIG_HOME:join(root,'home/.config')}:process.env});
+  let startupLog='';child.stderr.on('data',chunk=>{startupLog=(startupLog+chunk.toString()).slice(-2000);});
   let ws; let exited=false; child.on('exit',()=>{exited=true;});
   const pending=new Map(); let serial=0;
   const events=[];
@@ -24,9 +28,9 @@ export async function chromeSession() {
   }
   try {
     child.on('error',()=>{exited=true;});
-    for(let i=0;i<200&&!existsSync(join(root,'DevToolsActivePort'))&&!exited;i++) await delay(50);
-    if(!existsSync(join(root,'DevToolsActivePort'))) throw Error('Owned Chrome did not become ready');
-    const [port,path]=readFileSync(join(root,'DevToolsActivePort'),'utf8').trim().split('\n');
+    for(let i=0;i<200&&!existsSync(join(profile,'DevToolsActivePort'))&&!exited;i++) await delay(50);
+    if(!existsSync(join(profile,'DevToolsActivePort'))) throw Error('Owned Chrome did not become ready: '+startupLog);
+    const [port,path]=readFileSync(join(profile,'DevToolsActivePort'),'utf8').trim().split('\n');
     ws=new WebSocket(`ws://127.0.0.1:${port}${path}`);
     await new Promise((resolve,reject)=>{ws.onopen=resolve;ws.onerror=reject;});
     ws.onmessage=e=>{

@@ -41,6 +41,8 @@ try {
   }
   async function capture(s,path,width,height,full=false){
     await c.send('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:false},s);
+    // First-run setup can open another tab; background tabs may suspend animation frames.
+    await c.send('Page.bringToFront',{},s);
     // Let layout and the compositor settle after emulation/decoded image updates.
     await c.evaluate(s,'new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))');
     const h=full?await c.evaluate(s,'Math.ceil(Math.max(document.documentElement.scrollHeight,document.body.scrollHeight))'):height;
@@ -91,8 +93,8 @@ try {
       await click('start');assert.ok(await called('start'));evidence.controls.push('start');
       await capture(s,'assets/evidence/popup-playing.png',360,600,true);
       assert.match(await c.evaluate(s,'document.body.innerText'),/confirm/i);
-      await click('confirmTV');assert.ok(await c.evaluate(s,"__fixture.calls.some(c=>c.op==='localPause'&&c.confirmed===true)"));evidence.controls.push('confirmTV');
-      await click('localResume');assert.ok(await called('localResume'));evidence.controls.push('localResume');
+      assert.equal(await c.evaluate(s,"!!document.getElementById('confirmTV')||!!document.getElementById('localResume')"),false);
+      assert.equal(await called('localPause'),false);assert.equal(await called('localResume'),false);
       await click('stop');assert.ok(await called('stop'));evidence.controls.push('stop');
       // Pairing UI exercised without a code: the transport boundary is synthetic and records no PIN.
       await c.evaluate(s,"__fixture.view.native.error='pairing_required';document.getElementById('status').click()");await delay(100);

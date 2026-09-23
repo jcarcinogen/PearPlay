@@ -33,5 +33,8 @@ test('working state spans an awaited operation; failed actions stay visibly in e
 test('native errors take precedence over idle and disconnected controls remain gated',async()=>{
   const p=await popup();p.view.native.error='NATIVE_DISCONNECTED';await p.refresh();
   assert.equal(p.elements.get('phase')?.dataset.state,'error');
+  assert.equal(p.elements.get('helperSetup')?.textContent,'Finish setup');
+  await p.elements.get('helperSetup').onclick();
+  assert.equal(p.calls.at(-1).op,'openSetup');
   for(const id of ['discover','host','start'])assert.equal(p.elements.get(id).disabled,true);
 });

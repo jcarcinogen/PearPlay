@@ -88,7 +88,7 @@
     {
       "file": "assets/evidence/landing.png",
       "width": 1440,
-      "height": 4949
+      "height": 5028
     },
     {
       "file": "assets/evidence/landing-first-screen.png",
@@ -103,12 +103,12 @@
     {
       "file": "assets/evidence/landing-mobile-light.png",
       "width": 390,
-      "height": 7766
+      "height": 7925
     },
     {
       "file": "assets/evidence/landing-mobile-dark.png",
       "width": 390,
-      "height": 7766
+      "height": 7925
     }
   ],
   "pages": [
@@ -442,7 +442,8 @@
         "https://github.com/jcarcinogen/PearPlay/blob/main/contract/v1.md",
         "https://github.com/jcarcinogen/PearPlay/tree/main/tests",
         "https://github.com/jcarcinogen/PearPlay",
-        "https://x.com/scottito22"
+        "https://x.com/scottito22",
+        "https://ko-fi.com/scottangel"
       ],
       "metadata": [
         "https://jcarcinogen.github.io/PearPlay/social-preview.png"
@@ -482,7 +483,8 @@
         "https://github.com/jcarcinogen/PearPlay/blob/main/contract/v1.md",
         "https://github.com/jcarcinogen/PearPlay/tree/main/tests",
         "https://github.com/jcarcinogen/PearPlay",
-        "https://x.com/scottito22"
+        "https://x.com/scottito22",
+        "https://ko-fi.com/scottangel"
       ],
       "metadata": [
         "https://jcarcinogen.github.io/PearPlay/social-preview.png"
@@ -502,7 +504,7 @@
         },
         {
           "tag": "IMG",
-          "ref": "tip-with-x-money.svg"
+          "ref": "tip-with-x-money.png"
         },
         {
           "tag": "IMG",
@@ -510,24 +512,26 @@
         }
       ],
       "navigation": [
+        "#get-started",
+        "#compatibility",
+        "#limitations",
+        "#documentation",
         "https://x.com/scottito22",
-        "#install",
-        "#what-is-verified-today",
-        "#how-it-works",
-        "docs/index.html",
-        "docs/helper-onboarding.md",
-        "STATUS.md",
-        "docs/claims.md",
+        "https://ko-fi.com/scottangel",
+        "assets/evidence/helper-onboarding-verification.md",
+        "docs/helper-onboarding.md#release-gates",
+        "docs/install.md",
         "docs/install.md",
         "docs/claims.md#privacy-audit",
+        "docs/install.md",
+        "docs/helper-onboarding.md",
         "contract/v1.md",
         "helper/README.md",
-        "tests/browser/README.md",
-        "STATUS.md",
         "tests/",
-        "spikes/002-command/README.md",
+        "docs/claims.md",
+        "assets/evidence/helper-onboarding-verification.md",
+        "docs/index.html",
         "assets/brand/README.md",
-        "docs/positioning.md",
         "spikes/002-command/LICENSE.md"
       ],
       "metadata": [],
@@ -566,7 +570,8 @@
         "https://github.com/jcarcinogen/PearPlay/blob/main/contract/v1.md",
         "https://github.com/jcarcinogen/PearPlay/tree/main/tests",
         "https://github.com/jcarcinogen/PearPlay",
-        "https://x.com/scottito22"
+        "https://x.com/scottito22",
+        "https://ko-fi.com/scottangel"
       ],
       "metadata": [
         "https://jcarcinogen.github.io/PearPlay/social-preview.png"
@@ -606,7 +611,8 @@
         "https://github.com/jcarcinogen/PearPlay/blob/main/contract/v1.md",
         "https://github.com/jcarcinogen/PearPlay/tree/main/tests",
         "https://github.com/jcarcinogen/PearPlay",
-        "https://x.com/scottito22"
+        "https://x.com/scottito22",
+        "https://ko-fi.com/scottangel"
       ],
       "metadata": [
         "https://jcarcinogen.github.io/PearPlay/social-preview.png"

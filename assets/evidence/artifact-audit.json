@@ -1,0 +1,113 @@
+{
+  "icons": [
+    {
+      "file": "icon16.png",
+      "size": 16,
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "file": "icon32.png",
+      "size": 32,
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "file": "icon48.png",
+      "size": 48,
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "file": "icon128.png",
+      "size": 128,
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "file": "icon.png",
+      "size": 1024,
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "contrast": [
+    {
+      "pair": "Light body",
+      "ratio": 14.456
+    },
+    {
+      "pair": "Light surface",
+      "ratio": 15.564
+    },
+    {
+      "pair": "Light muted",
+      "ratio": 6.202
+    },
+    {
+      "pair": "Light surface muted",
+      "ratio": 6.678
+    },
+    {
+      "pair": "Light primary",
+      "ratio": 7.836
+    },
+    {
+      "pair": "Light border",
+      "ratio": 4.096
+    },
+    {
+      "pair": "Dark body",
+      "ratio": 16.517
+    },
+    {
+      "pair": "Dark surface",
+      "ratio": 14.608
+    },
+    {
+      "pair": "Dark muted",
+      "ratio": 10.145
+    },
+    {
+      "pair": "Dark surface muted",
+      "ratio": 8.972
+    },
+    {
+      "pair": "Dark primary",
+      "ratio": 11.576
+    },
+    {
+      "pair": "Dark border",
+      "ratio": 4.759
+    },
+    {
+      "pair": "Mark play",
+      "ratio": 8.499
+    }
+  ],
+  "claims_references": 93,
+  "privacy_findings": [],
+  "manifest_sha256": "7df583fb827c4b59b32dea1e42e35ae8fb569d32593156469cdcc9836afb694a",
+  "social_preview_bytes": 56658,
+  "site_remote_load_refs": []
+}

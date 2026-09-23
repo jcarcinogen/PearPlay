@@ -1,0 +1,5 @@
+$ ssh -o BatchMode=yes -o ConnectTimeout=8 omarchy-acer 'cd /Volumes/IronWolf/Projects/PearPlay && PYTHONDONTWRITEBYTECODE=1 ~/.local/share/pearplay/venv/bin/python -m pytest tests -q -p no:cacheprovider'
+................................................ [ 87%]
+.......                                                                  [100%]
+55 passed, 24 subtests passed in 1.59s
+Exit code: 0

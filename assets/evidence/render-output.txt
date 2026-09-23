@@ -1,0 +1,29 @@
+$ ./scripts/render-brand-assets.sh
+{
+  "browser": "Chrome/153.0.8010.53",
+  "controls": [
+    "grantAll",
+    "grantSite",
+    "enable",
+    "disable",
+    "enable",
+    "rescan",
+    "reload",
+    "hello",
+    "discover",
+    "status",
+    "candidate",
+    "receiver",
+    "start",
+    "confirmTV",
+    "localResume",
+    "stop",
+    "pair",
+    "host Enter"
+  ],
+  "captures": 18,
+  "pages": 13,
+  "consoleErrors": 0,
+  "remotePageRequests": 0
+}
+Exit code: 0

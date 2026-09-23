@@ -1,0 +1,13 @@
+$ node --test tests/brand.test.mjs
+✔ editable identity has a transparent canvas and no external assets (4.858916ms)
+✔ required raster assets have exact dimensions (4.132625ms)
+✔ popup manifest is unchanged by the visual refresh (0.499292ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 86.394709
+Exit code: 0

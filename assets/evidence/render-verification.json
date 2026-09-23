@@ -1,0 +1,622 @@
+{
+  "browser": "Chrome/153.0.8010.53",
+  "scope": "Actual unpacked extension popup.html, synthetic browser/native responses injected before its script. No live receiver, PIN, credentials or playback. Mac headless Chrome; not macOS playback evidence.",
+  "controls": [
+    "grantAll",
+    "grantSite",
+    "enable",
+    "disable",
+    "enable",
+    "rescan",
+    "reload",
+    "hello",
+    "discover",
+    "status",
+    "candidate",
+    "receiver",
+    "start",
+    "confirmTV",
+    "localResume",
+    "stop",
+    "pair",
+    "host Enter"
+  ],
+  "captures": [
+    {
+      "file": "assets/store/popup-light.png",
+      "width": 360,
+      "height": 1220
+    },
+    {
+      "file": "assets/store/popup-light-viewport.png",
+      "width": 360,
+      "height": 600
+    },
+    {
+      "file": "assets/store/popup-dark.png",
+      "width": 360,
+      "height": 1220
+    },
+    {
+      "file": "assets/store/popup-dark-viewport.png",
+      "width": 360,
+      "height": 600
+    },
+    {
+      "file": "assets/evidence/popup-playing.png",
+      "width": 360,
+      "height": 1338
+    },
+    {
+      "file": "assets/evidence/popup-working.png",
+      "width": 360,
+      "height": 1338
+    },
+    {
+      "file": "assets/evidence/popup-empty.png",
+      "width": 360,
+      "height": 1356
+    },
+    {
+      "file": "assets/evidence/popup-error.png",
+      "width": 360,
+      "height": 1391
+    },
+    {
+      "file": "assets/brand/icon-legibility.png",
+      "width": 1440,
+      "height": 1728
+    },
+    {
+      "file": "assets/landing/hero.png",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "file": "assets/landing/social-preview.png",
+      "width": 1280,
+      "height": 640
+    },
+    {
+      "file": "assets/store/listing-light.png",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "file": "assets/store/listing-dark.png",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "file": "assets/evidence/landing.png",
+      "width": 1440,
+      "height": 4949
+    },
+    {
+      "file": "assets/evidence/landing-first-screen.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "assets/evidence/readme.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "assets/evidence/landing-mobile-light.png",
+      "width": 390,
+      "height": 7742
+    },
+    {
+      "file": "assets/evidence/landing-mobile-dark.png",
+      "width": 390,
+      "height": 7742
+    }
+  ],
+  "pages": [
+    {
+      "page": "popup-light",
+      "resources": [
+        {
+          "tag": "IMG",
+          "ref": "icons/icon48.png"
+        },
+        {
+          "tag": "SCRIPT",
+          "ref": "popup.js"
+        }
+      ],
+      "navigation": [],
+      "metadata": [],
+      "width": 360,
+      "scrollWidth": 360,
+      "imagesOK": true,
+      "consoleErrors": 0,
+      "remoteRequests": []
+    },
+    {
+      "page": "popup-dark",
+      "resources": [
+        {
+          "tag": "IMG",
+          "ref": "icons/icon48.png"
+        },
+        {
+          "tag": "SCRIPT",
+          "ref": "popup.js"
+        }
+      ],
+      "navigation": [],
+      "metadata": [],
+      "width": 360,
+      "scrollWidth": 360,
+      "imagesOK": true,
+      "consoleErrors": 0,
+      "remoteRequests": []
+    },
+    {
+      "page": "popup-all-controls-and-states",
+      "resources": [
+        {
+          "tag": "IMG",
+          "ref": "icons/icon48.png"
+        },
+        {
+          "tag": "SCRIPT",
+          "ref": "popup.js"
+        }
+      ],
+      "navigation": [],
+      "metadata": [],
+      "width": 360,
+      "scrollWidth": 360,
+      "imagesOK": true,
+      "consoleErrors": 0,
+      "remoteRequests": []
+    },
+    {
+      "page": "assets/brand/icon-legibility.html",
+      "resources": [
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon16.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon16.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon32.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon32.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon48.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon48.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon128.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon128.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon16.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon16.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon32.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon32.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon48.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon48.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon128.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon128.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon16.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon16.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon32.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon32.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon48.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon48.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon128.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon128.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon16.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon16.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon32.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon32.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon48.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon48.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon128.png"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../../extension/icons/icon128.png"
+        }
+      ],
+      "navigation": [],
+      "metadata": [],
+      "width": 1440,
+      "scrollWidth": 1440,
+      "imagesOK": true,
+      "consoleErrors": 0,
+      "remoteRequests": []
+    },
+    {
+      "page": "assets/landing/hero.html",
+      "resources": [
+        {
+          "tag": "IMG",
+          "ref": "../brand/mark.svg"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../store/popup-dark-viewport.png"
+        }
+      ],
+      "navigation": [],
+      "metadata": [],
+      "width": 1280,
+      "scrollWidth": 1280,
+      "imagesOK": true,
+      "consoleErrors": 0,
+      "remoteRequests": []
+    },
+    {
+      "page": "assets/landing/social-preview.html",
+      "resources": [
+        {
+          "tag": "IMG",
+          "ref": "../brand/mark.svg"
+        },
+        {
+          "tag": "IMG",
+          "ref": "../brand/mark.svg"
+        }
+      ],
+      "navigation": [],
+      "metadata": [],
+      "width": 1280,
+      "scrollWidth": 1280,
+      "imagesOK": true,
+      "consoleErrors": 0,
+      "remoteRequests": []
+    },
+    {
+      "page": "assets/store/listing-light.html",
+      "resources": [
+        {
+          "tag": "IMG",
+          "ref": "../brand/mark.svg"
+        },
+        {
+          "tag": "IMG",
+          "ref": "popup-light-viewport.png"
+        }
+      ],
+      "navigation": [],
+      "metadata": [],
+      "width": 1280,
+      "scrollWidth": 1280,
+      "imagesOK": true,
+      "consoleErrors": 0,
+      "remoteRequests": []
+    },
+    {
+      "page": "assets/store/listing-dark.html",
+      "resources": [
+        {
+          "tag": "IMG",
+          "ref": "../brand/mark.svg"
+        },
+        {
+          "tag": "IMG",
+          "ref": "popup-dark-viewport.png"
+        }
+      ],
+      "navigation": [],
+      "metadata": [],
+      "width": 1280,
+      "scrollWidth": 1280,
+      "imagesOK": true,
+      "consoleErrors": 0,
+      "remoteRequests": []
+    },
+    {
+      "page": "docs/index.html",
+      "resources": [
+        {
+          "tag": "IMG",
+          "ref": "data:embedded"
+        },
+        {
+          "tag": "SOURCE",
+          "ref": "data:embedded"
+        },
+        {
+          "tag": "IMG",
+          "ref": "data:embedded"
+        }
+      ],
+      "navigation": [
+        "#top",
+        "#how",
+        "#status",
+        "#install",
+        "#install",
+        "https://github.com/jcarcinogen/PearPlay",
+        "https://github.com/jcarcinogen/PearPlay/blob/main/STATUS.md",
+        "claims.md",
+        "install.md",
+        "https://github.com/jcarcinogen/PearPlay/blob/main/contract/v1.md",
+        "https://github.com/jcarcinogen/PearPlay/tree/main/tests",
+        "https://github.com/jcarcinogen/PearPlay",
+        "https://x.com/scottito22"
+      ],
+      "metadata": [
+        "https://jcarcinogen.github.io/PearPlay/social-preview.png"
+      ],
+      "width": 1440,
+      "scrollWidth": 1440,
+      "imagesOK": true,
+      "consoleErrors": 0,
+      "remoteRequests": []
+    },
+    {
+      "page": "docs/index.html",
+      "resources": [
+        {
+          "tag": "IMG",
+          "ref": "data:embedded"
+        },
+        {
+          "tag": "SOURCE",
+          "ref": "data:embedded"
+        },
+        {
+          "tag": "IMG",
+          "ref": "data:embedded"
+        }
+      ],
+      "navigation": [
+        "#top",
+        "#how",
+        "#status",
+        "#install",
+        "#install",
+        "https://github.com/jcarcinogen/PearPlay",
+        "https://github.com/jcarcinogen/PearPlay/blob/main/STATUS.md",
+        "claims.md",
+        "install.md",
+        "https://github.com/jcarcinogen/PearPlay/blob/main/contract/v1.md",
+        "https://github.com/jcarcinogen/PearPlay/tree/main/tests",
+        "https://github.com/jcarcinogen/PearPlay",
+        "https://x.com/scottito22"
+      ],
+      "metadata": [
+        "https://jcarcinogen.github.io/PearPlay/social-preview.png"
+      ],
+      "width": 1440,
+      "scrollWidth": 1440,
+      "imagesOK": true,
+      "consoleErrors": 0,
+      "remoteRequests": []
+    },
+    {
+      "page": "assets/landing/readme.html",
+      "resources": [
+        {
+          "tag": "IMG",
+          "ref": "assets/brand/mark.svg"
+        },
+        {
+          "tag": "IMG",
+          "ref": "tip-with-x-money.svg"
+        },
+        {
+          "tag": "IMG",
+          "ref": "assets/landing/hero.png"
+        }
+      ],
+      "navigation": [
+        "https://x.com/scottito22",
+        "#install",
+        "#what-is-verified-today",
+        "#how-it-works",
+        "docs/index.html",
+        "STATUS.md",
+        "docs/claims.md",
+        "docs/install.md",
+        "docs/claims.md#privacy-audit",
+        "contract/v1.md",
+        "helper/README.md",
+        "tests/browser/README.md",
+        "STATUS.md",
+        "tests/",
+        "spikes/002-command/README.md",
+        "assets/brand/README.md",
+        "docs/positioning.md",
+        "spikes/002-command/LICENSE.md"
+      ],
+      "metadata": [],
+      "width": 1280,
+      "scrollWidth": 1280,
+      "imagesOK": true,
+      "consoleErrors": 0,
+      "remoteRequests": []
+    },
+    {
+      "page": "landing-mobile-light",
+      "resources": [
+        {
+          "tag": "IMG",
+          "ref": "data:embedded"
+        },
+        {
+          "tag": "SOURCE",
+          "ref": "data:embedded"
+        },
+        {
+          "tag": "IMG",
+          "ref": "data:embedded"
+        }
+      ],
+      "navigation": [
+        "#top",
+        "#how",
+        "#status",
+        "#install",
+        "#install",
+        "https://github.com/jcarcinogen/PearPlay",
+        "https://github.com/jcarcinogen/PearPlay/blob/main/STATUS.md",
+        "claims.md",
+        "install.md",
+        "https://github.com/jcarcinogen/PearPlay/blob/main/contract/v1.md",
+        "https://github.com/jcarcinogen/PearPlay/tree/main/tests",
+        "https://github.com/jcarcinogen/PearPlay",
+        "https://x.com/scottito22"
+      ],
+      "metadata": [
+        "https://jcarcinogen.github.io/PearPlay/social-preview.png"
+      ],
+      "width": 390,
+      "scrollWidth": 390,
+      "imagesOK": true,
+      "consoleErrors": 0,
+      "remoteRequests": []
+    },
+    {
+      "page": "landing-mobile-dark",
+      "resources": [
+        {
+          "tag": "IMG",
+          "ref": "data:embedded"
+        },
+        {
+          "tag": "SOURCE",
+          "ref": "data:embedded"
+        },
+        {
+          "tag": "IMG",
+          "ref": "data:embedded"
+        }
+      ],
+      "navigation": [
+        "#top",
+        "#how",
+        "#status",
+        "#install",
+        "#install",
+        "https://github.com/jcarcinogen/PearPlay",
+        "https://github.com/jcarcinogen/PearPlay/blob/main/STATUS.md",
+        "claims.md",
+        "install.md",
+        "https://github.com/jcarcinogen/PearPlay/blob/main/contract/v1.md",
+        "https://github.com/jcarcinogen/PearPlay/tree/main/tests",
+        "https://github.com/jcarcinogen/PearPlay",
+        "https://x.com/scottito22"
+      ],
+      "metadata": [
+        "https://jcarcinogen.github.io/PearPlay/social-preview.png"
+      ],
+      "width": 390,
+      "scrollWidth": 390,
+      "imagesOK": true,
+      "consoleErrors": 0,
+      "remoteRequests": []
+    }
+  ],
+  "keyboardControls": [
+    "About website access",
+    "grantSite",
+    "enable",
+    "Video not showing up?",
+    "rescan",
+    "reload",
+    "disable",
+    "candidate",
+    "discover",
+    "hello",
+    "receiver",
+    "Connection and address",
+    "status",
+    "host",
+    "start",
+    "stop",
+    "confirmTV"
+  ],
+  "clipboard": "Exact-command copy and denied-permission selection fallback passed (clipboard boundary injected).",
+  "cleanup": "Unpacked extension uninstalled; owned browser closed and disposable profile removed by finally."
+}

@@ -1,0 +1,31 @@
+$ node --test tests/extension
+✔ injected discovery scans dynamic open shadows and only confirmed exact video pauses (18.57ms)
+✔ navigation, stale documents, TTL and bounded sessions fail closed (2.036917ms)
+✔ unknown documents rejected and video snapshots replace stale sources without URL guessing (0.435125ms)
+✔ network responses require same navigation generation and request attribution (0.183458ms)
+✔ child navigation invalidates descendant documents and MIME manifests remain candidates only (0.183167ms)
+✔ network candidates require HLS or MP4 evidence, never segments or unsupported containers (0.246416ms)
+✔ same-host HLS masters collapse to one short label with no CDN hostname (1.198584ms)
+✔ source labels expose only hostname, format and attribution, never signed paths (1.301959ms)
+✔ URL validation rejects parser repair while keeping accepted signed strings exact (0.260583ms)
+✔ explicit candidate selection preserves exact URL and hides it in labels (0.17175ms)
+✔ malformed receiver entries fail closed without throwing out of the message listener (2.279083ms)
+✔ late replies cannot roll newer native state back; helper failures and invalid frames fail closed (0.274917ms)
+✔ native port survives UI, validates replies, exact start and disconnect fails pending requests (30.342625ms)
+✔ visible phase distinguishes idle, empty and protocol playing without claiming TV confirmation (2.383125ms)
+✔ working state spans an awaited operation; failed actions stay visibly in error (0.622875ms)
+✔ native errors take precedence over idle and disconnected controls remain gated (0.43775ms)
+✔ local-only stop is not labeled as confirmed TV control (0.654083ms)
+✔ MV3 popup requests optional access on clicks, never renders URLs, explicit candidate and receiver (2.342125ms)
+✔ popup exposes idle/working/empty/error/playing states with live regions and focusable controls (0.3295ms)
+✔ worker wires permitted frame discovery, selection, native start and confirmed exact local pause (2.371625ms)
+✔ webRequest is attached only after optional host permission and detached on revoke (1.362875ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 21
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 158.108916
+Exit code: 0

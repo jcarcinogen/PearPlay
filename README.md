@@ -1,80 +1,105 @@
+<img src="assets/brand/mark.svg" width="64" height="64" alt="PearPlay">
+
 # PearPlay
+
+### Your browser’s video. Your Apple TV.
+
+Send a compatible stream directly to your TV—not a mirror of your desktop or a re-encoded copy. **Linux playback is verified in Chrome on a tested FOX stream. macOS playback is unverified.**
 
 [![Tip with X Money](tip-with-x-money.svg)](https://x.com/scottito22)
 
-Linux-first website video AirPlay sender. **FOX 13 Seattle live video+audio have been confirmed on the Living Room Apple TV through the Chrome extension and Linux helper, including helper stop and recast.** Public HLS was previously confirmed via the CLI spike. An actual ad/program transition and Brave remain unverified. PearPlay is a working name, not trademark-cleared.
+[Install locally](#install) · [What is verified](#what-is-verified-today) · [How it works](#how-it-works) · [Product page source](docs/index.html)
 
-## Current result
+<img src="assets/landing/hero.png" width="960" alt="PearPlay mark, a real extension popup capture using example data, and a schematic TV">
 
-The Acer helper can discover the Apple TV, pair with an on-screen PIN, and store credentials outside the repository. On this LAN, inbound UDP timing must be allowed (temporary UFW rule on port 49170). With that in place, the experimental `/command` adapter (sanitized from pyatv PR #2846) played Apple bipbop HLS and FOX 13 Seattle live with visible video and audible sound. Upstream `play_url` still only buffered. See [STATUS.md](STATUS.md).
+*Real popup, example data. The capture demonstrates the interface, not live playback.*
 
-A successful HTTP response is not proof of playback. Human confirmation of video and audio is.
+## What it does
 
-## Architecture
+PearPlay connects a desktop Chrome extension to a small, local Python helper. You choose a video and an Apple TV; PearPlay passes the media URL to the receiver. **The TV fetches the stream from the site.** Native Messaging carries control, not media.
 
-- Distro-independent Python helper: pyatv 0.18.0 plus a bounded experimental adapter, now also `helper/` Native Messaging (`com.pearplay.helper`).
-- Brave/Chrome Manifest V3 extension in `extension/`: user-triggered source discovery, tab/frame-associated media candidates, explicit receiver selection. Chrome is the live-test baseline; Brave is not installed.
-- Chrome Native Messaging is control only; never media transport. Contract: [contract/v1.md](contract/v1.md).
-- Receiver fetches compatible HTTP(S) media directly. No transcode, Mac relay, cloud, or Omarchy dependency.
-- Pairing secrets live in `~/.local/state/pearplay/` (directory 0700, file 0600). Signed media URLs stay transient and must never enter logs or reports.
+- No screen mirroring, transcode, Mac relay for Linux, or PearPlay cloud service.
+- No PearPlay account. Pairing credentials stay on your machine.
+- An explicit handoff: grant access, choose what to send and where, then press Send. Local video does not pause automatically.
 
-## Linux setup (Acer, per-user, reversible)
+This is experimental software with manual setup, not a Chrome Web Store release or an “every website” sender.
 
-Source of truth is the Mini's `~/Projects/PearPlay`. The Acer copy is a test tree. Do not sync `.venv` or credentials.
+## How it works
 
-```sh
-uv venv --python /usr/bin/python3 .venv
-uv pip install --python .venv/bin/python -r requirements.txt
-.venv/bin/python -m pytest tests -q
-```
+1. **Allow and find.** On the video’s page, grant access on a click, play the video and choose **Find videos**. This version requires all-sites access for discovery.
+2. **Choose the video and TV.** Select the stream, connect the helper and find Apple TVs on your network. Choose the receiver and pair if asked.
+3. **Send and confirm.** Press **Send to Apple TV**. Check the TV for moving video and audible sound before using the optional local-pause confirmation.
 
-No system packages beyond Python 3, `uv`, and LAN access to the Apple TV. Do not run as root. This host's UFW default INPUT DROP blocks AirPlay timing unless a narrow UDP allow exists.
+## What is verified today
 
-## Extension/helper prototype
+| Path | Recorded evidence |
+|---|---|
+| Linux + Chrome extension + helper → Apple TV | FOX 13 live video and audible sound, human-confirmed |
+| FOX pre-roll → program | Observed through the popup path with Apple TV DNS blocking enabled; PearPlay does not block ads |
+| End helper session and recast | TV stopped in that FOX trial and recasting worked—not a universal stop guarantee |
+| Public HLS command adapter | Video and audio human-confirmed through the earlier CLI path |
+| Pairing and reconnect | Local credential storage and reconnect without another PIN confirmed |
 
-See [helper/README.md](helper/README.md) for exact-ID per-user setup/uninstall and [tests/browser/README.md](tests/browser/README.md) for real Chrome evidence. Match installer `--config-parent ROOT/browser` with Chrome `--user-data-dir ROOT/browser/google-chrome`; a separate XDG_CONFIG_HOME alone was insufficient. Test profiles only; never use daily profiles for automation.
+A successful HTTP response or a helper “playing” event is not proof of picture and sound. Read the **newest entry first** in [STATUS.md](STATUS.md); older checkpoints are retained as history. [Claim-by-claim evidence](docs/claims.md) distinguishes source facts, automated checks and human TV observations.
 
-The helper's End session control stopped this FOX trial on the Apple TV (human-confirmed). That is not a general guarantee for every stream. TV pause/resume are unsupported. No local video is automatically paused; explicit user confirmation is required. Brave and an observed ad/program transition remain open.
+### What is not done yet
 
-## Run
+- **macOS playback:** the native-host installer and discovery adapter are built; there is no recorded end-to-end playback verdict in `STATUS.md`.
+- **Other browsers:** Brave and Edge are unverified. Chrome is the baseline.
+- **Broader failure/lifecycle trials:** invalid or expired streams and receiver lifecycle behavior are not fully live-verified.
+- **Site-only discovery:** a per-site grant exists in the popup, but Find videos remains disabled without all-sites access.
 
-Unicast discovery is required; multicast `pyatv.scan` returned nothing.
+## Honest limits
 
-```sh
-cd ~/Projects/PearPlay
-.venv/bin/python spikes/001-airplay/pearplay.py scan --host RECEIVER_IP
-.venv/bin/python spikes/001-airplay/pearplay.py pair --host RECEIVER_IP
-```
+The Apple TV must be able to fetch an HTTP(S) media URL directly. A `blob:` URL is not a usable handoff; browser cookies are not transferred. PearPlay does not bypass DRM, geography or access controls, and does not block ads. Use media you are authorized to access. A source URL is not a promise of a particular resolution or compatibility.
 
-Working playback path (experimental):
+**TV pause/resume are unavailable.** **End helper session** closes the helper connection and **does not confirm that the TV stopped**. Use the **physical remote** if playback continues. Local video pauses only after you explicitly confirm TV video and audio.
 
-```sh
-.venv/bin/python spikes/002-command/command.py --host RECEIVER_IP --sample hls --mode command --timing-port 49170 --timeout 15 --duration 60
-```
+## Install
 
-Arbitrary authorized URLs only via stdin (never as a CLI argument):
-
-```sh
-.venv/bin/python spikes/002-command/command.py --host RECEIVER_IP --stdin --mode command --timing-port 49170 --timeout 15 --duration 180 < /path/outside/repository/private-url-input
-```
-
-`--duration` is a hold limit. Exiting with `TimeoutError` after confirmed playback means the helper stopped waiting, not that the TV failed.
-
-Do not invoke upstream `atvremote` on Python 3.14; it crashes with `There is no current event loop`.
-
-## Uninstall
-
-Removes only PearPlay-owned files (`credentials.json`, `control.sock`) from `~/.local/state/pearplay/`. Unknown files are preserved.
+You need Chrome, Python 3.11+, `uv`, an Apple TV on the same network, and a checkout kept in place. These commands are instructions for a new installation; running them downloads the source and pinned runtime dependency.
 
 ```sh
-.venv/bin/python spikes/001-airplay/pearplay.py uninstall
-rm -rf ~/Projects/PearPlay/.venv
+git clone https://github.com/jcarcinogen/PearPlay.git
+cd PearPlay
+uv venv --python 3.11 "$HOME/.local/share/pearplay/venv"
+uv pip install --python "$HOME/.local/share/pearplay/venv/bin/python" -r requirements.txt
 ```
 
-Also delete the temporary UFW timing rule if it is still present. Never `rm -rf ~/.local/state/pearplay` while unknown files may exist.
+Open `chrome://extensions`, enable Developer mode and load the checkout’s `extension/` directory. Copy its actual extension ID. Then register the native host:
 
-## Source and deployment
+```sh
+EXTENSION_ID="paste_your_extension_id_here"
+PY="$HOME/.local/share/pearplay/venv/bin/python"
+# Linux:
+CONFIG_PARENT="$HOME/.config"
+# macOS instead:
+# CONFIG_PARENT="$HOME/Library/Application Support"
+"$PY" helper/install.py install --extension-id "$EXTENSION_ID" \
+  --browser chrome --config-parent "$CONFIG_PARENT" --python "$PY"
+```
 
-Mini `~/Projects/PearPlay` is authoritative. Acer `~/Projects/PearPlay` is the Linux test copy. No GitHub repository, commits, extension publication, or extra system packages are authorized.
+Fully quit and reopen Chrome after the first registration. The helper installer does not install dependencies or change your firewall. On the tested Linux host, receiver-scoped inbound UDP timing on port 49170 was required. On macOS, Python Local Network permission can prevent discovery even after registration succeeds; **the generic macOS path is experimental, not a verified playback recipe**.
 
-Respect DRM, access control, geographic restrictions, and normal ad delivery. A `blob:` URL is not receiver-fetchable.
+Read the [complete Linux/macOS install and uninstall guide](docs/install.md) before troubleshooting. Uninstall registration with the identical command using `uninstall` instead of `install`; unknown files, credentials, source and the Python environment are preserved.
+
+## Privacy
+
+The extension talks to a local native helper; media travels from the origin site to the Apple TV. Pairing credentials live in `~/.local/state/pearplay/credentials.json`, inside a `0700` directory with a `0600` file. The pairing PIN is submitted once and not persisted by the extension. Signed media URLs are transient, not copied into marketing assets or logs.
+
+No telemetry endpoint or PearPlay account/cloud integration is present in the audited first-party extension/helper sources. That is a source-audit statement, not a claim that Chrome, dependencies or the origin site make no network requests. Local control does not make a stream anonymous. See the [audit scope and citations](docs/claims.md#privacy-audit).
+
+## Inside PearPlay
+
+- [Control contract and trust boundaries](contract/v1.md)
+- [Native helper and installer details](helper/README.md)
+- [Browser integration evidence](tests/browser/README.md)
+- [Latest TV observations and historical checkpoints](STATUS.md)
+- [Tests](tests/) · [Command adapter spike](spikes/002-command/README.md)
+- [Brand sources and reproducible rendering](assets/brand/README.md) · [Positioning](docs/positioning.md)
+
+No project-wide `LICENSE` has been selected. The experimental command adapter retains its [own license and provenance](spikes/002-command/LICENSE.md); that is not a license for the whole repository. The working name is not trademark-cleared.
+
+---
+
+PearPlay is independent and unaffiliated with Apple.

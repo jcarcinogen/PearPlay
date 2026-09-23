@@ -1,0 +1,6 @@
+$ python3.11 -m unittest discover -s tests -p 'test_helper*.py' -q
+----------------------------------------------------------------------
+Ran 23 tests in 0.824s
+
+OK
+Exit code: 0

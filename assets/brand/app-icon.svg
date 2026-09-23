@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-labelledby="title">
+<title id="title">PearPlay</title>
+<!-- Broad pear, single play aperture. The canvas is deliberately transparent. -->
+<path d="M500 254C508 146 594 102 705 106C696 208 623 274 500 254Z" fill="#355b29" stroke="#c1e67a" stroke-width="24" stroke-linejoin="round"/>
+<path d="M480 284C383 272 374 358 327 450C285 532 191 600 191 715C191 846 313 926 501 926C696 926 823 844 823 711C823 601 731 532 684 447C633 354 638 284 548 284Z" fill="#c1e67a" stroke="#253c23" stroke-width="40" stroke-linejoin="round"/>
+<path d="M432 520L651 653L432 789Z" fill="#253c23" stroke="#253c23" stroke-width="20" stroke-linejoin="round"/>
+</svg>

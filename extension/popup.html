@@ -2,115 +2,104 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PearPlay</title>
 <style>
-:root { color-scheme: light dark; }
-body { font: 14px/1.4 system-ui, sans-serif; margin: 12px; width: 360px; }
-header { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
-header img { width: 32px; height: 32px; }
-h1 { font-size: 18px; margin: 0; }
-.lead { margin: 0 0 12px; color: CanvasText; opacity: .8; }
-section { border: 1px solid color-mix(in srgb, CanvasText 18%, transparent); border-radius: 8px; padding: 10px; margin: 0 0 10px; }
-section h2 { font-size: 13px; margin: 0 0 8px; }
-.row { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
-button, select, input { font: inherit; }
-select, input { width: 100%; box-sizing: border-box; }
-button { cursor: pointer; }
-#grantAll, #start { font-weight: 600; }
-#tvStatus, #banner { display: none; margin: 0 0 12px; padding: 10px 12px; border-radius: 8px; font-weight: 650; background: CanvasText; color: Canvas; }
-#tvStatus:not(:empty), #banner:not(:empty) { display: block; }
-#notice, #state { min-height: 1.4em; margin: 6px 0 0; }
-.muted { font-size: 12px; opacity: .75; margin: 6px 0 0; }
-details { margin-top: 8px; }
-details > summary { cursor: pointer; font-size: 12px; }
-.hidden { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+:root { color-scheme: light dark; --bg:#f6f7f2; --surface:#fff; --ink:#19271d; --muted:#52604f; --accent:#355b29; --accent-ink:#fff; --line:#76816c; }
+@media(prefers-color-scheme:dark) { :root { --bg:#111914; --surface:#1a251d; --ink:#f4f7ed; --muted:#bac7b2; --accent:#c1e67a; --accent-ink:#172310; --line:#819277; } }
+* { box-sizing:border-box; }
+body { width:360px; margin:0; padding:18px; font:13px/1.45 system-ui,sans-serif; background:var(--bg); color:var(--ink); }
+header { display:flex; align-items:center; gap:10px; }
+header img { width:34px; height:34px; }
+h1 { margin:0; font-size:20px; font-weight:650; letter-spacing:-.6px; }
+.edition { margin-left:auto; color:var(--muted); font-size:10px; letter-spacing:.08em; text-transform:uppercase; }
+.lead { margin:12px 0 8px; color:var(--muted); }
+#phase { display:block; margin:0 0 18px; font-size:12px; font-weight:600; color:var(--accent); }
+#phase[data-state="working"]::before { content:'◌ '; }
+#phase[data-state="error"] { color:var(--ink); text-decoration:underline; text-underline-offset:3px; }
+section { margin-top:16px; padding-top:16px; border-top:1px solid var(--line); }
+h2 { margin:0 0 10px; font-size:13px; letter-spacing:-.1px; font-weight:650; }
+p { margin:8px 0; }
+.row { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+button,select,input { font:inherit; border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:6px; min-height:34px; padding:6px 9px; }
+button { cursor:pointer; }
+button:hover:not(:disabled) { border-color:var(--accent); background:var(--bg); }
+button:disabled { cursor:default; color:var(--muted); background:var(--bg); border-style:dashed; }
+button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
+#grantAll:not(:disabled),#enable:not(:disabled),#start:not(:disabled) { background:var(--accent); color:var(--accent-ink); border-color:var(--accent); font-weight:600; }
+#start { width:100%; min-height:40px; }
+select,input { width:100%; }
+select { padding-right:24px; }
+#tvStatus,#banner,#notice { margin:10px 0; padding:9px 10px; border:1px solid var(--line); border-radius:6px; font-size:12px; background:var(--surface); }
+#banner:empty,#notice:empty,#tvStatus:empty { display:none; }
+#state { font-size:12px; color:var(--muted); margin:10px 0; }
+.muted { color:var(--muted); font-size:12px; margin:8px 0 0; }
+details { margin-top:10px; }
+summary { cursor:pointer; color:var(--muted); font-size:12px; }
+details .row { margin-bottom:8px; }
+#pairBox { padding:10px; margin:10px 0; background:var(--surface); border:1px solid var(--line); border-radius:6px; }
+#pairBox label { display:block; margin-bottom:6px; }
+#pair { margin-top:8px; }
+#host { margin-top:6px; }
+#confirmTV { text-align:left; }
+.safety { color:var(--muted); font-size:12px; line-height:1.5; }
+.hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0; }
+[hidden] { display:none!important; }
 </style>
 </head>
 <body>
-<header>
-  <img src="icons/icon48.png" alt="">
-  <h1>PearPlay</h1>
-</header>
-<p class="lead">First allow all websites, then look for videos.</p>
+<header><img src="icons/icon48.png" alt=""><h1>PearPlay</h1><span class="edition">Preview</span></header>
+<p class="lead">Choose a video. Send it to your TV.</p>
+<span id="phase" role="status" aria-live="polite" data-state="idle">Ready</span>
 <p id="banner" role="status" aria-live="assertive"></p>
-
 <section>
   <h2>1. Allow all websites</h2>
-  <p>PearPlay cannot see the video until you allow all websites. Do that before Find videos.</p>
-  <div class="row">
-    <button id="grantAll">Allow all websites</button>
-  </div>
+  <div class="row"><button id="grantAll">Allow all websites</button></div>
   <p id="accessState" class="muted">Allow all websites first. Find videos stays off until you do.</p>
-  <details>
-    <summary>Allow only this website instead</summary>
-    <div class="row">
-      <button id="grantSite">Allow this website</button>
-    </div>
+  <details><summary>About website access</summary>
+    <p class="muted">Access is granted only when you click. This version needs all-sites access to enable Find videos. A per-site grant alone does not enable discovery yet.</p>
+    <div class="row"><button id="grantSite">Allow this website</button></div>
   </details>
 </section>
-
 <section>
   <h2>2. Find videos</h2>
-  <p class="muted">After all websites are allowed, open the video, press play, then Find videos. If the list stays empty, reload this page and look again.</p>
-  <div class="row">
-    <button id="enable">Find videos</button>
-    <button id="disable">Stop looking</button>
-    <button id="rescan">Look again</button>
-    <button id="reload">Reload this page</button>
-  </div>
-</section>
-
-<section>
-  <h2>3. Choose a video</h2>
-  <label class="hidden" for="candidate">Choose a video</label>
-  <select id="candidate"></select>
-</section>
-
-<section>
-  <h2>4. Choose an Apple TV</h2>
-  <p class="muted">PearPlay looks on your network. You should not need to type an address. If the helper is not connected, Find Apple TVs and the address box cannot find your Apple TV — click Connect helper first.</p>
-  <div class="row">
-    <button id="discover">Find Apple TVs</button>
-    <button id="hello">Connect helper</button>
-    <button id="status">Refresh TV status</button>
-  </div>
-  <p id="tvStatus" role="status"></p>
-  <div id="pairBox" hidden>
-    <label for="pin">TV PIN</label>
-    <input id="pin" type="password" inputmode="numeric" maxlength="4" autocomplete="off" spellcheck="false">
-    <button id="pair" type="button">Pair Apple TV</button>
-  </div>
-  <label class="hidden" for="receiver">Choose an Apple TV</label>
-  <select id="receiver"></select>
-  <details id="hostDetails">
-    <summary>TV not listed? Paste its address, then press Find Apple TVs (or Enter)</summary>
-    <label class="muted" for="host">Apple TV address</label>
-    <input id="host" placeholder="Only if Find Apple TVs found nothing">
+  <p class="muted">Play the video on this page, then find it here.</p>
+  <div class="row"><button id="enable">Find videos</button></div>
+  <details><summary>Video not showing up?</summary>
+    <p class="muted">Reload this page, press play and look again. Only receiver-fetchable streams can be sent.</p>
+    <div class="row"><button id="rescan">Look again</button><button id="reload">Reload this page</button><button id="disable">Stop looking</button></div>
   </details>
 </section>
-
+<section>
+  <h2>3. Choose a video</h2>
+  <label class="hidden" for="candidate">Choose a video</label><select id="candidate"></select>
+</section>
+<section>
+  <h2>4. Choose an Apple TV</h2>
+  <div class="row"><button id="discover">Find Apple TVs</button><button id="hello">Connect helper</button></div>
+  <p id="tvStatus" role="status" aria-live="polite"></p>
+  <div id="pairBox" hidden><label for="pin">TV PIN</label><input id="pin" type="password" inputmode="numeric" maxlength="4" autocomplete="off" spellcheck="false"><button id="pair" type="button">Pair Apple TV</button></div>
+  <label class="hidden" for="receiver">Choose an Apple TV</label><select id="receiver"></select>
+  <details id="hostDetails"><summary>Connection and address</summary>
+    <p class="muted">If the helper is disconnected, the address box cannot find your Apple TV. Click Connect helper first.</p>
+    <div class="row"><button id="status">Refresh TV status</button></div>
+    <label class="muted" for="host">Apple TV address (optional)</label><input id="host" placeholder="Only if network discovery finds nothing">
+    <p class="muted">Paste an address, then press Find Apple TVs or Enter.</p>
+  </details>
+</section>
 <section>
   <h2>5. Send it</h2>
-  <div class="row">
-    <button id="start">Send to Apple TV</button>
-    <button id="stop">End helper session</button>
-  </div>
-  <p id="notice" role="status"></p>
-  <p id="state" role="status"></p>
-  <p class="muted">Ending the helper session closes its connection; it does not confirm that the TV stopped. Use the physical remote if playback continues. TV pause/resume are unavailable in this prototype.</p>
+  <button id="start">Send to Apple TV</button>
+  <p id="notice" role="status" aria-live="polite"></p>
+  <p id="state" role="status" aria-live="polite"></p>
+  <div class="row"><button id="stop">End helper session</button></div>
+  <p class="safety">Ending the helper session closes its connection; it does not confirm that the TV stopped. Use the physical remote if playback continues. TV pause/resume are unavailable.</p>
 </section>
-
 <section>
-  <h2>After it is playing on the TV</h2>
-  <div class="row">
-    <button id="confirmTV">I confirm TV video and audio — pause selected local video</button>
-    <button id="localResume">Resume local video</button>
-  </div>
+  <h2>After you see and hear it on the TV</h2>
+  <div class="row"><button id="confirmTV">I confirm TV video and audio — pause selected local video</button><button id="localResume">Resume local video</button></div>
   <p class="muted">Helper state is not visual or audible confirmation. Local playback is never automatically paused.</p>
 </section>
-
-<button id="pause" class="hidden">Pause TV</button>
-<button id="resume" class="hidden">Resume TV</button>
+<button id="pause" hidden tabindex="-1">Pause TV</button><button id="resume" hidden tabindex="-1">Resume TV</button>
 <script src="popup.js"></script>
-</body>
-</html>
+</body></html>

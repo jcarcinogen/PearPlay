@@ -36,22 +36,39 @@
   const tvStatus = native => {
     if (native.error === 'NATIVE_DISCONNECTED') return 'Helper not connected — Find Apple TVs and the address box cannot work yet. Click Connect helper.';
     if (!native.receivers?.length) return 'No Apple TVs yet. Click Find Apple TVs.';
-    return native.state === 'playing' ? 'Helper reports playing (look at the TV to confirm).' : `TV helper: ${native.state}.`;
+    return ({ idle: 'Helper connected. Choose your Apple TV.', connecting: 'Connecting to your Apple TV…', playing: 'Helper reports playing (look at the TV to confirm).', stopped: 'Helper session ended. Check the TV.', stopping: 'Ending the helper session…', error: 'Helper needs attention. Reconnect and try again.' })[native.state] ?? 'Check the TV and refresh its status.';
+  };
+  let currentView;
+  let pendingActions = 0;
+  let actionError = false;
+  const updatePhase = () => {
+    const s = currentView;
+    const state = actionError || s?.native.error ? 'error'
+      : pendingActions || ['connecting', 'stopping'].includes(s?.native.state) ? 'working'
+      : s?.native.state === 'playing' ? 'playing'
+      : s?.enabled && !s.candidates.length ? 'empty' : 'idle';
+    const labels = { idle: 'Ready', working: 'Working…', empty: 'No video found yet', error: 'Needs attention', playing: 'Helper reports playing — check the TV' };
+    $('phase').dataset.state = state;
+    $('phase').textContent = labels[state];
   };
   async function refresh() {
     try {
       const s = await send('view');
+      const nativeChanged = currentView?.native.state !== s.native.state || currentView?.native.error !== s.native.error;
       if (!s.selected && s.candidates.length === 1) {
         await send('select', { id: s.candidates[0].id });
         s.selected = s.candidates[0].id;
       }
       options('candidate', s.candidates, s.selected, 'Choose a video');
       options('receiver', s.native.receivers, s.receiver, 'Choose an Apple TV');
-      $('state').textContent = [
+      const stateText = [
         s.enabled ? 'Looking for videos on this page.' : 'Not looking for videos yet.',
         s.candidates.length ? `${s.candidates.length} video${s.candidates.length === 1 ? '' : 's'} found.` : 'No videos found yet.',
         tvStatus(s.native),
       ].join(' ');
+      $('state').textContent = stateText;
+      currentView = s;
+      updatePhase();
       const c = s.candidates.find(item => item.id === s.selected);
       const disconnected = s.native.error === 'NATIVE_DISCONNECTED';
       $('discover').disabled = disconnected;
@@ -79,7 +96,7 @@
         });
       } else if (pinReady) $('pairBox').hidden = false;
       else $('pairBox').hidden = true;
-      if (!needsPin && !pinReady && !tvMessage) showTVs(tvStatus(s.native));
+      if (!needsPin && !pinReady && (!tvMessage || nativeChanged)) showTVs(tvStatus(s.native));
       $('confirmTV').disabled = !c?.videoId;
       $('localResume').disabled = !s.localAvailable;
       for (const op of ['pause', 'resume', 'stop']) $(op).disabled = !s.native.capabilities.includes(op);
@@ -87,9 +104,14 @@
       await memory?.set({ host, receiver: s.receiver ?? '', candidate: s.selected ?? '' });
     } catch {
       notice('Extension unavailable. Reopen this window.');
+      actionError = true;
+      updatePhase();
     }
   }
   const act = fn => async () => {
+    pendingActions++;
+    actionError = false;
+    updatePhase();
     try {
       await fn();
       await refresh();
@@ -97,13 +119,17 @@
       const text = explain(error);
       notice(text);
       if (fn === findTVs) showTVs(text);
+      actionError = true;
+    } finally {
+      pendingActions--;
+      updatePhase();
     }
   };
   for (const op of ['enable', 'disable', 'rescan']) {
     $(op).onclick = act(async () => {
       const r = await send(op);
       notice(r.total !== undefined
-        ? (r.scanned ? `Found videos in ${r.scanned} part${r.scanned === 1 ? '' : 's'} of this page.` : 'No videos yet. Allow all websites, reload this page, press play, then Find videos.')
+        ? (r.scanned ? 'Search complete. Choose a video if one appears below.' : 'No videos yet. Allow all websites, reload this page, press play, then Find videos.')
         : 'Stopped looking on this page.');
     });
   }
@@ -156,7 +182,7 @@
     const u = new URL(tab.url);
     if (!['http:', 'https:'].includes(u.protocol)) throw Error('UNSUPPORTED_PAGE');
     const granted = await chrome.permissions.request({ origins: [`${u.protocol}//${u.hostname}/*`] });
-    notice(granted ? 'This website is allowed. Reload, press play, then find videos.' : 'Not allowed.');
+    notice(granted ? 'This website is allowed. This version still needs all-sites access to enable Find videos.' : 'Not allowed.');
   });
   $('reload').onclick = act(() => chrome.tabs.reload(tab.id));
   async function allWebsitesAllowed() {
@@ -170,6 +196,8 @@
     $('hostDetails').open = true;
   }
   await refresh();
+  pendingActions++;
+  updatePhase();
   try {
     await send('hello');
     await findTVs();
@@ -178,6 +206,10 @@
     const text = explain(error);
     showTVs(text);
     notice(text);
+    actionError = true;
+  } finally {
+    pendingActions--;
+    updatePhase();
   }
   setInterval(refresh, 2000);
 })();

@@ -6,6 +6,32 @@ import unittest
 from test_helper_protocol import ROOT
 
 class PackageTests(unittest.TestCase):
+    def test_linux_stage_has_public_readonly_modes_under_restrictive_umask(self):
+        import os
+        import stat
+        spec=importlib.util.spec_from_file_location('build_helper',ROOT/'scripts/build_helper.py')
+        assert spec is not None and spec.loader is not None
+        build=importlib.util.module_from_spec(spec);spec.loader.exec_module(build)
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary)
+            previous=os.umask(0o077)
+            try:
+                payload=root/'payload';payload.mkdir()
+                binary=payload/'PearPlayHelper';binary.write_text('executable');binary.chmod(0o700)
+                internal=payload/'_internal';internal.mkdir()
+                (internal/'build.json').write_text('{}')
+                outside=root/'outside';outside.write_text('untouched');outside.chmod(0o600)
+                (internal/'link').symlink_to(outside)
+                stage=build.stage_payload(payload,root/'stage',{'platform':'linux'})
+            finally:
+                os.umask(previous)
+            for path in [stage,*stage.rglob('*')]:
+                if path.is_symlink(): continue
+                expected=0o755 if path.is_dir() or path.name=='PearPlayHelper' else 0o644
+                self.assertEqual(stat.S_IMODE(path.stat().st_mode),expected,str(path.relative_to(stage)))
+            self.assertEqual(stat.S_IMODE(outside.stat().st_mode),0o600)
+            self.assertEqual(stat.S_IMODE(binary.stat().st_mode),0o700)
+
     def test_macos_stage_keeps_native_bundle_resources_out_of_code_directories(self):
         spec=importlib.util.spec_from_file_location('build_helper',ROOT/'scripts/build_helper.py')
         assert spec is not None and spec.loader is not None

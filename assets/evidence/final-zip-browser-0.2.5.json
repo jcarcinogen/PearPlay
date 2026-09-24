@@ -1,0 +1,37 @@
+{
+  "zip_sha256": "54d190d2aa861ef3a8e4b78c51f777a98f3e15f298540c9297f9136a07953f84",
+  "zip_entries": 18,
+  "tests": [
+    {
+      "browser": "Chrome/153.0.8010.47",
+      "installed": false,
+      "extensionId": "eoadahoncjfpnennmkjifohclbafjkol",
+      "kind": "missing",
+      "developerHidden": true,
+      "stepsVisible": true,
+      "links": [
+        "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.deb",
+        "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.pkg.tar.zst"
+      ],
+      "overflow": false,
+      "fixtureOverrides": false,
+      "scope": "Real setup, unmodified release catalog and installed native helper; no pairing or playback"
+    },
+    {
+      "browser": "Chrome/153.0.8010.47",
+      "installed": true,
+      "extensionId": "eoadahoncjfpnennmkjifohclbafjkol",
+      "kind": "ready",
+      "developerHidden": true,
+      "stepsVisible": true,
+      "links": [
+        "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.deb",
+        "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.pkg.tar.zst"
+      ],
+      "overflow": false,
+      "fixtureOverrides": false,
+      "scope": "Real setup, unmodified release catalog and installed native helper; no pairing or playback"
+    }
+  ],
+  "scope": "Exact final ZIP extracted into a disposable artifact directory. No source overrides, fixture keys or catalog replacement. Real Chrome and installed production Arch helper. No new playback trial."
+}

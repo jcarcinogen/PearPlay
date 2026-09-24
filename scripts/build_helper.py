@@ -1,5 +1,6 @@
 """Build Linux helpers on Linux. Mac support is coming soon; Mac internals are archived."""
 import argparse
+import base64
 import hashlib
 import importlib.metadata
 import json
@@ -28,10 +29,16 @@ def stage_payload(payload, stage, config):
         shutil.copy2(payload/'dependency-versions.json',resources/'dependency-versions.json')
     else:
         shutil.copytree(payload,stage/'opt/pearplay/PearPlayHelper',symlinks=True)
+        shutil.copy2(ROOT/'LICENSE',stage/'opt/pearplay/PearPlayHelper/LICENSE')
         desktop=stage/'usr/share/applications/pearplay-setup.desktop';desktop.parent.mkdir(parents=True)
         desktop.write_text('[Desktop Entry]\nType=Application\nName=PearPlay Setup\nComment=Connect browsers to PearPlay Helper\nExec=/opt/pearplay/PearPlayHelper/PearPlayHelper\nIcon=pearplay\nTerminal=false\nCategories=AudioVideo;Settings;\n')
         icon=stage/'usr/share/icons/hicolor/128x128/apps/pearplay.png';icon.parent.mkdir(parents=True)
         shutil.copy2(ROOT/'extension/icons/icon128.png',icon)
+        # System packages become root-owned: build umask must not hide the runtime.
+        # Change only staged objects, never symlink targets or the source payload.
+        for path in [stage, *stage.rglob('*')]:
+            if not path.is_symlink():
+                path.chmod(0o755 if path.is_dir() or path.stat().st_mode & 0o111 else 0o644)
     return stage
 
 
@@ -61,6 +68,14 @@ def configuration(extension_id, development, target, machine):
         catalog=json.loads((ROOT/'extension/releases.json').read_text())
         if catalog.get('extensionId')!=extension_id or not (ROOT/'LICENSE').is_file():
             raise ValueError('release_requires_store_id_and_project_license')
+        try:
+            key=json.loads((ROOT/'extension/manifest.json').read_text())['key']
+            digest=hashlib.sha256(base64.b64decode(key,validate=True)).hexdigest()[:32]
+        except (KeyError,TypeError,ValueError) as error:
+            raise ValueError('invalid_store_public_key') from error
+        derived=''.join(chr(ord('a')+int(n,16)) for n in digest)
+        if derived!=extension_id:
+            raise ValueError('store_public_key_id_mismatch')
     return dict(extension_id=extension_id,development=development,version=VERSION,platform=target,arch='arm64' if machine in ('arm64','aarch64') else 'x86_64')
 
 
@@ -154,7 +169,7 @@ def build(args):
         if shutil.which('makepkg'):
             work=output/'arch';work.mkdir()
             arch='aarch64' if config['arch']=='arm64' else 'x86_64'
-            (work/'PKGBUILD').write_text(f"pkgname=pearplay-helper\npkgver={VERSION}\npkgrel=1\npkgdesc='PearPlay helper and browser setup'\narch=('{arch}')\nurl='https://github.com/jcarcinogen/PearPlay'\nlicense=('custom')\ndepends=({linux_dependencies('arch', platform.libc_ver()[1])})\noptions=('!strip' '!debug')\npackage() {{ cp -a \"$startdir/../stage/.\" \"$pkgdir/\"; }}\n")
+            (work/'PKGBUILD').write_text(f"pkgname=pearplay-helper\npkgver={VERSION}\npkgrel=1\npkgdesc='PearPlay helper and browser setup'\narch=('{arch}')\nurl='https://github.com/jcarcinogen/PearPlay'\nlicense=('MIT')\ndepends=({linux_dependencies('arch', platform.libc_ver()[1])})\noptions=('!strip' '!debug')\npackage() {{ cp -a \"$startdir/../stage/.\" \"$pkgdir/\"; }}\n")
             subprocess.run(['makepkg','--nodeps','--noconfirm'],check=True,cwd=work)
             for package in work.glob('*.pkg.tar.zst'):
                 target=output/(label+'.pkg.tar.zst');shutil.copy2(package,target);artifacts.append(target)
@@ -163,7 +178,7 @@ def build(args):
             top=output/'rpm'
             for folder in ('BUILD','BUILDROOT','RPMS','SOURCES','SPECS','SRPMS'): (top/folder).mkdir(parents=True,exist_ok=True)
             spec=top/'SPECS/pearplay.spec'
-            spec.write_text(f'Name: pearplay-helper\nVersion: {VERSION}\nRelease: 1\nSummary: PearPlay helper and browser setup\nLicense: LicenseRef-PearPlay\nRequires: {linux_dependencies("rpm", platform.libc_ver()[1])}\nAutoReqProv: no\n%description\nPearPlay native helper. Connect browsers by opening PearPlay Setup.\n%install\nmkdir -p "%{{buildroot}}"\ncp -a "{stage}/." "%{{buildroot}}/"\n%files\n/opt/pearplay\n/usr/share/applications/pearplay-setup.desktop\n/usr/share/icons/hicolor/128x128/apps/pearplay.png\n')
+            spec.write_text(f'Name: pearplay-helper\nVersion: {VERSION}\nRelease: 1\nSummary: PearPlay helper and browser setup\nLicense: MIT\nRequires: {linux_dependencies("rpm", platform.libc_ver()[1])}\nAutoReqProv: no\n%description\nPearPlay native helper. Connect browsers by opening PearPlay Setup.\n%install\nmkdir -p "%{{buildroot}}"\ncp -a "{stage}/." "%{{buildroot}}/"\n%files\n/opt/pearplay\n/usr/share/applications/pearplay-setup.desktop\n/usr/share/icons/hicolor/128x128/apps/pearplay.png\n')
             subprocess.run(['rpmbuild','--define',f'_topdir {top}','--define','__os_install_post %{nil}','-bb',str(spec)],check=True)
             for package in (top/'RPMS').rglob('*.rpm'):
                 target=output/(label+'.rpm');shutil.copy2(package,target);artifacts.append(target)

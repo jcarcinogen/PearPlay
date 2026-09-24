@@ -4,12 +4,12 @@
 
 ## Deliverables and identity
 
-`pearplay-0.2.4-DRAFT-ONLY.zip` is a draft-upload artifact, not the final public release ZIP. Its manifest is at the ZIP root. It excludes helpers, Python, build caches, tests, fixture keys and the local installer-rehearsal flag. Public download links remain intentionally absent.
+The final upload artifact is `pearplay-0.2.5.zip` in `Stuff/PearPlay Web Store/0.2.5/`. Its manifest is at the ZIP root. It excludes helpers, Python, build caches, tests, fixture keys and the local installer-rehearsal flag. It contains the verified Store public key and the matching Linux helper download catalog. This is an upload handoff, not Store submission approval.
 
-1. Inspect the publisher dashboard for an existing **PearPlay** draft first. Reuse it if present; do not create a second listing or confuse it with Open Autofill.
-2. If none exists, upload this ZIP as a new unpublished item. **Do not click Submit for Review or Publish.**
-3. Record the exact Item ID and the Package tab's public key. Verify the ID is 32 lowercase a–p characters. This user-account step remains pending; no PearPlay store ID has been verified in this run.
-4. Apply that public key to development builds to match the listing, pin the exact ID into helper builds and the production release catalog, and repeat the clean installation tests with that identity.
+1. Open the existing **PearPlay** draft `eoadahoncjfpnennmkjifohclbafjkol`. Do not create a second listing or confuse it with Open Autofill.
+2. Upload the final ZIP under **Package** and confirm version 0.2.5. **Do not click Submit for Review or Publish.**
+3. **Completed:** Scott supplied Item ID `eoadahoncjfpnennmkjifohclbafjkol` and its Package public key. Format and SHA256-derived identity match exactly. Reuse this existing item; do not create another.
+4. **Completed in candidate source:** the 0.2.5 manifest, release catalog and Ubuntu production helper use this identity. Real Chrome tests in the clean Ubuntu VM verified the matching ID, native allowlist, connection, repair and removal. Other release gates remain below.
 5. Replace the draft ZIP with the final version only after matching helper downloads are actually published and verified. Rehearsal uses a dedicated fixture ID and does not establish the store ID.
 
 ## Product and permission explanations — draft
@@ -39,14 +39,16 @@ Reviewer flow: install extension → install matching helper → restart Chrome 
 
 ## Release blockers / acceptance checklist
 
-- [ ] Permanent PearPlay draft ID and public key verified; production build uses that ID only.
+- [x] Permanent PearPlay draft ID and public key verified; the Ubuntu 0.2.5 production build uses that ID only.
 - [x] Owner selected MIT for original project code; root `LICENSE` added and existing adapter/dependency notices retained.
 - [x] Acer 0.2.3 package install, restart, discovery, fresh-PIN and saved pairing, visible video/audio, disconnect/reconnect and removal/reinstall verified (see STATUS).
-- [ ] Cross-version Linux package upgrade verified.
+- [x] Arch cross-version upgrade 0.2.3-1 → production 0.2.5-1 verified on Omarchy Acer: installed unprivileged self-test, package integrity, isolated Chrome connection/repair/removal and three LAN discovery rounds passed; pairing byte-identical and mode 0600. Corrected restrictive-build-umask packaging defect has a regression test and independent review. Old development-ID registration was explicitly migrated with ownership checks, not automatically. No playback trial in this pass. Evidence: `assets/evidence/arch-upgrade-0.2.5.json`.
 - [ ] Linux Brave/Chromium end-to-end behavior verified before claiming those browsers beyond registration support.
-- [ ] Non-Omarchy Linux clean test: native Google Chrome, package dependencies, Avahi, same-LAN discovery, pairing/playback and uninstall. Build `.deb` on the selected Ubuntu baseline, not the Acer's newer glibc.
+- [x] Ubuntu 24.04.5 x86_64/glibc 2.39 `.deb` built on the actual Ubuntu baseline; APT install, real graphical helper setup, sandboxed Google Chrome hello/status/repair/native-host removal and package remove/reinstall passed. Evidence: `assets/evidence/ubuntu-0.2.5-installer.json`.
+- [x] Non-Omarchy same-LAN discovery and fresh-PIN playback: Xubuntu live USB (detected Ubuntu 26.04.1/glibc 2.43), production 0.2.5 `.deb`, isolated sandboxed Chrome, actual toolbar popup, user-confirmed moving Apple TV video/audio and protocol readback. Evidence: `assets/evidence/xubuntu-live-0.2.5.json`. The earlier VM NAT limitation remains a separate result; neither installed drive nor firewall was changed.
+- [x] Graphical package-manager installation on Xubuntu 26.04.1: its pre-existing App Center installed the production `.deb` from package-absent state; UI, package database/logs, payload integrity and post-install Chrome connection/discovery passed. User pairing/registration metadata were preserved. Native XFCE defaults to GDebi, whose elevated window failed in this session; the earlier Engrampa default claim was an incomplete-SSH-environment error. Documented route: Open With → App Center. Dependencies were retained; this is not a universal distro/clean-reboot/authentication pass. Evidence: `assets/evidence/xubuntu-gui-install-0.2.5.json`. The extension was unpacked, not Store-installed.
 - [ ] Real download assets published, checksums verified and release catalog wired to matching OS/architecture/ID. No placeholder URLs.
-- [ ] For Arch desktops without a GUI package manager, explicitly document the small `pacman -U` step; do not advertise a universal no-Terminal Linux install.
+- [x] Arch no-GUI `pacman -U` and Ubuntu/Debian `apt install` fallbacks are documented; no universal no-Terminal Linux install claim.
 - [ ] Fresh storefront screenshots from isolated synthetic UI; no Scott personal information, daily browser UI, real tokens or private network details.
 - [ ] Listing claims restricted to tested platforms/receivers; LG detection is not playback support.
 - [ ] Privacy policy publicly accessible; dashboard disclosures/permission explanations reconciled with final source.
@@ -55,7 +57,7 @@ Reviewer flow: install extension → install matching helper → restart Chrome 
 
 ## Paused Mac work — not a Linux release gate
 
-Mac research and old artifacts are preserved, but no Mac install, signing purchase, consent or playback test is scheduled. Resume only if Scott explicitly reopens Mac work. The current local kit is `Stuff/PearPlay Installer Test/0.2.4/`; the old mixed-platform kit is archived. The source and project website are authorized for publication separately; no consumer helper release or Web Store submission is authorized by this checklist.
+Mac research and old artifacts are preserved, but no Mac install, signing purchase, consent or playback test is scheduled. Resume only if Scott explicitly reopens Mac work. The current Ubuntu candidate is in `Stuff/PearPlay Installer Test/0.2.5/ubuntu/`; the 0.2.4 and older mixed-platform kits are historical. The source and project website are authorized for publication separately; helper publication is now approved, but Google review submission remains unapproved.
 
 Official references:
 - https://developer.chrome.com/docs/extensions/reference/manifest/key

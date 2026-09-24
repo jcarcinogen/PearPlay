@@ -12,8 +12,11 @@ assert.ok(terminalBundle?existsSync(join(terminalBundle,'install-macos.sh')):bin
 const browser=process.env.PEARPLAY_BROWSER??'chrome';
 const folders=process.platform==='darwin'?{chrome:'Google/Chrome',brave:'BraveSoftware/Brave-Browser',chromium:'Chromium'}:{chrome:'google-chrome',brave:'BraveSoftware/Brave-Browser',chromium:'chromium'};
 assert.ok(folders[browser]);
-const fixture=JSON.parse(readFileSync(new URL('./fixture-key.json',import.meta.url),'utf8'));
-const id=fixture.id; // Public test key only. Never authorize this ID in a production helper.
+const sourceManifest=JSON.parse(readFileSync(resolve('extension/manifest.json'),'utf8'));
+const production=process.env.PEARPLAY_PRODUCTION==='1';
+const fixture=production?{key:sourceManifest.key,id:JSON.parse(readFileSync(resolve('extension/releases.json'),'utf8')).extensionId}:JSON.parse(readFileSync(new URL('./fixture-key.json',import.meta.url),'utf8'));
+const id=fixture.id; // Production key only when explicitly requested; fixture ID never belongs in a production helper.
+const expectedVersion=process.env.PEARPLAY_HELPER_VERSION??sourceManifest.version;
 const results=[];
 function register(action,parent){
   if(!terminalBundle)return JSON.parse(execFileSync(binary,[action,'--browsers',browser,'--config-parent',parent],{encoding:'utf8'}));
@@ -38,7 +41,7 @@ for(const installed of [false,true]){
   }});
   try{
     const extension=await c.send('Extensions.loadUnpacked',{path:join(parent,'extension')});
-    assert.equal(extension.id,id,'Rebuild the development helper for the actual unpacked extension ID');
+    assert.equal(extension.id,id,'Rebuild the helper for this extension identity');
     const {targetId}=await c.send('Target.createTarget',{url:`chrome-extension://${id}/setup.html`});
     const {sessionId:s}=await c.send('Target.attachToTarget',{targetId,flatten:true});
     await c.send('Runtime.enable',{},s);await c.send('Page.enable',{},s);
@@ -53,8 +56,9 @@ for(const installed of [false,true]){
     if(installed){
       // A separate port proves status without using a fixture or contacting any receiver.
       const response=await c.evaluate(s,`new Promise(resolve=>{const port=chrome.runtime.connectNative('com.pearplay.helper');port.onMessage.addListener(m=>{port.disconnect();resolve(m)});port.onDisconnect.addListener(()=>{void chrome.runtime.lastError;resolve({ok:false})});port.postMessage({v:1,id:'status_test',op:'status',args:{}})})`);
-      assert.equal(response.helperVersion,'0.2.3');assert.equal(response.state,'idle');assert.equal(response.ok,true);
+      assert.equal(response.helperVersion,expectedVersion);assert.equal(response.state,'idle');assert.equal(response.ok,true);
       const manifest=join(parent,folders[browser],'NativeMessagingHosts/com.pearplay.helper.json');assert.ok(existsSync(manifest));
+      assert.deepEqual(JSON.parse(readFileSync(manifest,'utf8')).allowed_origins,[`chrome-extension://${id}/`]);
       const removed=register('remove',parent);assert.equal(removed[browser],'removed');assert.equal(existsSync(manifest),false);
       const absent=await c.evaluate(s,`new Promise(resolve=>{const port=chrome.runtime.connectNative('com.pearplay.helper');port.onDisconnect.addListener(()=>resolve({missing:!!chrome.runtime.lastError}));port.onMessage.addListener(()=>{port.disconnect();resolve({missing:false})});port.postMessage({v:1,id:'after_remove',op:'hello',args:{}})})`);
       assert.equal(absent.missing,true);
@@ -66,7 +70,7 @@ for(const installed of [false,true]){
       writeFileSync(join(dir,`setup-${browser}-${installed?'connected':'missing'}.png`),Buffer.from(image.data,'base64'));
     }
     const errors=c.events.filter(e=>e.sessionId===s&&e.method==='Runtime.exceptionThrown');assert.equal(errors.length,0);
-    results.push({browser:c.version,variant:browser,installer:terminalBundle?'Mac terminal':'Linux/Mac package',installed,connection:state.kind,repairChecked:installed,uninstallChecked:installed,scope:'Real setup page and helper hello/status; no network discovery or playback'});
+    results.push({browser:c.version,variant:browser,productionIdentity:production,extensionId:id,installer:terminalBundle?'Mac terminal':'Linux/Mac package',installed,connection:state.kind,repairChecked:installed,uninstallChecked:installed,scope:'Real setup page and helper hello/status; no network discovery or playback'});
   }finally{await c.close();}
 }
 console.log(JSON.stringify(results,null,2));

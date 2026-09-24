@@ -45,12 +45,18 @@ for name, span in re.findall(r"`([\w./-]+\.(?:md|mjs|js|html|py|json)):(\d[\d,â€
 manifest = (root / "extension/manifest.json").read_bytes()
 baseline = subprocess.check_output(["git", "show", "6ce73e1:extension/manifest.json"], cwd=root)
 current, original = json.loads(manifest), json.loads(baseline)
-assert current["version"] == "0.2.4"
+assert current["version"] == "0.2.5"
 assert current["description"] == "Send compatible web videos from Linux to Apple TV with a local helper. Mac support is coming soon."
-# The approved platform-scope release changes version/copy, not permissions or identity.
+# The store public key pins the approved item; permission scope stays unchanged.
+import base64
+store_id = "eoadahoncjfpnennmkjifohclbafjkol"
+digest = hashlib.sha256(base64.b64decode(current["key"], validate=True)).hexdigest()[:32]
+assert "".join(chr(ord("a") + int(n, 16)) for n in digest) == store_id
+assert json.loads((root/"extension/releases.json").read_text())["extensionId"] == store_id
 original["version"] = current["version"]
 original["description"] = current["description"]
-assert current == original, "Manifest identity or permissions changed"
+original["key"] = current["key"]
+assert current == original, "Manifest fields or permissions changed"
 report["manifest_sha256"] = hashlib.sha256(manifest).hexdigest()
 
 for path in [root/"README.md", *root.glob("docs/*"), *root.glob("assets/**/*.html"), *root.glob("assets/**/*.svg")]:

@@ -1,7 +1,8 @@
 {
   "manifest_version": 3,
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAx5S6AhTjzLMCAjJ5vIZeksr3Ons1cs73Vj4aOJh/3Yqy1uwbiAqRRkyQxHWv5AgOyOHBarkjaH+2fPFhQtpiRVXQOvvjJJUX+LQ5i6BgTE23YnKM9Rph3vgCUEo49dK7Oa6eTpxyQGmQaZUwaMzY9H018ucJGJ+b1CJcGeNWe52z+UqY7sG3u5zTwPgH4PO7hMmf/2busvSP+WyTVYKvR29KQkKCMGV9+LSdLADkX3Bl2VcG78jzSdvj/bgUNykd0r5a+Zv8n7yszG4M46jscQA2sZvovJ5l4VdJ+SjZz2Ak7xUvUIKZSDb7I4Nirf6YDwHGJiS7lT3Q53xGCo6+HQIDAQAB",
   "name": "PearPlay",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "minimum_chrome_version": "106",
   "description": "Send compatible web videos from Linux to Apple TV with a local helper. Mac support is coming soon.",
   "permissions": ["activeTab", "scripting", "webRequest", "webNavigation", "nativeMessaging", "alarms", "storage"],

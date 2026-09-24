@@ -1,0 +1,47 @@
+{
+  "version": "0.2.5",
+  "store_id": "eoadahoncjfpnennmkjifohclbafjkol",
+  "development": false,
+  "guest": "Ubuntu 24.04.5 LTS x86_64",
+  "glibc": "2.39",
+  "chrome": "154.0.8037.57",
+  "package_sha256": "9d53f65b38724750f8f428ead0f7fe976cc4ec0253fea2c73da0459ef90b0b5f",
+  "system_package_install": "APT passed",
+  "graphical_helper_setup": "Chrome connected; production allowlist and executable path read back",
+  "onboarding": [
+    {
+      "browser": "Chrome/154.0.8037.57",
+      "variant": "chrome",
+      "productionIdentity": true,
+      "extensionId": "eoadahoncjfpnennmkjifohclbafjkol",
+      "installer": "Linux/Mac package",
+      "installed": false,
+      "connection": "missing",
+      "repairChecked": false,
+      "uninstallChecked": false,
+      "scope": "Real setup page and helper hello/status; no network discovery or playback"
+    },
+    {
+      "browser": "Chrome/154.0.8037.57",
+      "variant": "chrome",
+      "productionIdentity": true,
+      "extensionId": "eoadahoncjfpnennmkjifohclbafjkol",
+      "installer": "Linux/Mac package",
+      "installed": true,
+      "connection": "ready",
+      "repairChecked": true,
+      "uninstallChecked": true,
+      "scope": "Real setup page and helper hello/status; no network discovery or playback"
+    }
+  ],
+  "package_remove_reinstall": "passed; GUI registration unchanged",
+  "chrome_sandbox": "namespace + seccomp-BPF enabled; chrome://sandbox reports adequately sandboxed",
+  "not_verified": [
+    "same-LAN VM discovery",
+    "VM pairing and playback",
+    "GUI package-manager install",
+    "cross-version upgrade",
+    "Linux Brave/Chromium playback",
+    "public download or Web Store submission"
+  ]
+}

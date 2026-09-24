@@ -1,0 +1,95 @@
+{
+  "version": "0.2.5",
+  "platform": "Omarchy Arch x86_64",
+  "glibc_baseline": "2.44",
+  "package": "pearplay-helper-0.2.5-linux-x86_64.pkg.tar.zst",
+  "sha256": "aa2008cfb1107ff12a203f7d87fef80854d88618a741ca16026311fb8e24be93",
+  "production_id": "eoadahoncjfpnennmkjifohclbafjkol",
+  "upgrade": {
+    "version": "0.2.5-1",
+    "productionIdentity": "eoadahoncjfpnennmkjifohclbafjkol",
+    "registrationMigrated": true,
+    "pairingUnchanged": true,
+    "pairingMode": "0600",
+    "previousIdentity": "iojhjdcndgfoalcialdlgklfdnlpmobf",
+    "rollbackAvailable": true
+  },
+  "package_integrity": {
+    "files": 869,
+    "altered": 0
+  },
+  "installed_unprivileged_self_test": true,
+  "onboarding": [
+    {
+      "browser": "Chrome/153.0.8010.47",
+      "variant": "chrome",
+      "productionIdentity": true,
+      "extensionId": "eoadahoncjfpnennmkjifohclbafjkol",
+      "installer": "Linux/Mac package",
+      "installed": false,
+      "connection": "missing",
+      "repairChecked": false,
+      "uninstallChecked": false,
+      "scope": "Real setup page and helper hello/status; no network discovery or playback"
+    },
+    {
+      "browser": "Chrome/153.0.8010.47",
+      "variant": "chrome",
+      "productionIdentity": true,
+      "extensionId": "eoadahoncjfpnennmkjifohclbafjkol",
+      "installer": "Linux/Mac package",
+      "installed": true,
+      "connection": "ready",
+      "repairChecked": true,
+      "uninstallChecked": true,
+      "scope": "Real setup page and helper hello/status; no network discovery or playback"
+    }
+  ],
+  "discovery": {
+    "browser": "Chrome/153.0.8010.47",
+    "realSetupFind": true,
+    "rounds": [
+      {
+        "seconds": 5.32,
+        "appleTV": true,
+        "otherVideoReceiver": true,
+        "unverifiedLabel": true
+      },
+      {
+        "seconds": 5.03,
+        "appleTV": true,
+        "otherVideoReceiver": true,
+        "unverifiedLabel": true
+      },
+      {
+        "seconds": 5.1,
+        "appleTV": true,
+        "otherVideoReceiver": true,
+        "unverifiedLabel": true
+      }
+    ],
+    "productionIdentity": true,
+    "extensionId": "eoadahoncjfpnennmkjifohclbafjkol",
+    "installedBinary": "/opt/pearplay/PearPlayHelper/PearPlayHelper",
+    "paired": false,
+    "played": false
+  },
+  "tests": {
+    "python": 69,
+    "javascript": 38
+  },
+  "permissions_regression": {
+    "red_observed": true,
+    "fixed_staging_under_umask_077": true,
+    "archive_modes_verified": true,
+    "independent_review": "passed; no blocking security or logic findings"
+  },
+  "pairing_after_tests": "unchanged SHA256 and mode 0600; no contents exported",
+  "remaining_chrome_or_helper_processes": 0,
+  "limits": [
+    "No playback trial in this upgrade pass",
+    "Development-ID to production-ID registration migrated explicitly with exact ownership checks; not an automatic consumer migration",
+    "Package unsigned and not published",
+    "Extension unpacked, not installed from Web Store"
+  ]
+}

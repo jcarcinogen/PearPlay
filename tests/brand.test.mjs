@@ -32,7 +32,7 @@ test('current product pages consistently present Linux-only scope', () => {
 
 test('onboarding keeps the established manifest permissions and identity', () => {
   const m=JSON.parse(read('extension/manifest.json'));
-  assert.equal(m.version,'0.2.4');
+  assert.equal(m.version,'0.2.5');
   assert.deepEqual(m.permissions,['activeTab','scripting','webRequest','webNavigation','nativeMessaging','alarms','storage']);
   assert.deepEqual(m.optional_host_permissions,['http://*/*','https://*/*']);
 });

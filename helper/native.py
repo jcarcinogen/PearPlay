@@ -8,7 +8,7 @@ from pathlib import Path
 import re
 import struct
 
-VERSION = '0.2.3'
+VERSION = '0.2.5'
 
 async def native_stdio(output):
     import sys

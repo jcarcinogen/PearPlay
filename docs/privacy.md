@@ -2,7 +2,7 @@
 
 **Linux only. Mac support is coming soon.**
 
-Effective September 23, 2026. This policy describes PearPlay extension 0.2.4 and its separate Linux helper. PearPlay is a development preview; a public Chrome Web Store release and matching consumer helper downloads are not yet available.
+Effective September 24, 2026. This policy describes PearPlay extension 0.2.5 and its separate Linux helper 0.2.5. PearPlay is a development preview; the Linux helper 0.2.5 is published at https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5. A public Chrome Web Store release is not yet available.
 
 ## What PearPlay does with data
 

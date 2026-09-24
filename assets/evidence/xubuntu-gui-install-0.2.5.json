@@ -1,0 +1,47 @@
+{
+  "recorded_at": "2026-09-23T22:24:51.771562-07:00",
+  "scope": "Graphical installation from package-absent state on same disposable live session; dependencies and user registration/pairing already existed",
+  "desktop": "Xubuntu / XFCE, confirmed through loginctl and desktop process environment",
+  "desktop_default": "gdebi.desktop",
+  "association_correction": "Earlier engrampa.desktop result was from minimal SSH environment missing XDG_CURRENT_DESKTOP=XFCE and native XDG data/config directories. No default association was changed.",
+  "gdebi": {
+    "version": "0.9.5.8",
+    "already_present": true,
+    "provenance": "Existing image-build apt history lists gdebi and gdebi-core in its 2026-08-26 transaction; no agent installation of either",
+    "actual_file_manager_launch": true,
+    "reinstall_result": "Failed before package transaction; elevated GTK window reported no display connection",
+    "security_or_authentication_workaround": false
+  },
+  "app_center": {
+    "already_installed_snap_revision": "1390",
+    "actual_context_menu": "Thunar \u2192 Open With \u2192 App Center",
+    "fresh_package_open": "Same installed desktop entry launched with local file through GIO after removing the helper",
+    "pre_install_gui_button": "Install",
+    "third_party_warning": "Shown and explicitly confirmed; no warning or policy disabled",
+    "final_gui_button": "Installed",
+    "package_database": "install ok installed 0.2.5",
+    "installed_payload_integrity": "dpkg --verify pearplay-helper: exit 0, no differences",
+    "package_transaction": "Package removal and package-absent state were verified; subsequent dpkg log records install <none> 0.2.5 and status installed"
+  },
+  "preservation": {
+    "pairing_inode_size_mtime_mode_unchanged": true,
+    "registration_inode_size_mtime_mode_unchanged": true,
+    "credentials_contents_read": false
+  },
+  "post_install_browser": {
+    "fresh_chrome_process": true,
+    "connection": "ready",
+    "helper_version": "0.2.5",
+    "native_state": "idle",
+    "apple_tv_discovered": true,
+    "receiver_count_in_this_scan": 1,
+    "playback_repeated": false
+  },
+  "limits": [
+    "APT was used only to remove the prior test package for this follow-up; installation itself was driven through App Center buttons.",
+    "Existing dependencies were retained; this is not a pristine reboot/dependency-download test.",
+    "Live-session authentication succeeded without collecting a password; normal installed-system admin-password prompts were not exercised.",
+    "App Center still shows generic unknown-publisher/license and 0 B metadata; package metadata polish remains separate.",
+    "No default app, display security, polkit policy, sandbox, firewall or internal-drive configuration was changed."
+  ]
+}

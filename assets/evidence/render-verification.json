@@ -88,7 +88,7 @@
     {
       "file": "assets/evidence/landing.png",
       "width": 1440,
-      "height": 5028
+      "height": 4823
     },
     {
       "file": "assets/evidence/landing-first-screen.png",
@@ -103,12 +103,12 @@
     {
       "file": "assets/evidence/landing-mobile-light.png",
       "width": 390,
-      "height": 7579
+      "height": 7536
     },
     {
       "file": "assets/evidence/landing-mobile-dark.png",
       "width": 390,
-      "height": 7579
+      "height": 7536
     }
   ],
   "pages": [
@@ -438,6 +438,9 @@
         "https://github.com/jcarcinogen/PearPlay",
         "https://github.com/jcarcinogen/PearPlay/blob/main/STATUS.md",
         "https://github.com/jcarcinogen/PearPlay/blob/main/docs/claims.md",
+        "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.deb",
+        "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.pkg.tar.zst",
+        "https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5",
         "https://github.com/jcarcinogen/PearPlay/blob/main/docs/install.md",
         "https://github.com/jcarcinogen/PearPlay/blob/main/contract/v1.md",
         "https://github.com/jcarcinogen/PearPlay/tree/main/tests",
@@ -481,6 +484,9 @@
         "https://github.com/jcarcinogen/PearPlay",
         "https://github.com/jcarcinogen/PearPlay/blob/main/STATUS.md",
         "https://github.com/jcarcinogen/PearPlay/blob/main/docs/claims.md",
+        "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.deb",
+        "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.pkg.tar.zst",
+        "https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5",
         "https://github.com/jcarcinogen/PearPlay/blob/main/docs/install.md",
         "https://github.com/jcarcinogen/PearPlay/blob/main/contract/v1.md",
         "https://github.com/jcarcinogen/PearPlay/tree/main/tests",
@@ -526,8 +532,10 @@
         "#documentation",
         "https://x.com/scottito22",
         "https://ko-fi.com/scottangel",
+        "https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5",
         "assets/evidence/helper-onboarding-verification.md",
         "docs/helper-onboarding.md#release-gates",
+        "https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5",
         "docs/install.md",
         "docs/install.md",
         "docs/claims.md#privacy-audit",
@@ -576,6 +584,9 @@
         "https://github.com/jcarcinogen/PearPlay",
         "https://github.com/jcarcinogen/PearPlay/blob/main/STATUS.md",
         "https://github.com/jcarcinogen/PearPlay/blob/main/docs/claims.md",
+        "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.deb",
+        "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.pkg.tar.zst",
+        "https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5",
         "https://github.com/jcarcinogen/PearPlay/blob/main/docs/install.md",
         "https://github.com/jcarcinogen/PearPlay/blob/main/contract/v1.md",
         "https://github.com/jcarcinogen/PearPlay/tree/main/tests",
@@ -619,6 +630,9 @@
         "https://github.com/jcarcinogen/PearPlay",
         "https://github.com/jcarcinogen/PearPlay/blob/main/STATUS.md",
         "https://github.com/jcarcinogen/PearPlay/blob/main/docs/claims.md",
+        "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.deb",
+        "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.pkg.tar.zst",
+        "https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5",
         "https://github.com/jcarcinogen/PearPlay/blob/main/docs/install.md",
         "https://github.com/jcarcinogen/PearPlay/blob/main/contract/v1.md",
         "https://github.com/jcarcinogen/PearPlay/tree/main/tests",

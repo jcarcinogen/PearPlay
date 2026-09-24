@@ -1,0 +1,68 @@
+{
+  "recorded_at": "2026-09-23T21:47:36.973296-07:00",
+  "scope": "Same-LAN non-Omarchy live-USB integration; not a Web Store installation or release approval",
+  "platform": {
+    "flavor": "Xubuntu (user-reported), Xfce live desktop",
+    "observed_os": "Ubuntu 26.04.1 LTS",
+    "architecture": "x86_64",
+    "glibc": "2.43",
+    "root_filesystem": "overlay",
+    "chrome": "154.0.8037.57-1"
+  },
+  "artifacts": {
+    "helper": "pearplay-helper-0.2.5-linux-x86_64.deb",
+    "helper_sha256": "9d53f65b38724750f8f428ead0f7fe976cc4ec0253fea2c73da0459ef90b0b5f",
+    "build_baseline": "Ubuntu 24.04.5 / glibc 2.39",
+    "helper_version": "0.2.5",
+    "extension_version": "0.2.5",
+    "extension_id": "eoadahoncjfpnennmkjifohclbafjkol",
+    "extension_delivery": "production-key manifest loaded unpacked into isolated test Chrome",
+    "extension_zip_sha256": "c5556d1ae89e456b83b5aa921f035f2ff9b44293734632056a3c735edd952f7a"
+  },
+  "checks": {
+    "ssh_host_key_matched_user_supplied_fingerprint": true,
+    "key_only_ssh_verified_after_fixing_missing_config_include": true,
+    "chrome_sandbox_verified": true,
+    "missing_host_negative_control": true,
+    "apt_package_install": true,
+    "real_setup_gui_opened": true,
+    "gui_visible_and_chrome_checked_user_confirmed": true,
+    "gui_browser_registration_exact_production_id": true,
+    "hello_and_status_version": "0.2.5",
+    "actual_setup_page_lan_discovery": true,
+    "receivers_found": 2,
+    "apple_tv_discovered": true,
+    "other_airplay_video_receiver_discovered_compatibility_unverified": true,
+    "fresh_sender_pairing_file_absent_before_test": true,
+    "pin_box_shown_and_masked": true,
+    "user_completed_pin_pairing_in_extension": true,
+    "user_confirmed_moving_video_and_tv_audio": true,
+    "post_playback_protocol_readback": {
+      "state": "playing",
+      "evidence": "protocol",
+      "error": null,
+      "selected": "c2",
+      "candidateCount": 1
+    },
+    "saved_pairing_regular_owner_owned_single_link_mode": "0600",
+    "internal_nvme_drives_unmounted_before_and_after": true,
+    "firewall": "inactive on arrival; unchanged"
+  },
+  "playback_source": {
+    "description": "Public Mux Big Buck Bunny HLS sample in the official hls.js demo",
+    "fresh_first_playlist_matched_known_master": true,
+    "candidate_count": 1,
+    "selection_and_start": "Actual extension toolbar popup; not direct-native playback"
+  },
+  "boundaries": [
+    "No PIN or credential contents read or recorded.",
+    "Two native-window screenshot methods returned black; user confirmed visible GUI instead.",
+    "No installed drive mounted, no daily browser used, no receiver settings reset.",
+    "Chrome site access was pre-authorized through its extension settings API in this isolated profile, then activated using the real Allow all websites button.",
+    "Initial installation used APT. Follow-up graphical installation through the pre-existing App Center passed from package-absent state; see xubuntu-gui-install-0.2.5.json. The earlier archive-manager default claim was a minimal-SSH-environment error; native XFCE defaults to GDebi.",
+    "No saved-pairing restart or remove/reinstall playback claim for this live-session run. Prior VM/Acer evidence remains separate.",
+    "LG/other-TV playback, Brave/Chromium playback, cross-version upgrade, published assets and store submission remain outside this result."
+  ],
+  "left_running": "After approved test teardown and GUI reinstall: isolated Chrome reopened, helper connected and idle; no recast performed.",
+  "followup_gui_install_evidence": "xubuntu-gui-install-0.2.5.json"
+}

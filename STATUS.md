@@ -2,7 +2,43 @@
 
 **Current scope: Linux-only release target. Chrome and Brave are requested Linux targets. Mac support is coming soon. Mac tasks are paused and are NOT blockers for Linux release.**
 
-## Linux-only scope update — extension 0.2.4
+## Production identity, Ubuntu VM and Xubuntu live playback — 0.2.5 candidate
+
+The supplied Web Store public key derives exactly to **`eoadahoncjfpnennmkjifohclbafjkol`**. The manifest and release catalog now pin that identity, and production helper builds reject missing, malformed or mismatched public keys. The fixture key remains separate. Extension and helper versions are 0.2.5; Linux packages include the original project's MIT notice. These changes are not yet committed or published.
+
+A disposable **Ubuntu 24.04.5 LTS x86_64** VM now runs on Acer with QEMU/KVM, an Xfce desktop and real Google Chrome **154.0.8037.57**. KVM enabled status, graphical desktop control and Chrome namespace/seccomp sandbox were verified. Canonical source is mounted **read-only** at the same path through 9p; no second working checkout was created. Builds and test profiles remain guest-local.
+
+Built a production-ID-bound `.deb` on **glibc 2.39**, installed it with APT, opened the actual PearPlay Setup desktop entry, selected Chrome and verified the connected dialog plus exact production native-host allowlist. Real isolated Chrome passed missing-host → connected hello/status → repeat registration → removal/fresh missing-host. System package removal removed the payload; reinstall restored it and preserved the GUI-created registration. The project's MIT notice matched exactly. **68 Python tests and 38 extension/brand tests passed.** Evidence: `assets/evidence/ubuntu-0.2.5-installer.json`; package and full reports: `Stuff/PearPlay Installer Test/0.2.5/ubuntu/`.
+
+**Limits:** the VM uses QEMU user-mode NAT. Avahi returned no LAN receiver advertisements. No VM pairing or playback is claimed, no host firewall/bridge change was made, and Acer's existing browser/pairing were not used by this test. APT installation is not a double-click package-manager pass. The existing Acer 0.2.3 human-confirmed playback remains separate evidence. First-boot vendor-data formatting was corrected; after reboot cloud-init reports done with no errors or recoverable warnings.
+
+Independent read-only review found no blockers in production identity/key validation, fixture separation, MIT payload notice, version alignment or production browser-test mode. Parent verification remains 68 Python tests, 38 extension/brand tests, brand-asset checks and clean diff whitespace. See `assets/evidence/production-identity-0.2.5-review.json`; this source review is not transport or release approval.
+
+### Same-LAN live-USB result
+
+The Acer's Xubuntu live session reports **Ubuntu 26.04.1 LTS / glibc 2.43**, not the VM's 24.04 baseline. The exact Ubuntu-built production 0.2.5 `.deb` was installed with APT into the live overlay. Real headed Chrome 154.0.8037.57, with its sandbox verified and an isolated profile, passed missing-host → actual graphical Chrome registration → browser restart → connected helper 0.2.5. The native manifest authorizes only `eoadahoncjfpnennmkjifohclbafjkol`. The setup page found both Apple TV and the other AirPlay video receiver on the physical LAN.
+
+The actual extension toolbar popup collected a public Mux HLS sample, selected the Apple TV and initiated fresh pairing. Scott entered the TV PIN directly in PearPlay, paired, pressed Send to TV, and **confirmed moving video and audible TV sound**. Readback subsequently reported `playing` with `protocol` evidence and no error. Sender pairing was absent before the test; afterward its file was owner-owned, regular, single-link and mode 0600. No PIN or credential contents were read. Existing installed-system pairing was not used or reset.
+
+Both internal NVMe drives remained unmounted, and the firewall stayed inactive as it was on arrival. Native-window captures were black, so GUI visibility is human-confirmed rather than screenshot-proven. The live SSH configuration had omitted its drop-in Include; this was corrected and effective key-only authentication plus a fresh connection verified. Chrome/helper were left running after the successful cast. Evidence: `assets/evidence/xubuntu-live-0.2.5.json`; readable report: `Stuff/PearPlay Installer Test/0.2.5/xubuntu-live/RESULT.md`.
+
+**Graphical-install follow-up passed:** after Scott approved ending the test and removing the live-session helper, the pre-existing App Center installed the exact `.deb` from a verified package-absent state. Actual Thunar **Open With → App Center** was exercised; App Center's Install and third-party-warning confirmation buttons led to Installed. Package database/logs and `dpkg --verify` agreed. Pairing and browser-registration inode/size/mtime/mode were unchanged, and restarted Chrome connected to helper 0.2.5 and discovered the Apple TV. Chrome is now connected and idle; playback was not repeated after this installation.
+
+**Correction and limits:** the actual XFCE default is GDebi, not Engrampa; the earlier association query lacked the desktop's XDG environment. GDebi's elevated window failed before any package transaction with a GTK display-connection error; no authentication/display workaround was attempted. App Center required no additional installation or default change. Dependencies already existed, the normal installed-system password prompt was not exercised, and the extension remains unpacked rather than Store-installed. App Center's generic unknown-publisher/license and zero-size metadata can be polished separately. See `assets/evidence/xubuntu-gui-install-0.2.5.json` and the documented graphical route in `docs/install.md`.
+
+### Arch production upgrade — verified on Omarchy Acer
+
+Built the production-ID 0.2.5 x86_64 Arch package on glibc 2.44 and upgraded the installed 0.2.3-1 package with local sudo approval. The first artifact exposed an inherited-umask defect: root-owned `build.json` was 0600, although owner-run pre-install smoke passed. A regression test failed before the fix. Linux staging now normalizes directories/executables to 0755 and data to 0644, skipping symlinks and leaving source payloads untouched. The corrected artifact was rebuilt under umask 077; archive permissions, unprivileged installed self-test and `pacman -Qkk` passed (869 files, zero altered).
+
+Real isolated Chrome 153.0.8010.47 passed missing-host → connected helper 0.2.5 → repeat connect → removal → fresh missing-host. Three actual setup-page discovery scans found Apple TV and the other video receiver with its compatibility-unverified label. The old fixture-bound Chrome registration was explicitly migrated using exact-byte ownership checks to authorize only the production ID; this is a test migration, not an automatic consumer migration feature. Existing saved pairing remained byte-identical and mode 0600 before and after all checks. All test Chrome/helper processes closed; firewall and daily browser session were untouched. No playback trial was performed in this upgrade pass.
+
+**69 Python and 38 extension/brand tests pass.** Independent review of the permissions fix found no blocking security or logic issues. Corrected package SHA256: `aa2008cfb1107ff12a203f7d87fef80854d88618a741ca16026311fb8e24be93`. Evidence: `assets/evidence/arch-upgrade-0.2.5.json`; verified package/checksums/report: `Stuff/PearPlay Installer Test/0.2.5/arch/`. Private rollback/pairing backups remain Acer-local. The package is unsigned and unpublished; the extension was unpacked rather than Store-installed.
+
+Remaining: Linux Brave/Chromium playback before those claims, published download assets/catalog and final store ZIP, reconciled dashboard disclosures, and explicit submission approval. Do not create a second store listing. Mac support is coming soon; Mac work remains paused.
+
+## Historical Linux-only scope update — extension 0.2.4
+
+This checkpoint is superseded by the production-identity/Ubuntu evidence above; retain its earlier measurements without treating its pending gates as current facts.
 
 Mac compatibility work is paused, with no promised date. Extension popup/setup now stop on Mac before helper requests, site queries or download lookup. Legacy Mac download entries are filtered out. New Mac Terminal installs and non-Linux helper builds stop with the coming-soon message; receipt-guarded removal and historical internals remain available. No existing installed helper, runtime, TV pairing, firewall or daily browser configuration was changed.
 

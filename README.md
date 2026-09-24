@@ -31,7 +31,7 @@ PearPlay connects a browser extension to **PearPlay Helper**, a small applicatio
 - **Guided helper setup.** A first-run tab checks whether the helper is connected and explains installation, updates, and repair. Reopen it with **Helper setup** in the popup.
 - **One helper, multiple browsers.** The packaged helper can register with Chrome, Brave, and Chromium separately. Install the extension in each browser you want to use; pairing credentials are shared under the same operating-system user.
 
-The setup flow and helper packages are implemented, but **public installers and a Chrome Web Store listing are not available yet**. Current installation is from source. Browser registration support does not mean playback has been verified in every browser.
+**[Linux helper 0.2.5 preview downloads are available](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5).** The Chrome Web Store listing is not yet submitted or public; load the extension unpacked until then. Browser registration support does not mean playback has been verified in every browser.
 
 ## Compatibility
 
@@ -48,17 +48,17 @@ Connection checks are not playback tests. Development package extraction tests d
 
 ## Get started
 
-For the current source installation, you need **Linux**, **Chrome**, **Python 3.11 or newer**, **uv**, and an **Apple TV on the same local network**. Keep the source checkout and Python environment in place after setup.
+You need **Linux x86_64**, **Chrome**, and an **Apple TV on the same local network**. [Download the helper](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5): Ubuntu/Debian `.deb` (Ubuntu 24.04 baseline, glibc 2.39+) or Arch/Omarchy `.pkg.tar.zst` (glibc 2.44+). Python is bundled. No RPM or ARM packages are available. Packages are unsigned; use the trusted release, compare its checksums, and keep normal package-manager security enabled.
+
+Until the Web Store listing is available, get the extension source:
 
 ```sh
 git clone https://github.com/jcarcinogen/PearPlay.git
 cd PearPlay
-uv venv --python 3.11 "$HOME/.local/share/pearplay/venv"
-uv pip install --python "$HOME/.local/share/pearplay/venv/bin/python" -r requirements.txt
 ```
 
 1. Open `chrome://extensions`, enable **Developer mode**, and load the checkout’s `extension/` directory.
-2. Copy the extension’s actual ID and follow the [Linux helper registration instructions](docs/install.md). Source installation requires this separate registration step; opening the setup tab does not install the helper.
+2. Install the downloaded helper with your distribution’s package manager, then open **PearPlay Setup** and select Chrome. The extension’s pinned public key matches the production helper; no manual extension-ID command is needed. See the [graphical and terminal installation steps](docs/install.md).
 3. Fully quit and reopen Chrome. In the extension’s setup tab, select **Check connection**.
 4. Open a video page and use the PearPlay popup to send a compatible stream.
 
@@ -79,7 +79,7 @@ PearPlay does not automatically pause the browser video. One helper playback or 
 - **No TV pause/resume controls.** **End helper session** closes the helper connection; it does **not** confirm that TV playback stopped. Use the physical remote if playback continues.
 - **All-sites access is currently required for discovery.** The popup offers a per-site grant, but **Find videos** remains disabled without all-sites access.
 - **Compatibility is limited to recorded results.** A successful connection or “playing” status is not proof of picture and sound. Invalid/expired-stream handling and broader receiver lifecycle trials still need live verification.
-- **Not a consumer release yet.** Public Linux installers, production Web Store identity verification, and additional Linux browser/distribution testing remain open. Paused Mac work does not block the Linux release.
+- **Preview release.** Linux helper downloads are available, but the Chrome Web Store listing is not yet submitted or public. Only the documented x86_64 targets are offered; broader Linux browser/distribution testing remains open. Paused Mac work does not block Linux.
 
 ## Privacy
 

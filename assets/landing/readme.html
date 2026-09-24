@@ -21,7 +21,7 @@
 <li><strong>Guided helper setup.</strong> A first-run tab checks whether the helper is connected and explains installation, updates, and repair. Reopen it with <strong>Helper setup</strong> in the popup.</li>
 <li><strong>One helper, multiple browsers.</strong> The packaged helper can register with Chrome, Brave, and Chromium separately. Install the extension in each browser you want to use; pairing credentials are shared under the same operating-system user.</li>
 </ul>
-<p>The setup flow and helper packages are implemented, but <strong>public installers and a Chrome Web Store listing are not available yet</strong>. Current installation is from source. Browser registration support does not mean playback has been verified in every browser.</p>
+<p><strong><a href="https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5">Linux helper 0.2.5 preview downloads are available</a>.</strong> The Chrome Web Store listing is not yet submitted or public; load the extension unpacked until then. Browser registration support does not mean playback has been verified in every browser.</p>
 <h2>Compatibility</h2>
 <table>
 <thead>
@@ -52,15 +52,14 @@
 <p>Windows is not supported. Other Chromium-based browsers, browser beta/dev channels, and Snap/Flatpak browser packages are not supported installer targets.</p>
 <p>Connection checks are not playback tests. Development package extraction tests do not establish that consumer installation, upgrades, and removal work on every system. See the <a href="assets/evidence/helper-onboarding-verification.md">verification record</a> and <a href="docs/helper-onboarding.md#release-gates">remaining release requirements</a>.</p>
 <h2>Get started</h2>
-<p>For the current source installation, you need <strong>Linux</strong>, <strong>Chrome</strong>, <strong>Python 3.11 or newer</strong>, <strong>uv</strong>, and an <strong>Apple TV on the same local network</strong>. Keep the source checkout and Python environment in place after setup.</p>
+<p>You need <strong>Linux x86_64</strong>, <strong>Chrome</strong>, and an <strong>Apple TV on the same local network</strong>. <a href="https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5">Download the helper</a>: Ubuntu/Debian <code>.deb</code> (Ubuntu 24.04 baseline, glibc 2.39+) or Arch/Omarchy <code>.pkg.tar.zst</code> (glibc 2.44+). Python is bundled. No RPM or ARM packages are available. Packages are unsigned; use the trusted release, compare its checksums, and keep normal package-manager security enabled.</p>
+<p>Until the Web Store listing is available, get the extension source:</p>
 <pre><code class="language-sh">git clone https://github.com/jcarcinogen/PearPlay.git
 cd PearPlay
-uv venv --python 3.11 &quot;$HOME/.local/share/pearplay/venv&quot;
-uv pip install --python &quot;$HOME/.local/share/pearplay/venv/bin/python&quot; -r requirements.txt
 </code></pre>
 <ol>
 <li>Open <code>chrome://extensions</code>, enable <strong>Developer mode</strong>, and load the checkout’s <code>extension/</code> directory.</li>
-<li>Copy the extension’s actual ID and follow the <a href="docs/install.md">Linux helper registration instructions</a>. Source installation requires this separate registration step; opening the setup tab does not install the helper.</li>
+<li>Install the downloaded helper with your distribution’s package manager, then open <strong>PearPlay Setup</strong> and select Chrome. The extension’s pinned public key matches the production helper; no manual extension-ID command is needed. See the <a href="docs/install.md">graphical and terminal installation steps</a>.</li>
 <li>Fully quit and reopen Chrome. In the extension’s setup tab, select <strong>Check connection</strong>.</li>
 <li>Open a video page and use the PearPlay popup to send a compatible stream.</li>
 </ol>
@@ -79,7 +78,7 @@ uv pip install --python &quot;$HOME/.local/share/pearplay/venv/bin/python&quot; 
 <li><strong>No TV pause/resume controls.</strong> <strong>End helper session</strong> closes the helper connection; it does <strong>not</strong> confirm that TV playback stopped. Use the physical remote if playback continues.</li>
 <li><strong>All-sites access is currently required for discovery.</strong> The popup offers a per-site grant, but <strong>Find videos</strong> remains disabled without all-sites access.</li>
 <li><strong>Compatibility is limited to recorded results.</strong> A successful connection or “playing” status is not proof of picture and sound. Invalid/expired-stream handling and broader receiver lifecycle trials still need live verification.</li>
-<li><strong>Not a consumer release yet.</strong> Public Linux installers, production Web Store identity verification, and additional Linux browser/distribution testing remain open. Paused Mac work does not block the Linux release.</li>
+<li><strong>Preview release.</strong> Linux helper downloads are available, but the Chrome Web Store listing is not yet submitted or public. Only the documented x86_64 targets are offered; broader Linux browser/distribution testing remains open. Paused Mac work does not block Linux.</li>
 </ul>
 <h2>Privacy</h2>
 <p>The extension communicates with a helper on your computer; the website delivers media directly to the TV. Pairing credentials are stored locally with user-only file permissions. The extension does not save the pairing PIN, and signed stream URLs are not included in screenshots or application logs.</p>

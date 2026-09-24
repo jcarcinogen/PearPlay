@@ -1,4 +1,19 @@
 {
-  "extensionId": null,
-  "downloads": []
+  "extensionId": "eoadahoncjfpnennmkjifohclbafjkol",
+  "downloads": [
+    {
+      "os": "linux",
+      "arch": "x86-64",
+      "format": "deb",
+      "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.deb",
+      "sha256": "9d53f65b38724750f8f428ead0f7fe976cc4ec0253fea2c73da0459ef90b0b5f"
+    },
+    {
+      "os": "linux",
+      "arch": "x86-64",
+      "format": "pkg.tar.zst",
+      "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.pkg.tar.zst",
+      "sha256": "aa2008cfb1107ff12a203f7d87fef80854d88618a741ca16026311fb8e24be93"
+    }
+  ]
 }

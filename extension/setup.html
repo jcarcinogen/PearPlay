@@ -9,7 +9,7 @@
 <p><strong>Linux only. Mac support is coming soon.</strong></p>
 <p>On Linux, install the free PearPlay Helper so your browser can connect to Apple TVs on your network. No account. No cloud relay.</p>
 <section id="installSection"><h2>1. Install the helper once</h2><p id="availability"></p><div id="downloads"></div>
-<ol id="linux" hidden><li>Choose the package for your distribution: Ubuntu/Debian, Fedora, or Arch/Omarchy.</li><li>Install with your software installer, then open <strong>PearPlay Setup</strong> from your app launcher.</li><li>Select the browsers you want to connect. If your desktop has no graphical package installer, use the developer guide.</li></ol>
+<ol id="linux" hidden><li>Choose your x86_64 package: Ubuntu/Debian (Ubuntu 24.04+ baseline, glibc 2.39+) or Arch/Omarchy (glibc 2.44+). Fedora and ARM packages are not available.</li><li>Install with your software installer, then open <strong>PearPlay Setup</strong> from your app launcher. On Arch without a graphical installer, open a terminal in your download folder and run <code>sudo pacman -U ./pearplay-helper-0.2.5-linux-x86_64.pkg.tar.zst</code>.</li><li>Select Chrome, then fully quit and reopen it. The package includes Python and the correct extension connection; no extension ID command is needed.</li></ol>
 <p class="muted">The Linux package provides browser connections to one helper. Chrome is the verified playback baseline; Brave and Chromium need separate end-to-end verification. Install PearPlay in each browser you use; website permissions are separate.</p>
 <div id="development" hidden>
 <h3>Development install — Linux Chrome</h3>

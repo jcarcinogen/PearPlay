@@ -2,17 +2,52 @@
 
 **Linux only. Mac support is coming soon.** No Mac installation is offered while compatibility work is paused.
 
-## Guided setup — development preview
+## Guided setup — Linux helper 0.2.5 preview
 
 The extension opens a setup tab on first installation. Use **Helper setup** in the popup to reopen it. A successful check is a local helper handshake, not TV playback. Choose **Find my TV** only when you want network discovery.
 
 The Linux package supplies Python and dependencies. Open **PearPlay Setup**, select your browser, fully quit/reopen it, then choose **Check connection**. Later launches offer repair and disconnection. Website permissions remain separate.
 
-**Public installers are not published yet.** The setup page offers no download until a verified asset matches Linux, architecture and extension identity. The Arch/Omarchy x86_64 development package is for rehearsal, not every Linux distribution. See [build instructions and release gates](helper-onboarding.md).
+Download from the **[0.2.5 helper release](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5)**:
+
+- [Ubuntu/Debian x86_64 `.deb`](https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.deb): Ubuntu 24.04 baseline, glibc 2.39+.
+- [Arch/Omarchy x86_64 package](https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.pkg.tar.zst): glibc 2.44+.
+
+No Fedora/RPM or ARM package is offered. Packages are unsigned: use the trusted GitHub release, compare its `SHA256SUMS.txt`, and use normal package-manager authentication without disabling security. Checksums detect mismatched bytes; they are not a signing certificate.
+
+The Chrome Web Store listing is **not yet submitted or public**. Until then, get this repository and load its `extension/` directory using Chrome’s **Load unpacked**. The pinned public key supplies the matching production identity. The packaged helper requires no Python setup or manual extension-ID command.
 
 End casting and quit browsers before updating the package. Chrome Web Store updates do not update the helper. Disconnect browsers before package removal; saved TV pairing is preserved. Modified or unknown registrations are never overwritten or deleted. Remove a legacy source registration using its original installer before switching helper types.
 
 Chrome is the Linux playback baseline. Brave and Chromium registration exist, but playback needs separate verification. Snap/Flatpak browsers, beta/dev channels and custom layouts are not supported installer targets.
+
+## Graphical `.deb` installation — verified Xubuntu route
+
+For the published `.deb`, the tested Xubuntu route is:
+
+1. In the file manager, right-click the downloaded PearPlay `.deb` and choose **Open With → App Center**.
+2. Choose **Install**. Read the third-party-package warning and proceed only with a package you obtained from the trusted PearPlay release. Approve the normal administrator prompt if your system requires one; no security setting needs to be disabled.
+3. Wait for **Installed**, then open **PearPlay Setup** from the applications menu, select Chrome, and fully quit/reopen Chrome before **Check connection**.
+
+This route passed on the Xubuntu 26.04.1 live desktop using its already-installed App Center. No additional package manager or changed default association was needed. GDebi was the desktop's default, but its elevated window failed in that live session; use the tested App Center route instead. Other Debian/Ubuntu desktops may offer a different graphical installer. If no package installer is available, follow that distribution's package-install instructions rather than extracting the `.deb` as an archive. This is not a universal no-terminal Linux-install claim.
+
+### Terminal alternatives
+
+Ubuntu/Debian, after downloading the matching package:
+
+```sh
+cd ~/Downloads
+sudo apt install ./pearplay-helper-0.2.5-linux-x86_64.deb
+```
+
+Arch/Omarchy without a graphical package installer:
+
+```sh
+cd ~/Downloads
+sudo pacman -U ./pearplay-helper-0.2.5-linux-x86_64.pkg.tar.zst
+```
+
+If your browser saved elsewhere, open a terminal in that folder instead. Then open **PearPlay Setup**, select Chrome, and fully quit/reopen Chrome. To remove the packaged helper, first use PearPlay Setup to disconnect browsers, then remove `pearplay-helper` with your normal package manager. Saved TV pairing remains.
 
 ## Source installation — Linux developer fallback
 

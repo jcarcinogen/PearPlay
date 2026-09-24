@@ -11,6 +11,23 @@ test('malformed receiver entries fail closed without throwing out of the message
   } finally {n.fail('INVALID_RESPONSE');await rejected;}
  }
 });
+test('video receiver kinds render static compatibility labels instead of trusting names',async()=>{
+ const {Native}=await import('../../extension/native.mjs');const p=fakePort();const n=new Native(()=>p);
+ const pending=n.request('discover');
+ p.onMessage.emit({v:1,id:p.sent[0].id,ok:true,state:'idle',evidence:'none',capabilities:['discover'],receivers:[
+ {identifier:'a',address:'192.0.2.10',kind:'apple-tv',label:'SECRET'},
+ {identifier:'b',address:'192.0.2.20',kind:'airplay-video',label:'https://secret.test'}]});
+ const result=await pending;
+ assert.match(result.receivers[0].label,/Apple TV/);
+ assert.match(result.receivers[1].label,/compatibility unverified/);
+ assert.doesNotMatch(JSON.stringify(result),/SECRET|secret.test/);
+});
+test('discovery gets a separate deadline longer than ordinary requests',async()=>{
+ const {Native}=await import('../../extension/native.mjs');const p=fakePort();const n=new Native(()=>p,{timeout:5,discoveryTimeout:100});
+ const pending=n.request('discover');
+ setTimeout(()=>p.onMessage.emit({v:1,id:p.sent[0].id,ok:true,state:'idle',evidence:'none',capabilities:['discover'],receivers:[]}),20);
+ assert.equal((await pending).state,'idle');
+});
 function signal(){const listeners=[];return {addListener:f=>listeners.push(f),emit:v=>listeners.forEach(f=>f(v))};}
 export function fakePort(){return {onMessage:signal(),onDisconnect:signal(),sent:[],postMessage(m){this.sent.push(m);},disconnect(){this.onDisconnect.emit();}};}
 test('late replies cannot roll newer native state back; helper failures and invalid frames fail closed',async()=>{

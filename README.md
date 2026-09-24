@@ -6,7 +6,9 @@
 
 Send a compatible video stream from your browser directly to your Apple TV—without screen mirroring, re-encoding, or a cloud relay.
 
-**Development preview · Linux and macOS · Separate local helper required**
+**Development preview · Linux only · Separate local helper required**
+
+**Mac support is coming soon.**
 
 [Get started](#get-started) · [Compatibility](#compatibility) · [Limitations](#limitations) · [Documentation](#documentation)
 
@@ -36,9 +38,9 @@ The setup flow and helper packages are implemented, but **public installers and 
 | Platform and browser | What has been verified |
 | --- | --- |
 | **Linux + Chrome** | Video and audio through the extension on a tested FOX live stream, including a pre-roll-to-program transition. Pairing, reconnect, and recasting have also been observed. |
-| **macOS + Chrome** | Connection and status checks using an extracted development helper package, plus browser-registration removal. **TV playback remains unverified.** |
+| **Mac** | **Mac support is coming soon.** Compatibility work is paused; not currently available. |
 | **Linux + Chromium** | Connection and status checks using an extracted development helper package, plus browser-registration removal. **TV playback remains unverified.** |
-| **Brave on Linux or macOS** | Registration support is implemented. **End-to-end integration and playback remain unverified.** |
+| **Linux + Brave** | Registration support is implemented. **End-to-end integration and playback remain unverified.** |
 
 Windows is not supported. Other Chromium-based browsers, browser beta/dev channels, and Snap/Flatpak browser packages are not supported installer targets.
 
@@ -46,7 +48,7 @@ Connection checks are not playback tests. Development package extraction tests d
 
 ## Get started
 
-For the current source installation, you need **Chrome**, **Python 3.11 or newer**, **uv**, and an **Apple TV on the same local network**. Keep the source checkout and Python environment in place after setup.
+For the current source installation, you need **Linux**, **Chrome**, **Python 3.11 or newer**, **uv**, and an **Apple TV on the same local network**. Keep the source checkout and Python environment in place after setup.
 
 ```sh
 git clone https://github.com/jcarcinogen/PearPlay.git
@@ -56,11 +58,11 @@ uv pip install --python "$HOME/.local/share/pearplay/venv/bin/python" -r require
 ```
 
 1. Open `chrome://extensions`, enable **Developer mode**, and load the checkout’s `extension/` directory.
-2. Copy the extension’s actual ID and follow the [Linux/macOS helper registration instructions](docs/install.md). Source installation requires this separate registration step; opening the setup tab does not install the helper.
+2. Copy the extension’s actual ID and follow the [Linux helper registration instructions](docs/install.md). Source installation requires this separate registration step; opening the setup tab does not install the helper.
 3. Fully quit and reopen Chrome. In the extension’s setup tab, select **Check connection**.
 4. Open a video page and use the PearPlay popup to send a compatible stream.
 
-The [installation guide](docs/install.md) covers browser registration, network permissions, troubleshooting, and removal. Linux may require a receiver-scoped firewall rule for AirPlay timing; do not disable your firewall. On macOS, allow the helper runtime’s Local Network access when requested. macOS remains experimental until TV playback is verified.
+The [installation guide](docs/install.md) covers browser registration, network permissions, troubleshooting, and removal. Linux may require a receiver-scoped firewall rule for AirPlay timing; do not disable your firewall. Mac support is coming soon.
 
 ## Send a video
 
@@ -77,7 +79,7 @@ PearPlay does not automatically pause the browser video. One helper playback or 
 - **No TV pause/resume controls.** **End helper session** closes the helper connection; it does **not** confirm that TV playback stopped. Use the physical remote if playback continues.
 - **All-sites access is currently required for discovery.** The popup offers a per-site grant, but **Find videos** remains disabled without all-sites access.
 - **Compatibility is limited to recorded results.** A successful connection or “playing” status is not proof of picture and sound. Invalid/expired-stream handling and broader receiver lifecycle trials still need live verification.
-- **Not a consumer release yet.** Public installers, macOS signing/notarization, the permanent Web Store ID, and additional browser/distribution testing remain open.
+- **Not a consumer release yet.** Public Linux installers, production Web Store identity verification, and additional Linux browser/distribution testing remain open. Paused Mac work does not block the Linux release.
 
 ## Privacy
 
@@ -94,11 +96,11 @@ The optional X Money and Ko-fi links open external support pages only when selec
 - [Control protocol and trust boundaries](contract/v1.md)
 - [Helper implementation](helper/README.md) · [Tests](tests/)
 - [Playback evidence and claim audit](docs/claims.md) · [Package/browser verification](assets/evidence/helper-onboarding-verification.md)
-- [Landing page HTML](docs/index.html) — built, but not yet published as a website
+- [Website](https://jcarcinogen.github.io/PearPlay/) · [Privacy policy](https://jcarcinogen.github.io/PearPlay/privacy.html)
 - [Brand assets and reproducible rendering](assets/brand/README.md)
 
 ## License and affiliation
 
-No project-wide license has been selected yet. The experimental command adapter retains its [own license and provenance](spikes/002-command/LICENSE.md); that does not license the rest of the repository.
+PearPlay’s original code is available under the [MIT License](LICENSE). The experimental command adapter retains its [own license and provenance](spikes/002-command/LICENSE.md); third-party notices and dependency licenses still apply.
 
 PearPlay is independent and unaffiliated with Apple. The working name has not been trademark-cleared.

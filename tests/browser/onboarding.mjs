@@ -7,22 +7,34 @@ import {setTimeout as delay} from 'node:timers/promises';
 import {chromeSession} from '../../scripts/chrome-session.mjs';
 
 const binary=process.env.PEARPLAY_BINARY;
-assert.ok(binary&&existsSync(binary),'Set PEARPLAY_BINARY to the packaged helper executable');
+const terminalBundle=process.env.PEARPLAY_TERMINAL_BUNDLE;
+assert.ok(terminalBundle?existsSync(join(terminalBundle,'install-macos.sh')):binary&&existsSync(binary),'Set PEARPLAY_BINARY or PEARPLAY_TERMINAL_BUNDLE');
 const browser=process.env.PEARPLAY_BROWSER??'chrome';
 const folders=process.platform==='darwin'?{chrome:'Google/Chrome',brave:'BraveSoftware/Brave-Browser',chromium:'Chromium'}:{chrome:'google-chrome',brave:'BraveSoftware/Brave-Browser',chromium:'chromium'};
 assert.ok(folders[browser]);
 const fixture=JSON.parse(readFileSync(new URL('./fixture-key.json',import.meta.url),'utf8'));
 const id=fixture.id; // Public test key only. Never authorize this ID in a production helper.
 const results=[];
+function register(action,parent){
+  if(!terminalBundle)return JSON.parse(execFileSync(binary,[action,'--browsers',browser,'--config-parent',parent],{encoding:'utf8'}));
+  assert.equal(process.platform,'darwin');assert.equal(browser,'chrome');
+  const output=execFileSync('/bin/bash',[join(terminalBundle,'install-macos.sh'),action==='connect'?'install':'remove','--config-parent',parent,'--data-home',join(parent,'runtime')],{encoding:'utf8'});
+  const result=JSON.parse(output.split('\n').find(line=>line.startsWith('{')));
+  assert.equal(result.ok,true);
+  return {chrome:result.action};
+}
 for(const installed of [false,true]){
   let parent;
-  const c=await chromeSession({isolateHome:true,profileDirectory:folders[browser],prepare:root=>{
+  // macOS fake HOME can trigger a visible missing-Keychain dialog. The public
+  // fixture ID prevents daily registrations from authorizing this test extension.
+  const c=await chromeSession({isolateHome:process.platform!=='darwin',profileDirectory:folders[browser],prepare:root=>{
     parent=root;
     // Disposable build artifact, not a second working checkout; isolates us from daily native-host allowlists.
     cpSync(resolve('extension'),join(root,'extension'),{recursive:true});
     const manifest=JSON.parse(readFileSync(join(root,'extension/manifest.json'),'utf8'));
     manifest.key=fixture.key;writeFileSync(join(root,'extension/manifest.json'),JSON.stringify(manifest));
-    if(installed){const result=JSON.parse(execFileSync(binary,['connect','--browsers',browser,'--config-parent',root],{encoding:'utf8'}));assert.equal(result[browser],'connected');}
+    writeFileSync(join(root,'extension/releases.json'),JSON.stringify({extensionId:id,localInstallerTest:true,downloads:[]}));
+    if(installed){assert.equal(register('connect',root)[browser],'connected');assert.equal(register('connect',root)[browser],'connected');}
   }});
   try{
     const extension=await c.send('Extensions.loadUnpacked',{path:join(parent,'extension')});
@@ -41,9 +53,9 @@ for(const installed of [false,true]){
     if(installed){
       // A separate port proves status without using a fixture or contacting any receiver.
       const response=await c.evaluate(s,`new Promise(resolve=>{const port=chrome.runtime.connectNative('com.pearplay.helper');port.onMessage.addListener(m=>{port.disconnect();resolve(m)});port.onDisconnect.addListener(()=>{void chrome.runtime.lastError;resolve({ok:false})});port.postMessage({v:1,id:'status_test',op:'status',args:{}})})`);
-      assert.equal(response.helperVersion,'0.2.0');assert.equal(response.state,'idle');assert.equal(response.ok,true);
+      assert.equal(response.helperVersion,'0.2.3');assert.equal(response.state,'idle');assert.equal(response.ok,true);
       const manifest=join(parent,folders[browser],'NativeMessagingHosts/com.pearplay.helper.json');assert.ok(existsSync(manifest));
-      const removed=JSON.parse(execFileSync(binary,['remove','--browsers',browser,'--config-parent',parent],{encoding:'utf8'}));assert.equal(removed[browser],'removed');assert.equal(existsSync(manifest),false);
+      const removed=register('remove',parent);assert.equal(removed[browser],'removed');assert.equal(existsSync(manifest),false);
       const absent=await c.evaluate(s,`new Promise(resolve=>{const port=chrome.runtime.connectNative('com.pearplay.helper');port.onDisconnect.addListener(()=>resolve({missing:!!chrome.runtime.lastError}));port.onMessage.addListener(()=>{port.disconnect();resolve({missing:false})});port.postMessage({v:1,id:'after_remove',op:'hello',args:{}})})`);
       assert.equal(absent.missing,true);
     }
@@ -54,7 +66,7 @@ for(const installed of [false,true]){
       writeFileSync(join(dir,`setup-${browser}-${installed?'connected':'missing'}.png`),Buffer.from(image.data,'base64'));
     }
     const errors=c.events.filter(e=>e.sessionId===s&&e.method==='Runtime.exceptionThrown');assert.equal(errors.length,0);
-    results.push({browser:c.version,variant:browser,installed,connection:state.kind,uninstallChecked:installed,scope:'Real setup page and packaged hello/status; no network discovery or playback'});
+    results.push({browser:c.version,variant:browser,installer:terminalBundle?'Mac terminal':'Linux/Mac package',installed,connection:state.kind,repairChecked:installed,uninstallChecked:installed,scope:'Real setup page and helper hello/status; no network discovery or playback'});
   }finally{await c.close();}
 }
 console.log(JSON.stringify(results,null,2));

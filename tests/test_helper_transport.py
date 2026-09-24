@@ -5,6 +5,8 @@ from types import SimpleNamespace
 import unittest
 from test_helper_protocol import load
 
+async def no_mdns(): return []
+
 class TransportTests(unittest.IsolatedAsyncioTestCase):
     async def test_real_command_session_discovery_identity_and_cleanup(self):
         m=load(); command=m.spike(); calls=[]; notices=[]
@@ -21,16 +23,16 @@ class TransportTests(unittest.IsolatedAsyncioTestCase):
                 return {}
             async def events(self,port,callback): self.callback=callback
             def close(self): self.closed=True
-        device=SimpleNamespace(identifier='AA:BB:CC:DD:EE:FF', address='127.0.0.1', name='SECRET',get_service=lambda p:SimpleNamespace(port=7000))
+        device=SimpleNamespace(identifier='AA:BB:CC:DD:EE:FF', address='127.0.0.1', name='SECRET',get_service=lambda p:SimpleNamespace(port=7000, properties={'model':'AppleTV14,1'}))
         async def scan(*a,**kw): return [device]
         async def connect(*a): return SimpleNamespace(close=lambda:None)
         api=SimpleNamespace(scan=scan,Protocol=SimpleNamespace(AirPlay=1))
         with tempfile.TemporaryDirectory() as directory:
             store=command.existing().Store(); store.root=Path(directory).resolve()/'state'
             store.save({'identifier':device.identifier,'credentials':'fake'})
-            transport=m.Transport(api=api, command=command, store=store, connect=connect, parse=lambda c:c, backend=Wire, timeout=.1)
+            transport=m.Transport(api=api, command=command, store=store, connect=connect, parse=lambda c:c, backend=Wire, timeout=.1, mdns=no_mdns)
             receivers=await transport.discover(None)
-            self.assertEqual(receivers,[{'identifier':device.identifier,'address':'127.0.0.1','label':'Apple TV'}])
+            self.assertEqual(receivers,[{'identifier':device.identifier,'address':'127.0.0.1','label':'Apple TV','kind':'apple-tv'}])
             await transport.run(dict(receiver=device.identifier,host='127.0.0.1',url='https://EXAMPLE.org/a%2fb?SECRET'),lambda *x:notices.append(x))
             self.assertIn(('playing','protocol'),notices)
             self.assertTrue(transport.wire.closed)
@@ -43,7 +45,7 @@ class TransportTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_empty_discover_uses_mdns_hosts_when_multicast_scan_is_empty(self):
         m=load(); command=m.spike()
-        device=SimpleNamespace(identifier='AA:BB:CC:DD:EE:FF', address='10.0.0.8', name='SECRET',get_service=lambda p:SimpleNamespace(port=7000))
+        device=SimpleNamespace(identifier='AA:BB:CC:DD:EE:FF', address='10.0.0.8', name='SECRET',get_service=lambda p:SimpleNamespace(port=7000, properties={'model':'AppleTV14,1'}))
         scanned=[]
         async def scan(*a,**kw):
             hosts=kw.get('hosts')
@@ -54,7 +56,7 @@ class TransportTests(unittest.IsolatedAsyncioTestCase):
         transport=m.Transport(api=api, command=command, mdns=mdns, connect=lambda *a: None, parse=lambda c:c, timeout=.1)
         receivers=await transport.discover(None)
         self.assertEqual(scanned,[None,['10.0.0.8']])
-        self.assertEqual(receivers,[{'identifier':device.identifier,'address':'10.0.0.8','label':'Apple TV'}])
+        self.assertEqual(receivers,[{'identifier':device.identifier,'address':'10.0.0.8','label':'Apple TV','kind':'apple-tv'}])
 
     async def test_discover_keeps_classified_apple_tv_and_drops_unknown(self):
         m=load(); command=m.spike()
@@ -63,7 +65,7 @@ class TransportTests(unittest.IsolatedAsyncioTestCase):
         async def scan(*a, **kw):
             return [apple, other]
         api=SimpleNamespace(scan=scan, Protocol=SimpleNamespace(AirPlay=1))
-        transport=m.Transport(api=api, command=command, connect=lambda *a: None, parse=lambda c:c, timeout=.1)
+        transport=m.Transport(api=api, command=command, connect=lambda *a: None, parse=lambda c:c, timeout=.1, mdns=no_mdns)
         receivers=await transport.discover(None)
         self.assertEqual([item['address'] for item in receivers], ['192.0.2.10'])
 
@@ -80,7 +82,7 @@ class TransportTests(unittest.IsolatedAsyncioTestCase):
     async def test_avahi_absent_falls_back_to_dns_sd_apple_tv_ipv4_only(self):
         import unittest.mock
         m=load(); command=m.spike()
-        device=SimpleNamespace(identifier='AA:BB:CC:DD:EE:FF', address='192.0.2.10', name='SECRET', get_service=lambda p: SimpleNamespace(port=7000))
+        device=SimpleNamespace(identifier='AA:BB:CC:DD:EE:FF', address='192.0.2.10', name='SECRET', get_service=lambda p: SimpleNamespace(port=7000, properties={'model':'AppleTV14,1'}))
         scanned=[]
         async def scan(*a, **kw):
             hosts=kw.get('hosts')
@@ -119,7 +121,7 @@ class TransportTests(unittest.IsolatedAsyncioTestCase):
         transport=m.Transport(api=api, command=command, connect=lambda *a: None, parse=lambda c:c, timeout=.1)
         with unittest.mock.patch('asyncio.create_subprocess_exec', fake_exec):
             receivers=await transport.discover(None)
-        self.assertEqual(receivers,[{'identifier':device.identifier,'address':'192.0.2.10','label':'Apple TV'}])
+        self.assertEqual(receivers,[{'identifier':device.identifier,'address':'192.0.2.10','label':'Apple TV','kind':'apple-tv'}])
         self.assertEqual(scanned,[None,['192.0.2.10']])
         self.assertTrue(any(c[0]=='avahi-browse' for c in calls))
         self.assertEqual([c[2] for c in calls if c[:2]==('dns-sd','-L')],['Living Room','Speaker'])

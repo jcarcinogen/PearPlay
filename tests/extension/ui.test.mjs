@@ -43,12 +43,12 @@ test('MV3 popup requests optional access on clicks, never renders URLs, explicit
   const html = await read(manifest.action.default_popup);
   assert.match(html, /popup.js/);
   assert.match(html, /Find videos/);
-  assert.match(html, /Find Apple TVs/);
-  assert.match(html, /Send to Apple TV/);
+  assert.match(html, /Find TVs/);
+  assert.match(html, /Send to TV/);
   assert.match(html, /Choose a video/);
-  assert.match(html, /Choose an Apple TV/);
+  assert.match(html, /Choose an AirPlay TV/);
   assert.match(html, /Connect helper/);
-  assert.match(html, /cannot find your Apple TV/i);
+  assert.match(html, /cannot find your TV/i);
   assert.match(html, /id="banner"/);
   assert.match(html, /id="tvStatus"/);
   assert.ok(html.indexOf('id="discover"') < html.indexOf('id="tvStatus"') && html.indexOf('id="tvStatus"') < html.indexOf('id="hostDetails"'));
@@ -66,7 +66,7 @@ test('MV3 popup requests optional access on clicks, never renders URLs, explicit
   const chrome = {
     tabs: { query: async () => [{ id: 1, url: 'https://site.test/path?secret=x' }], reload: async () => actions.push('reload') },
     permissions: { request: async opts => { requests++; actions.push(opts); return true; } },
-    runtime: { sendMessage: async m => { actions.push(m); if (m.op === 'view') return { enabled: true, candidates: [{ id: 'c1', label: 'Candidate c1' }], native: { state: 'idle', evidence: 'none', receivers: [], capabilities: [] } }; return { scanned: 1, total: 2 }; } }
+    runtime: { getPlatformInfo: async () => ({os: 'linux'}), sendMessage: async m => { actions.push(m); if (m.op === 'view') return { enabled: true, candidates: [{ id: 'c1', label: 'Candidate c1' }], native: { state: 'idle', evidence: 'none', receivers: [], capabilities: [] } }; return { scanned: 1, total: 2 }; } }
   };
   await vm.runInNewContext(await read('popup.js'), { document, chrome, URL, setInterval() { }, clearInterval() { } });
   await new Promise(r => setImmediate(r));

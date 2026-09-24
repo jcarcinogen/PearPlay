@@ -1,5 +1,15 @@
 (async () => {
   const $ = id => document.getElementById(id);
+  const platform = await chrome.runtime.getPlatformInfo();
+  if (platform.os !== 'linux') {
+    $('casting').hidden = true;
+    $('platformNotice').textContent = platform.os === 'mac' ? 'Linux only. Mac support is coming soon.' : 'PearPlay currently supports Linux only. Mac support is coming soon.';
+    $('phase').textContent = 'Not available on this computer';
+    $('phase').dataset.state = 'unsupported';
+    $('helperSetup').textContent = 'Compatibility information';
+    $('helperSetup').onclick = () => chrome.tabs.create({url: chrome.runtime.getURL('setup.html')});
+    return;
+  }
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   const memory = chrome.storage?.session;
   const notice = text => {
@@ -8,10 +18,11 @@
   };
   const explain = error => {
     const code = error?.message;
-    if (code === 'NATIVE_DISCONNECTED' || code === 'NATIVE_TIMEOUT') return 'This browser cannot connect to PearPlay Helper. Click Finish setup to install it or connect this browser.';
+    if (code === 'NATIVE_DISCONNECTED' || code === 'NATIVE_TIMEOUT') return 'This browser cannot connect to PearPlay Helper. Click Finish setup for installation and browser connection instructions.';
+    if (code === 'discovery_failed') return 'The network search could not finish. Check that your TV is awake, AirPlay is enabled, and both devices are on the same network; then try Find TVs again.';
     if (code === 'busy') return 'PearPlay is busy in another browser or pairing window. End that helper session there, then try again.';
-    if (code === 'pairing_required') return 'Look at the Apple TV. Type the 4 digits it shows in step 4. They stay hidden.';
-    if (code === 'ACTION_FAILED') return 'Connect the helper first if it still says not connected. Then choose the video and an Apple TV.';
+    if (code === 'pairing_required') return 'Look at the TV. Type the 4 digits it shows in step 4. They stay hidden.';
+    if (code === 'ACTION_FAILED') return 'Connect the helper first if it still says not connected. Then choose the video and an AirPlay TV.';
     return 'Connect the helper, find videos, find Apple TVs, then send.';
   };
   const send = async (op, args = {}) => {
@@ -36,9 +47,9 @@
   };
   const tvStatus = native => {
     if (native.error === 'busy') return 'PearPlay is busy in another browser or pairing window. End that helper session there before trying again.';
-    if (native.error === 'NATIVE_DISCONNECTED') return 'Helper not connected. Click Finish setup to install it or connect this browser.';
-    if (!native.receivers?.length) return 'No Apple TVs yet. Click Find Apple TVs.';
-    return ({ idle: 'Helper connected. Choose your Apple TV.', connecting: 'Connecting to your Apple TV…', playing: 'Helper reports playing (look at the TV to confirm).', stopped: 'Helper session ended. Check the TV.', stopping: 'Ending the helper session…', error: 'Helper needs attention. Reconnect and try again.' })[native.state] ?? 'Check the TV and refresh its status.';
+    if (native.error === 'NATIVE_DISCONNECTED') return 'Helper not connected. Click Finish setup for installation and browser connection instructions.';
+    if (!native.receivers?.length) return 'No AirPlay TVs yet. Click Find TVs.';
+    return ({ idle: 'Helper connected. Choose your TV.', connecting: 'Connecting to your TV…', playing: 'Helper reports playing (look at the TV to confirm).', stopped: 'Helper session ended. Check the TV.', stopping: 'Ending the helper session…', error: 'Helper needs attention. Reconnect and try again.' })[native.state] ?? 'Check the TV and refresh its status.';
   };
   let currentView;
   let pendingActions = 0;
@@ -62,7 +73,7 @@
         s.selected = s.candidates[0].id;
       }
       options('candidate', s.candidates, s.selected, 'Choose a video');
-      options('receiver', s.native.receivers, s.receiver, 'Choose an Apple TV');
+      options('receiver', s.native.receivers, s.receiver, 'Choose an AirPlay TV');
       const stateText = [
         s.enabled ? 'Looking for videos on this page.' : 'Not looking for videos yet.',
         s.candidates.length ? `${s.candidates.length} video${s.candidates.length === 1 ? '' : 's'} found.` : 'No videos found yet.',
@@ -88,14 +99,14 @@
       if (needsPin && !pinStarted) {
         pinStarted = true;
         $('pairBox').hidden = true;
-        showTVs('Starting pairing. Look at the Apple TV for a 4-digit PIN.');
+        showTVs('Starting pairing. Look at the TV for a 4-digit PIN.');
         send('pairBegin').then(() => {
           pinReady = true;
           $('pairBox').hidden = false;
-          showTVs('The PIN is on the Apple TV. Type those 4 digits below. They stay hidden.');
+          showTVs('The PIN is on the TV. Type those 4 digits below. They stay hidden.');
         }).catch(() => {
           pinStarted = false;
-          showTVs('Could not start pairing. Press Send to Apple TV again.');
+          showTVs('Could not start pairing. Press Send to TV again.');
         });
       } else if (pinReady) $('pairBox').hidden = false;
       else $('pairBox').hidden = true;
@@ -148,11 +159,11 @@
     $('tvStatus').textContent = text;
   };
   const findTVs = async () => {
-    showTVs('Looking for Apple TVs…');
+    showTVs('Looking for AirPlay TVs…');
     const host = $('host').value.trim();
     const r = await send('discover', host ? { host } : {});
     const n = r.receivers?.length ?? 0;
-    showTVs(n === 1 ? 'Apple TV found and selected. Press Send to Apple TV.' : n ? `Found ${n} Apple TVs. Choose one, then send.` : 'No Apple TV found on the network. Leave the address blank and press Find Apple TVs again.');
+    showTVs(n === 1 ? 'TV found and selected. Choose a video, then send.' : n ? `Found ${n} AirPlay TVs. Choose one, then send.` : 'No video-capable AirPlay TV found. Check that AirPlay is enabled, the TV is awake, and both devices are on the same network. Then try Find TVs again.');
   };
   $('discover').onclick = act(findTVs);
   $('pair').onclick = async () => {
@@ -162,7 +173,7 @@
       await send('pair', { pin });
       pinReady = false;
       pinStarted = false;
-      showTVs('Paired. Press Send to Apple TV.');
+      showTVs('Paired. Press Send to TV.');
       $('pairBox').hidden = true;
       await refresh();
     } catch {

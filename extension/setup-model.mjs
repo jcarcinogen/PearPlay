@@ -10,9 +10,9 @@ export function connectionState(helper,error=null) {
   return {kind:'ready',text:'PearPlay Helper connected. You’re ready to find your Apple TV.'};
 }
 export function downloadsFor(catalog,platform,extensionId) {
-  if(!catalog||catalog.extensionId!==extensionId||!Array.isArray(catalog.downloads))return [];
+  if(platform.os!=='linux'||!catalog||catalog.extensionId!==extensionId||!Array.isArray(catalog.downloads))return [];
   return catalog.downloads.filter(item=>{
-    if(item?.os!==platform.os||item?.arch!==platform.arch||!['pkg','deb','rpm','pkg.tar.zst'].includes(item.format))return false;
+    if(item?.os!==platform.os||item?.arch!==platform.arch||!['deb','rpm','pkg.tar.zst'].includes(item.format))return false;
     try { const url=new URL(item.url);return url.protocol==='https:'&&url.host==='github.com'&&!url.username&&!url.password&&!url.search&&!url.hash&&url.pathname.startsWith('/jcarcinogen/PearPlay/releases/download/'); } catch { return false; }
   });
 }

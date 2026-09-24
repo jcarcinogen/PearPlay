@@ -22,14 +22,21 @@ def dialog(text):
         subprocess.run(['zenity','--info','--no-markup','--title=PearPlay Setup','--text='+text],capture_output=True)
 
 def gui(config, parent, executable):
+    # First launch goes straight to browser selection. Any existing registration,
+    # including a legacy/unknown one, keeps the explicit repair/removal menu.
+    registered = any((parent/setup.install.browser_dir(b)/'NativeMessagingHosts/com.pearplay.helper.json').exists()
+                     for b in setup.LABELS)
     choices=list(ACTIONS)
-    if sys.platform == 'darwin':
-        script='choose from list {'+','.join(json.dumps(x) for x in choices)+'} with title "PearPlay Setup" with prompt "One helper for your browsers. End casting before updates or removal."'
-        selected=subprocess.run(['/usr/bin/osascript','-e',script],capture_output=True,text=True)
+    if not registered:
+        action='connect'
     else:
-        selected=subprocess.run(['zenity','--list','--title=PearPlay Setup','--text=One helper for your browsers. End casting before updates or removal.','--column=Action','--width=500','--height=350',*choices],capture_output=True,text=True)
-    if selected.returncode or selected.stdout.strip() not in ACTIONS: return 0
-    action=ACTIONS[selected.stdout.strip()]
+        if sys.platform == 'darwin':
+            script='choose from list {'+','.join(json.dumps(x) for x in choices)+'} with title "PearPlay Setup" with prompt "One helper for your browsers. End casting before updates or removal."'
+            selected=subprocess.run(['/usr/bin/osascript','-e',script],capture_output=True,text=True)
+        else:
+            selected=subprocess.run(['zenity','--list','--title=PearPlay Setup','--text=One helper for your browsers. End casting before updates or removal.','--column=Action','--width=500','--height=350',*choices],capture_output=True,text=True)
+        if selected.returncode or selected.stdout.strip() not in ACTIONS: return 0
+        action=ACTIONS[selected.stdout.strip()]
     if action == 'update': webbrowser.open(UPDATES); return 0
     browsers=list(setup.LABELS) if action=='uninstall' else setup.choose_browsers(setup.detected_browsers(parent))
     if not browsers: return 0
@@ -41,6 +48,8 @@ def gui(config, parent, executable):
     if action=='connect': text+='\n\nFully quit and reopen these browsers, then click Check connection in the extension setup tab. Install the extension in each browser.'
     else: text+='\n\nSaved TV pairing is kept. To remove the helper itself, move PearPlay Setup from Applications to Trash on Mac, or remove pearplay-helper with your Linux software manager. Removing the extension alone does not remove the helper.'
     if 'conflict' in result.values() or 'preserved' in result.values(): text+='\n\nA previous developer installation may need its original uninstaller. See the developer guide; do not overwrite unknown files.'
+    if config.get('development'):
+        text='Development build — for testing only, not a signed consumer release.\nUse the matching test extension supplied with this installer.\n\n'+text
     dialog(text)
     return 1 if any(v in ('conflict','preserved') for v in result.values()) else 0
 
@@ -59,7 +68,7 @@ def main(argv=None, config=None):
     args=parser.parse_args(argv)
     if args.action=='self-test':
         native.Transport()  # Imports all transport dependencies, but performs no discovery or playback.
-        print(json.dumps({'ok':True,'version':'0.2.0','dependencies':'loaded','network':'not used'}))
+        print(json.dumps({'ok':True,'version':native.VERSION,'dependencies':'loaded','network':'not used'}))
         return 0
     if os.getuid()==0: return 2  # Browser registration always belongs to the signed-in user, never root.
     if not getattr(sys,'frozen',False): return 2  # A system Python executable is not the packaged native host.

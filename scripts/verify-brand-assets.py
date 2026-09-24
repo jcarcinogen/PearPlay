@@ -45,8 +45,11 @@ for name, span in re.findall(r"`([\w./-]+\.(?:md|mjs|js|html|py|json)):(\d[\d,â€
 manifest = (root / "extension/manifest.json").read_bytes()
 baseline = subprocess.check_output(["git", "show", "6ce73e1:extension/manifest.json"], cwd=root)
 current, original = json.loads(manifest), json.loads(baseline)
-assert current["version"] == "0.2.0"
+assert current["version"] == "0.2.4"
+assert current["description"] == "Send compatible web videos from Linux to Apple TV with a local helper. Mac support is coming soon."
+# The approved platform-scope release changes version/copy, not permissions or identity.
 original["version"] = current["version"]
+original["description"] = current["description"]
 assert current == original, "Manifest identity or permissions changed"
 report["manifest_sha256"] = hashlib.sha256(manifest).hexdigest()
 

@@ -1,10 +1,12 @@
 # Real isolated Chrome/native smoke evidence
 
+**Current scope: Linux only. Mac support is coming soon.** Linux native tests remain active; historical Mac helper tests are paused research, not Linux release gates. `node tests/browser/platform-scope.mjs` is an isolated Mac negative control for the unavailable UI, not a Mac installation test. It makes no helper, discovery, pairing or playback requests.
+
 These are Acer-specific CDP integration probes, not unit-test mocks. They use Node 26 built-in WebSocket/fetch and installed Google Chrome 152.0.7977.82. No packages are needed. They do not scan, pair, start, or stop a TV. Synthetic MP4 bodies are deliberately not playable media: this verifies URL discovery, not decoding or playback.
 
 ## Verified result
 
-- Unpacked source `/home/scott/Projects/PearPlay/extension` loaded using `Extensions.loadUnpacked`; actual ID `gndkmajngklgjkcmbolddaodljgoabma`.
+- Unpacked source `<checkout>/PearPlay/extension` loaded using `Extensions.loadUnpacked`; actual ID `gndkmajngklgjkcmbolddaodljgoabma`.
 - Real action popup opened with `Extensions.triggerAction` against a CDP **tab** target. Opening popup.html as a normal tab is correctly rejected by worker authorization and is not an equivalent test.
 - Persistent real native port: hello/status returned idle, evidence none, capabilities hello/discover/start/status/stop. Pause/resume returned unsupported. The actual popup -> worker -> Native route also succeeded for hello/status; unsupported operations became ACTION_FAILED/HELPER_ERROR as implemented.
 - Synthetic loopback page: one DOM MP4 candidate, then a distinct network HLS candidate, then a distinct network MP4 candidate; disable cleared collection. No candidate URL or response was injected into extension internals. Tests used actual video currentSrc and real fetch/webRequest events.
@@ -29,7 +31,7 @@ Do not infer native-host lookup from XDG_CONFIG_HOME when overriding user-data-d
 
 ## Artifacts and scope
 
-Acer isolated root: `/home/scott/.cache/pearplay-browser.ONYwEh` (0700 creation). `profile` is a test-only symlink to `browser/google-chrome` for the CDP helper's DevToolsActivePort lookup, never an installer target. Chrome was always launched with the real directory path.
+Acer isolated root: `<local-cache>/pearplay-browser.ONYwEh` (0700 creation). `profile` is a test-only symlink to `browser/google-chrome` for the CDP helper's DevToolsActivePort lookup, never an installer target. Chrome was always launched with the real directory path.
 
 Owned Chrome PIDs 4093, 5126, and 6207 were closed and verified absent. The isolated profile, Chrome logs and unknown sentinels remain for inspection; native manifests/launchers and PearPlay extension registration are removed. No daily profiles, Brave, credentials, TV actions, packages, firewall, Pi-hole or git operations were used. Chrome itself performed normal component background activity despite disable-background-networking; this test does not claim Chrome had zero external network traffic.
 

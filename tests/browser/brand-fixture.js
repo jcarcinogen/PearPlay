@@ -10,6 +10,8 @@
         receivers:[{identifier:'example-receiver',address:'192.0.2.10',label:'Living Room'}],
         capabilities:['hello','discover','start','status','stop'] } }
   };
+  // Linux UI fixture on the Mac rendering host, not Mac compatibility evidence.
+  chrome.runtime.getPlatformInfo = async () => ({os:'linux',arch:'x86-64'});
   chrome.tabs.query = async () => [{id:1,url:'https://example.test/watch'}];
   chrome.tabs.reload = async () => { f.calls.push({op:'reload'}); };
   chrome.permissions.getAll = async () => ({origins:f.allowed?['http://*/*','https://*/*']:[]});

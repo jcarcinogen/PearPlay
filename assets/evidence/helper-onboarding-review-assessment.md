@@ -1,5 +1,7 @@
 # Assessment of first independent review
 
+> Historical verification snapshot. Current scope: **Linux only. Mac support is coming soon.** Mac procedures/results below are archived research, not active release gates. Follow current STATUS and docs/helper-onboarding.md for the Linux release.
+
 The first reviewer returned `passed: false`. Parent inspection of the referenced source did not substantiate its seven claimed defects. A second independent review subsequently reported no security concerns, logic errors or must-fix defects. Its `passed` field was a list of reviewed areas rather than a boolean; the explicit prose verdict and empty finding lists are recorded here, not presented as a schema-validated automated approval.
 
 | Claim | Source-grounded assessment |

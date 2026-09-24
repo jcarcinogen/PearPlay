@@ -1,5 +1,7 @@
 # Helper onboarding verification
 
+> Historical verification snapshot. Current scope: **Linux only. Mac support is coming soon.** Mac procedures/results below are archived research, not active release gates. Follow current STATUS and docs/helper-onboarding.md for the Linux release.
+
 ## Verified locally
 
 - JavaScript: `node --test tests/extension tests/brand.test.mjs` — 28 passing tests on macOS and Linux.

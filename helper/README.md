@@ -1,7 +1,7 @@
 # PearPlay native helper (experimental)
 
-Linux command-mode playback is the proven path. macOS support here is the
-native-host installer and discovery adapter for the same unpacked extension.
+**Linux only. Mac support is coming soon.** Mac compatibility work is paused.
+Linux Chrome is the verified playback baseline; other browser playback needs separate verification.
 No Mac relay, WebKit, AVPlayer, or screen mirroring.
 
 Requires Python **3.11+**, the existing unmodified `pyatv==0.18.0` environment,
@@ -16,7 +16,7 @@ Do not run these against a daily browser profile during testing. Choose the
 actual 32-character `[a-p]` extension ID from your unpacked extension.
 
 ```sh
-PY="$HOME/Projects/PearPlay/.venv/bin/python"
+PY="$HOME/.local/share/pearplay/venv/bin/python"
 CONFIG_PARENT="/absolute/path/to/isolated-config"
 EXTENSION_ID="replace_with_actual_extension_id"
 "$PY" helper/install.py install --extension-id "$EXTENSION_ID" \
@@ -25,42 +25,15 @@ EXTENSION_ID="replace_with_actual_extension_id"
 
 `--config-parent` is the browser **configuration parent**, not `Default` or an
 individual profile directory. The installer chooses the folder from the OS.
-Linux Chrome gets `google-chrome/NativeMessagingHosts`. macOS Chrome gets
-`Google/Chrome/NativeMessagingHosts` (not `google-chrome`). Brave gets
-`BraveSoftware/Brave-Browser/NativeMessagingHosts` on either OS. Ensure an
-isolated browser is actually configured to use that configuration tree; this
-installer does not launch or configure a browser. Linux's usual parent is
-`$HOME/.config`. macOS Chrome's usual parent is `$HOME/Library/Application Support`.
-Neither is selected by default. Only `chrome` and `brave` are accepted.
+Linux Chrome uses `google-chrome/NativeMessagingHosts`; Brave uses
+`BraveSoftware/Brave-Browser/NativeMessagingHosts`; Chromium uses
+`chromium/NativeMessagingHosts`. The normal configuration parent is `$HOME/.config`.
+An isolated browser must actually use the matching configuration tree.
+Quit Chrome fully after initial registration; reloading the extension is not enough.
 
-### macOS Chrome unpacked install
-
-Use the unpacked `[a-p]{32}` id from the Chrome Scott already has. Do not
-install Brave for this check, and do not launch Chrome from the installer.
-
-```sh
-PY="$HOME/.local/share/pearplay/venv/bin/python"
-GRANTED="$HOME/.hermes/hermes-agent/venv/bin/python3.11"
-PYPATH="$HOME/.local/share/pearplay/venv/lib/python3.11/site-packages"
-CONFIG_PARENT="$HOME/Library/Application Support"
-EXTENSION_ID="replace_with_actual_unpacked_id"
-"$PY" helper/install.py install --extension-id "$EXTENSION_ID" \
-  --browser chrome --config-parent "$CONFIG_PARENT" \
-  --python "$GRANTED" --pythonpath "$PYPATH"
-```
-
-`pyatv==0.18.0` stays in the machine-local venv. The launcher must exec the
-Python macOS already allows on the local network (`com.nousresearch.hermes.managed-python`)
-and set `PYTHONPATH` to that venv's site-packages. The uv CPython behind the
-venv has no local-network grant, so Chrome-spawned scans return empty. Do not
-copy that granted binary over the uv Python. Uninstall with the same
-`--python` and `--pythonpath` the install used, or the launcher bytes will not
-match.
-
-Chrome snapshots native hosts at process start. After the first install, quit
-Chrome fully; Reload is not enough. Brave, later, is the same command with
-`--browser brave` once Brave is installed the way a new user would install it.
-No Chrome Web Store step.
+Mac install directions are retired. Prior runtime/signing findings are preserved
+in [paused Mac research](../docs/mac-runtime-identity.md), not offered as a workaround.
+Never borrow another app’s permitted interpreter or disable security to obtain access.
 
 Repeat the exact command with `uninstall` instead of `install`. Installation
 creates only a manifest and a shell launcher. Existing unequal files are

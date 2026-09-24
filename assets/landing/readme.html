@@ -2,7 +2,8 @@
 <h1>PearPlay</h1>
 <h3>Your browser’s video. Your Apple TV.</h3>
 <p>Send a compatible video stream from your browser directly to your Apple TV—without screen mirroring, re-encoding, or a cloud relay.</p>
-<p><strong>Development preview · Linux and macOS · Separate local helper required</strong></p>
+<p><strong>Development preview · Linux only · Separate local helper required</strong></p>
+<p><strong>Mac support is coming soon.</strong></p>
 <p><a href="#get-started">Get started</a> · <a href="#compatibility">Compatibility</a> · <a href="#limitations">Limitations</a> · <a href="#documentation">Documentation</a></p>
 <p>
   <a href="https://x.com/scottito22"><img src="tip-with-x-money.svg" alt="Tip with X Money" width="190" height="30"></a>&nbsp;&nbsp;
@@ -35,15 +36,15 @@
 <td>Video and audio through the extension on a tested FOX live stream, including a pre-roll-to-program transition. Pairing, reconnect, and recasting have also been observed.</td>
 </tr>
 <tr>
-<td><strong>macOS + Chrome</strong></td>
-<td>Connection and status checks using an extracted development helper package, plus browser-registration removal. <strong>TV playback remains unverified.</strong></td>
+<td><strong>Mac</strong></td>
+<td><strong>Mac support is coming soon.</strong> Compatibility work is paused; not currently available.</td>
 </tr>
 <tr>
 <td><strong>Linux + Chromium</strong></td>
 <td>Connection and status checks using an extracted development helper package, plus browser-registration removal. <strong>TV playback remains unverified.</strong></td>
 </tr>
 <tr>
-<td><strong>Brave on Linux or macOS</strong></td>
+<td><strong>Linux + Brave</strong></td>
 <td>Registration support is implemented. <strong>End-to-end integration and playback remain unverified.</strong></td>
 </tr>
 </tbody>
@@ -51,7 +52,7 @@
 <p>Windows is not supported. Other Chromium-based browsers, browser beta/dev channels, and Snap/Flatpak browser packages are not supported installer targets.</p>
 <p>Connection checks are not playback tests. Development package extraction tests do not establish that consumer installation, upgrades, and removal work on every system. See the <a href="assets/evidence/helper-onboarding-verification.md">verification record</a> and <a href="docs/helper-onboarding.md#release-gates">remaining release requirements</a>.</p>
 <h2>Get started</h2>
-<p>For the current source installation, you need <strong>Chrome</strong>, <strong>Python 3.11 or newer</strong>, <strong>uv</strong>, and an <strong>Apple TV on the same local network</strong>. Keep the source checkout and Python environment in place after setup.</p>
+<p>For the current source installation, you need <strong>Linux</strong>, <strong>Chrome</strong>, <strong>Python 3.11 or newer</strong>, <strong>uv</strong>, and an <strong>Apple TV on the same local network</strong>. Keep the source checkout and Python environment in place after setup.</p>
 <pre><code class="language-sh">git clone https://github.com/jcarcinogen/PearPlay.git
 cd PearPlay
 uv venv --python 3.11 &quot;$HOME/.local/share/pearplay/venv&quot;
@@ -59,11 +60,11 @@ uv pip install --python &quot;$HOME/.local/share/pearplay/venv/bin/python&quot; 
 </code></pre>
 <ol>
 <li>Open <code>chrome://extensions</code>, enable <strong>Developer mode</strong>, and load the checkout’s <code>extension/</code> directory.</li>
-<li>Copy the extension’s actual ID and follow the <a href="docs/install.md">Linux/macOS helper registration instructions</a>. Source installation requires this separate registration step; opening the setup tab does not install the helper.</li>
+<li>Copy the extension’s actual ID and follow the <a href="docs/install.md">Linux helper registration instructions</a>. Source installation requires this separate registration step; opening the setup tab does not install the helper.</li>
 <li>Fully quit and reopen Chrome. In the extension’s setup tab, select <strong>Check connection</strong>.</li>
 <li>Open a video page and use the PearPlay popup to send a compatible stream.</li>
 </ol>
-<p>The <a href="docs/install.md">installation guide</a> covers browser registration, network permissions, troubleshooting, and removal. Linux may require a receiver-scoped firewall rule for AirPlay timing; do not disable your firewall. On macOS, allow the helper runtime’s Local Network access when requested. macOS remains experimental until TV playback is verified.</p>
+<p>The <a href="docs/install.md">installation guide</a> covers browser registration, network permissions, troubleshooting, and removal. Linux may require a receiver-scoped firewall rule for AirPlay timing; do not disable your firewall. Mac support is coming soon.</p>
 <h2>Send a video</h2>
 <ol>
 <li><strong>Allow and find.</strong> In the popup, choose <strong>Allow all websites</strong>, start the website’s video, and select <strong>Find videos</strong>.</li>
@@ -78,7 +79,7 @@ uv pip install --python &quot;$HOME/.local/share/pearplay/venv/bin/python&quot; 
 <li><strong>No TV pause/resume controls.</strong> <strong>End helper session</strong> closes the helper connection; it does <strong>not</strong> confirm that TV playback stopped. Use the physical remote if playback continues.</li>
 <li><strong>All-sites access is currently required for discovery.</strong> The popup offers a per-site grant, but <strong>Find videos</strong> remains disabled without all-sites access.</li>
 <li><strong>Compatibility is limited to recorded results.</strong> A successful connection or “playing” status is not proof of picture and sound. Invalid/expired-stream handling and broader receiver lifecycle trials still need live verification.</li>
-<li><strong>Not a consumer release yet.</strong> Public installers, macOS signing/notarization, the permanent Web Store ID, and additional browser/distribution testing remain open.</li>
+<li><strong>Not a consumer release yet.</strong> Public Linux installers, production Web Store identity verification, and additional Linux browser/distribution testing remain open. Paused Mac work does not block the Linux release.</li>
 </ul>
 <h2>Privacy</h2>
 <p>The extension communicates with a helper on your computer; the website delivers media directly to the TV. Pairing credentials are stored locally with user-only file permissions. The extension does not save the pairing PIN, and signed stream URLs are not included in screenshots or application logs.</p>
@@ -91,10 +92,10 @@ uv pip install --python &quot;$HOME/.local/share/pearplay/venv/bin/python&quot; 
 <li><a href="contract/v1.md">Control protocol and trust boundaries</a></li>
 <li><a href="helper/README.md">Helper implementation</a> · <a href="tests/">Tests</a></li>
 <li><a href="docs/claims.md">Playback evidence and claim audit</a> · <a href="assets/evidence/helper-onboarding-verification.md">Package/browser verification</a></li>
-<li><a href="docs/index.html">Landing page HTML</a> — built, but not yet published as a website</li>
+<li><a href="https://jcarcinogen.github.io/PearPlay/">Website</a> · <a href="https://jcarcinogen.github.io/PearPlay/privacy.html">Privacy policy</a></li>
 <li><a href="assets/brand/README.md">Brand assets and reproducible rendering</a></li>
 </ul>
 <h2>License and affiliation</h2>
-<p>No project-wide license has been selected yet. The experimental command adapter retains its <a href="spikes/002-command/LICENSE.md">own license and provenance</a>; that does not license the rest of the repository.</p>
+<p>PearPlay’s original code is available under the <a href="LICENSE">MIT License</a>. The experimental command adapter retains its <a href="spikes/002-command/LICENSE.md">own license and provenance</a>; third-party notices and dependency licenses still apply.</p>
 <p>PearPlay is independent and unaffiliated with Apple. The working name has not been trademark-cleared.</p>
 </main></html>

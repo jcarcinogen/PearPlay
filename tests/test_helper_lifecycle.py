@@ -8,7 +8,7 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
         m=load()
         def forbidden(): raise AssertionError('hello must not contact the network')
         result=await m.Host(forbidden, lambda value: None).handle(request())
-        self.assertEqual(result.get('helperVersion'), '0.2.0')
+        self.assertEqual(result.get('helperVersion'), '0.2.3')
 
     async def test_pairing_required_event_has_static_cli_guidance(self):
         m=load(); events=[]
@@ -74,7 +74,7 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
             async def discover(self,host): raise RuntimeError('SECRET')
         h=m.Host(Transport,events.append)
         result=await h.handle(request('discover'))
-        self.assertEqual(result['error'],'transport_failed')
+        self.assertEqual(result['error'],'discovery_failed')
         self.assertNotIn('SECRET',str(result))
         result=await h.handle(dict(request(),id='SECRET?'))
         self.assertEqual(result['id'],'event')

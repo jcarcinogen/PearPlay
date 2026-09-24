@@ -19,9 +19,9 @@ other declared versions. The guard does not hash installed source files.
 
 ```sh
 cd ~/Projects/PearPlay
-.venv/bin/python spikes/002-command/command.py --host 192.168.50.92 --sample mp4 --mode baseline-v2 --timing-port 49170 --timeout 15 --duration 30
+.venv/bin/python spikes/002-command/command.py --host 192.0.2.10 --sample mp4 --mode baseline-v2 --timing-port 49170 --timeout 15 --duration 30
 # Only if baseline is insufficient and the user approves the next trial:
-.venv/bin/python spikes/002-command/command.py --host 192.168.50.92 --sample mp4 --mode command --timing-port 49170 --timeout 15 --duration 60
+.venv/bin/python spikes/002-command/command.py --host 192.0.2.10 --sample mp4 --mode command --timing-port 49170 --timeout 15 --duration 60
 # HLS: same command with --sample hls
 ```
 

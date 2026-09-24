@@ -8,6 +8,8 @@ from pathlib import Path
 import re
 import struct
 
+VERSION = '0.2.3'
+
 async def native_stdio(output):
     import sys
     loop=asyncio.get_running_loop()
@@ -77,7 +79,8 @@ def parse_avahi_hosts(text):
         parts = line.split(';')
         if len(parts) < 8 or parts[0] != '=' or parts[2] != 'IPv4':
             continue
-        if 'model=' in line and 'model=AppleTV' not in line:
+        properties = dict(re.findall(r'"([A-Za-z0-9_]+)=([^"]*)"', line))
+        if not video_kind(properties):
             continue
         try:
             ip = str(ipaddress.ip_address(parts[7]))
@@ -88,6 +91,27 @@ def parse_avahi_hosts(text):
         if len(hosts) == 64:
             break
     return hosts
+
+def parse_avahi_receivers(text):
+    receivers = []
+    for line in text.splitlines():
+        parts = line.split(';')
+        if len(parts) < 10 or parts[0] != '=' or parts[2] != 'IPv4' or parts[4] != '_airplay._tcp':
+            continue
+        properties = dict(re.findall(r'"([A-Za-z0-9_]+)=([^"]*)"', line))
+        kind = video_kind(properties)
+        identifier = properties.get('deviceid', '')
+        if not kind or not re.fullmatch(IDENTIFIER, identifier): continue
+        try:
+            address = str(ipaddress.IPv4Address(parts[7]))
+            if not 0 < int(parts[8]) <= 65535: continue
+        except ValueError: continue
+        receiver = dict(identifier=identifier, address=address, kind=kind,
+                        label='Apple TV' if kind == 'apple-tv' else 'AirPlay TV — compatibility unverified')
+        if receiver not in receivers: receivers.append(receiver)
+        if len(receivers) == 64: break
+    return receivers
+
 
 def parse_dns_sd_browse(text):
     names = []
@@ -108,12 +132,16 @@ def parse_dns_sd_lookup(text):
     match = re.search(r'can be reached at (\S+?):(\d+)', text)
     return match.group(1) if match else None
 
-def apple_tv_only(devices):
-    def model_name(device):
-        model = getattr(getattr(device, 'device_info', None), 'model', None)
-        return getattr(model, 'name', '') or ''
-    named = [device for device in devices if 'AppleTV' in model_name(device)]
-    return named or list(devices)
+def video_kind(properties, model=''):
+    if str(properties.get('model', model)).startswith('AppleTV'):
+        return 'apple-tv'
+    features = properties.get('features', '')
+    if not isinstance(features, str) or not re.fullmatch(r'0x[0-9a-fA-F]{1,8}(?:,0x[0-9a-fA-F]{1,8})?', features):
+        return None
+    words = [int(word, 16) for word in features.split(',')]
+    flags = words[0] | ((words[1] if len(words) == 2 else 0) << 32)
+    # AirPlay video V1, video play queue, V2. Screen mirroring alone is not URL video.
+    return 'airplay-video' if flags & ((1 << 0) | (1 << 33) | (1 << 49)) else None
 
 def parse_dns_sd_addresses(text):
     hosts = []
@@ -315,6 +343,7 @@ class Transport:
         self.timeout = timeout
         self.wire = None
         self.mdns = mdns
+        self.advertised = []
 
     async def scan(self, host):
         return await asyncio.wait_for(self.api.scan(asyncio.get_running_loop(), timeout=min(5,self.timeout), protocol=self.api.Protocol.AirPlay, hosts=[host] if host else None), self.timeout)
@@ -333,12 +362,20 @@ class Transport:
                     raise
             return out.decode('utf-8', 'replace')
         if not kill_on_timeout:
+            collected = asyncio.create_task(proc.communicate())
             try:
-                out, _ = await asyncio.wait_for(proc.communicate(), timeout)
+                out, _ = await asyncio.wait_for(asyncio.shield(collected), timeout)
             except TimeoutError:
-                proc.kill()
-                try: await proc.communicate()
-                except Exception: pass
+                # Keep already-resolved records instead of cancelling away the buffer.
+                try: proc.terminate()
+                except ProcessLookupError: pass
+                try: out, _ = await asyncio.wait_for(asyncio.shield(collected), 0.5)
+                except TimeoutError:
+                    proc.kill()
+                    out, _ = await collected
+            except asyncio.CancelledError:
+                if proc.returncode is None: proc.kill()
+                await collected
                 raise
             return out.decode('utf-8', 'replace')
         # dns-sd never exits and block-buffers on a pipe. SIGKILL drops that buffer.
@@ -372,6 +409,7 @@ class Transport:
             return await self.dns_sd_hosts()
         except (TimeoutError, OSError):
             return []
+        self.advertised = parse_avahi_receivers(text)
         return parse_avahi_hosts(text)
 
     async def dns_sd_hosts(self):
@@ -401,21 +439,42 @@ class Transport:
         return hosts
 
     async def discover(self, host):
-        devices = list(await self.scan(host))
-        if not host and not devices:
-            for ip in await self.mdns_hosts():
-                devices.extend(await self.scan(ip))
-        devices = apple_tv_only(devices)
-        result = []
+        self.advertised = []
+        failed = False
+        async def safe_scan(address):
+            try: return list(await self.scan(address))
+            except Exception:
+                nonlocal failed
+                failed = True
+                return []
+        if host:
+            devices = await safe_scan(host)
+        else:
+            devices, hosts = await asyncio.gather(safe_scan(None), self.mdns_hosts())
+            known = {str(device.address) for device in devices} | {r['address'] for r in self.advertised}
+            # Each bounded scan runs independently; a silent receiver cannot hide others.
+            pending = [ip for ip in hosts[:64] if ip not in known]
+            if pending:
+                scans = await asyncio.gather(*(safe_scan(ip) for ip in pending))
+                for found in scans: devices.extend(found)
+        result = [] if host else list(self.advertised)
         for device in devices[:256]:
+            if len(result) >= 64: break
             identifier = device.identifier
             if not isinstance(identifier, str) or not re.fullmatch(IDENTIFIER, identifier): continue
             try: address = str(ipaddress.ip_address(device.address))
             except ValueError: continue
-            receiver = dict(identifier=identifier, address=address, label='Apple TV')
-            if receiver not in result: result.append(receiver)
+            service = device.get_service(self.api.Protocol.AirPlay) if hasattr(device, 'get_service') else None
+            properties = getattr(service, 'properties', {})
+            model = getattr(getattr(getattr(device, 'device_info', None), 'model', None), 'name', '')
+            kind = video_kind(properties, model)
+            if not kind: continue
+            receiver = dict(identifier=identifier, address=address,
+                            label='Apple TV' if kind == 'apple-tv' else 'AirPlay TV — compatibility unverified', kind=kind)
+            if not any(r['identifier'].lower() == identifier.lower() and r['address'] == address for r in result): result.append(receiver)
             if len(result) == 64: break
-        return result
+        if not result and failed: raise HelperError('discovery_failed')
+        return sorted(result, key=lambda r: (r['kind'] != 'apple-tv', r['address']))
 
     async def begin_pair(self, identifier, host):
         lease = Lease(self.store).__enter__()
@@ -488,7 +547,7 @@ class Host:
 
     def response(self, identifier, error=None, **fields):
         result = dict(v=1, id=identifier, ok=error is None, state=self.state,
-                      evidence=self.evidence, capabilities=list(self.capabilities), helperVersion='0.2.0', **fields)
+                      evidence=self.evidence, capabilities=list(self.capabilities), helperVersion=VERSION, **fields)
         if error: result['error'] = error
         if error == 'pairing_required':
             result['pairing'] = 'Look at the Apple TV and type the 4 digits it shows. They stay hidden.'
@@ -561,10 +620,10 @@ class Host:
                 self.changed('stopped', 'unverified')
             return self.response(identifier)
         except HelperError as error:
-            code = str(error) if str(error) in ('busy','pairing_required','pairing_failed','receiver_unavailable') else 'transport_failed'
+            code = str(error) if str(error) in ('busy','pairing_required','pairing_failed','receiver_unavailable','discovery_failed') else 'transport_failed'
             return self.response(identifier, code)
         except Exception:
-            return self.response(identifier, 'transport_failed')
+            return self.response(identifier, 'discovery_failed' if op == 'discover' else 'transport_failed')
 
 if __name__ == '__main__':
     raise SystemExit(main())

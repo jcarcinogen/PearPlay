@@ -1,5 +1,7 @@
 # Final bounded independent review
 
+> Historical verification snapshot. Current scope: **Linux only. Mac support is coming soon.** Mac procedures/results below are archived research, not active release gates. Follow current STATUS and docs/helper-onboarding.md for the Linux release.
+
 A separate read-only reviewer inspected the current diff, setup modules, native helper/installer, packaging script and related tests. It returned no security concerns, logic errors or suggestions, concluding: “No must-fix defects found in the 5 focus areas across inspected files.”
 
 Scope: native-origin authorization, registration ownership, setup permissions, packaged runtime paths and shared session exclusion. The review is bounded evidence, not proof that all defects are absent. Its `passed` field used a list rather than the requested boolean, so it is not represented as a schema-validated machine gate.

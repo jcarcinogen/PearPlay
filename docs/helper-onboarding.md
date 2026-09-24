@@ -1,33 +1,45 @@
 # Helper onboarding and packaging
 
-## Architecture decision
+**Linux only. Mac support is coming soon.** No Mac release date is promised. Mac work is paused and does not block Linux release.
 
-One self-contained helper payload per machine, separate user-scoped native-messaging registration for Chrome, Brave and Chromium. The Web Store extension ID is pinned at build time; development packages must be explicitly marked. No wildcard origins, remote executable code in the extension, login agent, HTTP listener, or cloud service.
+## Current delivery decision
 
-Use the existing ownership-safe installer and flock-based playback lease. Registration repair only restores missing files or accepts exact owned bytes; unknown/modified files remain untouched. Payload upgrades belong to the OS package manager and retain a stable binary path. Pairing state stays outside the payload, shared by browsers under one OS user.
+- **Linux:** a self-contained Python/pyatv helper in a native distro package. Open PearPlay Setup to connect browsers. First launch selects browsers; subsequent launches offer maintenance.
+- **Mac:** no current installer or download. Source/runtime/signing experiments remain archived for a future explicit decision to resume; do not replace security settings or reuse another application's permitted Python.
+- A Web Store extension cannot silently install its native helper; installation is an explicit separate step.
 
-Use native OS dialogs (AppleScript on macOS, Zenity on Linux) for browser selection and repair/remove. The helper binary runs native messaging when invoked by a browser and setup when launched by the user. Linux packages require Zenity for graphical setup; native playback itself does not.
+The production Web Store ID must be pinned into release configuration. `extension/releases.json` currently has a null ID and no public downloads. Preserve the supplied PearPlay ID `hljhooeofdjbikkhbklccnlnladdbkfb` exactly and verify it against the existing PearPlay dashboard item/public key before release. The rehearsal fixture ID `iojhjdcndgfoalcialdlgklfdnlpmobf` and `tests/browser/fixture-key.json` must never become the production allowlist/key.
 
-The extension opens a local setup tab on first install only. Its privileged API is restricted to handshake and explicit receiver discovery; it cannot start playback, pair, or install software. Missing helper and missing browser registration are indistinguishable from the extension and use shared recovery instructions. Public download links stay unavailable until a release catalog contains published, platform-specific assets for the actual extension ID.
+## Boundaries
 
-## Verification and build workflow
+No login agent, persistent HTTP listener, cloud relay, firewall/DNS changes, privileged browser registration or wildcard extension origins. Canonical source remains on IronWolf; installed payloads, venvs, build outputs and credentials are machine-local.
 
-See [the durable verification record](../assets/evidence/helper-onboarding-verification.md) for tested browser versions, exact scope and remaining gates. The tip badge is bundled locally at the bottom of the popup.
+The Linux package manager owns the shared payload. Browser registrations are per OS user and protected by exact-byte/mode ownership checks. Unknown or modified files are preserved. The payload path stays stable across package updates. End casting before maintenance; disconnect browsers before removing the package. Saved TV pairing is not automatically erased.
 
-Build on the target OS in a dedicated machine-local Python environment with PyInstaller and the project's pyatv dependencies. Keep environments and build output outside the shared source checkout. Each build writes `dependency-versions.json`, third-party notices, smoke results and `build-report.json` with artifact hashes. These records describe the actual build; they do not claim bit-for-bit reproducible packages.
+## Linux build
+
+Use the target distro's machine-local venv with PyInstaller and `pyatv==0.18.0`:
 
 ```sh
 python scripts/build_helper.py --extension-id YOUR_EXACT_EXTENSION_ID --development --output /absolute/machine-local/new-build-directory
 ```
 
-Use the public fixture ID from `tests/browser/fixture-key.json` for isolated browser tests only. For a regular unpacked install use its actual extension ID. Production builds require the permanent store ID in `extension/releases.json`, a project license, and on macOS the `--sign-app`, `--sign-installer` and `--notary-profile` options. No signed release has been exercised yet.
+This is a developer command, not consumer onboarding. Build reports include artifact SHA-256, dependency versions/notices and smoke results. Linux packages declare Zenity, distro Avahi utilities and the build host's glibc floor. Verify Avahi service availability and receiver-scoped network requirements on a clean desktop.
 
-macOS emits a `.pkg` containing PearPlay Setup.app. Linux uses native `makepkg`, `dpkg-deb` or `rpmbuild` when available; unavailable formats are reported rather than substituted. Build Debian/Fedora artifacts on supported distribution baselines, not merely on a newer-glibc host.
+Do not convert Acer's glibc 2.44 Arch artifact into a generic Ubuntu package. Build `.deb` on the chosen Debian/Ubuntu baseline. Unavailable formats remain explicit gaps. Fedora and other distributions need separate evidence. The current builder rejects non-Linux hosts before creating build output; retained Mac internals are not a release route.
 
 ## Release gates
 
-- This Mac currently has no Developer ID signing identity. A local unsigned package is not a notarized consumer release.
-- A permanent PearPlay Chrome Web Store ID has not been supplied. Development fixtures are not publishable IDs.
-- Chrome is the playback baseline. Brave, Chromium, packaged macOS playback, distro-specific installation and sandboxed browser packages need separate evidence.
-- Package builds must bundle Python and pyatv, include third-party notices, and pass native hello/status plus dependency smoke checks without touching the TV.
-- No public release, network discovery, pairing, or casting is authorized in this implementation run.
+1. Unit tests and real isolated Chrome missing → connected → repair → remove → fresh host-not-found checks.
+2. Linux package install/restart/repair/update/remove with human-confirmed discovery, pairing, moving video and audible sound. Acer 0.2.3 evidence is in STATUS; removal/reinstall is not a cross-version upgrade test. LG discovery is not LG playback support.
+3. Independent Linux Brave/Chromium verification before claiming playback in those browsers. Chrome remains the verified baseline.
+4. Non-Omarchy Linux: disposable Ubuntu VM/live distro, native Google Chrome, separately built `.deb` and LAN-reachable networking. Default VM NAT may hide multicast. Keep packaging-only results distinct from TV playback.
+5. Verified production store identity, real published Linux downloads/checksums, final catalog, privacy disclosures, current screenshots and Scott's explicit submission approval.
+
+`localInstallerTest:true` is limited to the generated fixture extension. It displays supplied package steps without inventing download URLs. Draft store ZIPs contain neither the fixture key nor that flag. Extension 0.2.4 is the Linux-only UI update; the current rehearsal Linux helper remains the unchanged 0.2.3 package.
+
+## Paused Mac archive
+
+[Runtime identity/signing research](mac-runtime-identity.md) and [historical Terminal rehearsal](mac-terminal-install.md) preserve prior findings. They are not current install guides. New Mac install/build entry points stop with “Mac support is coming soon.” Receipt-guarded removal remains available for an existing installation, but this scope change uninstalls nothing.
+
+Only if Scott explicitly reopens Mac work: revisit identifiable runtime, shared Chrome/Brave native-host paths, Apple signing/notarization, clean-machine consent, updates and human-observed playback. No signing purchase or Mac test is required for the Linux release.

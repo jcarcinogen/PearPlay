@@ -22,9 +22,17 @@ test('required raster assets have exact dimensions', () => {
     if(file.endsWith('social-preview.png')) assert.ok(png.length < 1_000_000);
   }
 });
+test('current product pages consistently present Linux-only scope', () => {
+  for (const path of ['README.md','helper/README.md','docs/install.md','docs/helper-onboarding.md','docs/web-store-readiness.md','docs/privacy.md','docs/positioning.md','docs/claims.md','docs/index.html','docs/store-listing.md','assets/landing/page.html','assets/landing/hero.html','assets/landing/social-preview.html','assets/store/listing-light.html','assets/store/listing-dark.html']) {
+    const content=read(path).toString();
+    assert.match(content,/Mac support is coming soon\./,path);
+    assert.doesNotMatch(content,/Linux and macOS|Linux\/macOS|macOS or Linux|macOS playback unverified|id="mac"|data-copy="mac"/,path);
+  }
+});
+
 test('onboarding keeps the established manifest permissions and identity', () => {
   const m=JSON.parse(read('extension/manifest.json'));
-  assert.equal(m.version,'0.2.0');
+  assert.equal(m.version,'0.2.4');
   assert.deepEqual(m.permissions,['activeTab','scripting','webRequest','webNavigation','nativeMessaging','alarms','storage']);
   assert.deepEqual(m.optional_host_permissions,['http://*/*','https://*/*']);
 });

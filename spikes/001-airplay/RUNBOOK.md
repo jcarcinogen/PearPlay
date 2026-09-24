@@ -56,7 +56,7 @@ No fork or PR 2846 patch was applied. No commits, repository initialization, sys
 
 ## Offline verification
 
-Source of truth: `/Users/scott/Projects/PearPlay` on Mini. All tests use fake receivers and temporary private homes; no scan/pair/play/stop reaches a TV.
+Source of truth: `<checkout>/PearPlay` on Mini. All tests use fake receivers and temporary private homes; no scan/pair/play/stop reaches a TV.
 
 ```sh
 # Mini, stdlib only (actual python3 was Apple CLT Python 3.9):

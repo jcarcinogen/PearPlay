@@ -1,0 +1,102 @@
+{
+  "scope": "Local ad-hoc runtime; not consumer distribution or playback",
+  "signature": {
+    "exit_code": 0,
+    "output": ""
+  },
+  "identity": {
+    "exit_code": 0,
+    "output": "Executable=<local-scratch>/pearplay-owned-runtime-integrated/stage/Applications/PearPlay Setup.app/Contents/MacOS/PearPlayHelper\nIdentifier=com.pearplay.helper\nFormat=app bundle with Mach-O thin (arm64)\nCodeDirectory v=20400 size=14988 flags=0x2(adhoc) hashes=462+3 location=embedded\nSignature=adhoc\nInfo.plist entries=13\nTeamIdentifier=not set\nSealed Resources version=2 rules=13 files=703\nInternal requirements count=0 size=12\nTotal signatures=1\nChosen signature=1\n"
+  },
+  "uuid": {
+    "exit_code": 0,
+    "output": "UUID: 69D1E3A9-597E-511D-FD08-4755CEE9986D (arm64) <local-scratch>/pearplay-owned-runtime-integrated/stage/Applications/PearPlay Setup.app/Contents/MacOS/PearPlayHelper\n"
+  },
+  "dependency_selftest": {
+    "exit_code": 0,
+    "output": "{\"ok\": true, \"version\": \"0.2.3\", \"dependencies\": \"loaded\", \"network\": \"not used\"}\n"
+  },
+  "gatekeeper": {
+    "exit_code": 3,
+    "output": "<local-scratch>/pearplay-owned-runtime-integrated/stage/Applications/PearPlay Setup.app: rejected\n"
+  },
+  "chrome": {
+    "exit_code": 0,
+    "output": "{\"browser\":\"Chrome/153.0.8010.53\",\"connection\":\"ready\",\"runtime\":\"com.pearplay.helper\",\"productionRegistrationChanged\":false}\n{\"round\":1,\"finished\":true,\"found\":true,\"appleTV\":true,\"otherVideoReceiver\":true}\n{\"round\":2,\"finished\":true,\"found\":true,\"appleTV\":true,\"otherVideoReceiver\":true}"
+  },
+  "brave_corrected_unique_host_test": [
+    {
+      "product": "Brave",
+      "engine": "Chrome/153.0.8010.53",
+      "phase": "absent",
+      "state": "missing",
+      "uniqueTestHost": true
+    },
+    {
+      "product": "Brave",
+      "engine": "Chrome/153.0.8010.53",
+      "phase": "present",
+      "state": "ready",
+      "uniqueTestHost": true
+    },
+    {
+      "phase": "present",
+      "round": 1,
+      "finished": true,
+      "appleTV": true,
+      "otherVideoReceiver": true
+    },
+    {
+      "phase": "present",
+      "round": 2,
+      "finished": true,
+      "appleTV": true,
+      "otherVideoReceiver": true
+    },
+    {
+      "product": "Brave",
+      "engine": "Chrome/153.0.8010.53",
+      "phase": "restart",
+      "state": "ready",
+      "uniqueTestHost": true
+    },
+    {
+      "phase": "restart",
+      "round": 1,
+      "finished": true,
+      "appleTV": true,
+      "otherVideoReceiver": true
+    },
+    {
+      "phase": "restart",
+      "round": 2,
+      "finished": true,
+      "appleTV": true,
+      "otherVideoReceiver": true
+    },
+    {
+      "product": "Brave",
+      "engine": "Chrome/153.0.8010.53",
+      "phase": "removed",
+      "state": "missing",
+      "uniqueTestHost": true
+    },
+    {
+      "temporaryHostRemoved": true,
+      "existingRegistrationUnchanged": true,
+      "pairingOrPlayback": false
+    }
+  ],
+  "discarded_brave_test": "Naive profile-scoped registration reached existing Chrome helper; missing-host negative control caught this. Empty scans are not new-runtime evidence.",
+  "production_registration_and_pairing_unchanged": true,
+  "offline_tests": {
+    "python": 62,
+    "javascript": 31
+  },
+  "release_gates": [
+    "Apple-issued identity and notarization",
+    "Mac Brave shared-host installer semantics",
+    "Clean-machine consent and update persistence",
+    "Human-observed Mac video and audio"
+  ]
+}

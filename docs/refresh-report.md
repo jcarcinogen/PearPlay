@@ -1,4 +1,7 @@
-# PearPlay premium refresh — delivery report
+# PearPlay premium refresh — delivery report — archived / paused
+
+> **Current scope: Linux only. Mac support is coming soon.** Mac work is paused, with no release date. The historical Mac procedures/results below are not current install instructions or Linux release blockers. Resume only if Scott explicitly reopens Mac work; current Mac install/build entry points refuse new work. Existing installed runtimes and pairing remain untouched.
+
 
 Branch: `brand/premium-refresh`. Base: `6ce73e1` (`main` at the start). Work is local only; no push, repository setting write, Pages activation or store submission was performed. No dependency was installed. `STATUS.md` is unchanged and remains the playback authority.
 

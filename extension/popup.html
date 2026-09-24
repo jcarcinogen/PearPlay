@@ -56,8 +56,11 @@ footer svg { width:20px; height:20px; flex:none; }
 <body>
 <header><img src="icons/icon48.png" alt=""><h1>PearPlay</h1><span class="edition">Preview</span></header>
 <p class="lead">Choose a video. Send it to your TV.</p>
+<p id="platformNotice" class="muted">Linux only. Mac support is coming soon.</p>
 <span id="phase" role="status" aria-live="polite" data-state="idle">Ready</span>
 <p id="banner" role="status" aria-live="assertive"></p>
+<button id="helperSetup">Helper setup</button>
+<div id="casting">
 <section>
   <h2>1. Allow all websites</h2>
   <div class="row"><button id="grantAll">Allow all websites</button></div>
@@ -81,27 +84,29 @@ footer svg { width:20px; height:20px; flex:none; }
   <label class="hidden" for="candidate">Choose a video</label><select id="candidate"></select>
 </section>
 <section>
-  <h2>4. Choose an Apple TV</h2>
-  <div class="row"><button id="discover">Find Apple TVs</button><button id="hello">Connect helper</button><button id="helperSetup">Helper setup</button></div>
+  <h2>4. Choose an AirPlay TV</h2>
+  <div class="row"><button id="discover">Find TVs</button><button id="hello">Connect helper</button></div>
   <p id="tvStatus" role="status" aria-live="polite"></p>
-  <div id="pairBox" hidden><label for="pin">TV PIN</label><input id="pin" type="password" inputmode="numeric" maxlength="4" autocomplete="off" spellcheck="false"><button id="pair" type="button">Pair Apple TV</button></div>
-  <label class="hidden" for="receiver">Choose an Apple TV</label><select id="receiver"></select>
+  <div id="pairBox" hidden><label for="pin">TV PIN</label><input id="pin" type="password" inputmode="numeric" maxlength="4" autocomplete="off" spellcheck="false"><button id="pair" type="button">Pair TV</button></div>
+  <p class="muted">Other AirPlay TVs may appear, but their playback compatibility is unverified. Audio-only speakers are not listed.</p>
+  <label class="hidden" for="receiver">Choose an AirPlay TV</label><select id="receiver"></select>
   <details id="hostDetails"><summary>Connection and address</summary>
-    <p class="muted">If the helper is disconnected, the address box cannot find your Apple TV. Click Connect helper first.</p>
+    <p class="muted">If the helper is disconnected, the address box cannot find your TV. Click Connect helper first.</p>
     <div class="row"><button id="status">Refresh TV status</button></div>
-    <label class="muted" for="host">Apple TV address (optional)</label><input id="host" placeholder="Only if network discovery finds nothing">
-    <p class="muted">Paste an address, then press Find Apple TVs or Enter.</p>
+    <label class="muted" for="host">TV address (optional)</label><input id="host" placeholder="Only if network discovery finds nothing">
+    <p class="muted">Paste an address, then press Find TVs or Enter.</p>
   </details>
 </section>
 <section>
   <h2>5. Send it</h2>
-  <button id="start">Send to Apple TV</button>
+  <button id="start">Send to TV</button>
   <p id="notice" role="status" aria-live="polite"></p>
   <p id="state" role="status" aria-live="polite"></p>
   <div class="row"><button id="stop">End helper session</button></div>
   <p class="safety">Ending the helper session closes its connection; it does not confirm that the TV stopped. Use the physical remote if playback continues. TV pause/resume are unavailable.</p>
 </section>
 <button id="pause" hidden tabindex="-1">Pause TV</button><button id="resume" hidden tabindex="-1">Resume TV</button>
+</div>
 <footer>
   <a href="https://x.com/scottito22" target="_blank" rel="noopener noreferrer"><img src="tip-with-x-money.png" alt="Tip with X Money"></a>
   <a class="coffee" href="https://ko-fi.com/scottangel" target="_blank" rel="noopener noreferrer" aria-label="Buy me a coffee on Ko-fi (opens in a new tab)">

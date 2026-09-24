@@ -1,5 +1,7 @@
 # PearPlay brand and reproducible assets
 
+**Linux only. Mac support is coming soon.** The renderer uses the actual extension with synthetic Linux platform/browser/helper responses on its isolated Mac rendering host. This is UI evidence, not Mac compatibility or new Linux playback evidence.
+
 ## Identity
 
 The pear-plus-play idea stays: a broad pear silhouette, a substantial leaf and a dark play aperture. A dark outline defines it on light toolbars; the pear fill defines it on dark ones. There is no background tile, Apple mark, AirPlay mark or browser-vendor logo.

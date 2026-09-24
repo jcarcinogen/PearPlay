@@ -20,7 +20,7 @@ copyFileSync(file('extension/icons/icon.png'),file('assets/store/icon-1024.png')
 execFileSync(process.env.RSVG_CONVERT||'rsvg-convert',['-o',file('assets/landing/feature-direct.png'),file('assets/landing/feature-direct.svg')]);
 
 const c=await chromeSession();
-const evidence={browser:c.version,scope:'Actual unpacked extension popup.html, synthetic browser/native responses injected before its script. No live receiver, PIN, credentials or playback. Mac headless Chrome; not macOS playback evidence.',controls:[],captures:[],pages:[]};
+const evidence={browser:c.version,scope:'Actual unpacked extension popup.html, synthetic browser/native responses injected before its script. No live receiver, PIN, credentials or playback. Synthetic Linux platform response on Mac headless Chrome; not macOS compatibility or new Linux playback evidence.',controls:[],captures:[],pages:[]};
 try {
   const {id}=await c.send('Extensions.loadUnpacked',{path:file('extension')});
   async function page(url,width,height,theme='dark',fixture=false) {
@@ -129,7 +129,7 @@ try {
     if(source==='docs/index.html'){
       const copy=await c.evaluate(s,`(async()=>{let text='';Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async t=>{text=t}}});document.querySelector('[data-copy="linux"]').click();await new Promise(r=>setTimeout(r,20));return {text,expected:document.getElementById('linux').textContent,status:document.getElementById('copy-status').textContent}})()`);
       assert.equal(copy.text,copy.expected);assert.match(copy.status,/Copied/);
-      const fallback=await c.evaluate(s,`(async()=>{navigator.clipboard.writeText=async()=>{throw Error('denied')};document.querySelector('[data-copy="mac"]').click();await new Promise(r=>setTimeout(r,20));return {selection:getSelection().toString(),expected:document.getElementById('mac').textContent,status:document.getElementById('copy-status').textContent}})()`);
+      const fallback=await c.evaluate(s,`(async()=>{navigator.clipboard.writeText=async()=>{throw Error('denied')};document.querySelector('[data-copy="linux"]').click();await new Promise(r=>setTimeout(r,20));return {selection:getSelection().toString(),expected:document.getElementById('linux').textContent,status:document.getElementById('copy-status').textContent}})()`);
       assert.equal(fallback.selection,fallback.expected);assert.match(fallback.status,/selected/);
       evidence.clipboard='Exact-command copy and denied-permission selection fallback passed (clipboard boundary injected).';
     }

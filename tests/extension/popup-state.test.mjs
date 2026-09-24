@@ -8,7 +8,7 @@ async function popup(overrides={}) {
   const elements=new Map([...html.matchAll(/id="([^"]+)"/g)].map(m=>[m[1],{value:'',textContent:'',disabled:false,dataset:{},replaceChildren(){},append(){},addEventListener(){}}]));
   const view={enabled:true,selected:'video',receiver:'tv',localAvailable:false,candidates:[{id:'video',label:'Example film',videoId:'element'}],native:{state:'idle',error:null,receivers:[{identifier:'tv',label:'Living Room'}],capabilities:['start','stop']},...overrides};
   let timer;const calls=[];let fail=false;let release;let hold=false;
-  const chrome={tabs:{query:async()=>[{id:1,url:'https://example.test/watch'}]},permissions:{getAll:async()=>({origins:['http://*/*','https://*/*']})},runtime:{sendMessage:async m=>{calls.push(m);if(m.op==='view')return structuredClone(view);if(fail)throw Error('NATIVE_DISCONNECTED');if(hold)await new Promise(r=>{release=r});return m.op==='discover'?{receivers:view.native.receivers}:{ok:true}}}};
+  const chrome={tabs:{query:async()=>[{id:1,url:'https://example.test/watch'}]},permissions:{getAll:async()=>({origins:['http://*/*','https://*/*']})},runtime:{getPlatformInfo:async()=>({os:'linux'}),sendMessage:async m=>{calls.push(m);if(m.op==='view')return structuredClone(view);if(fail)throw Error('NATIVE_DISCONNECTED');if(hold)await new Promise(r=>{release=r});return m.op==='discover'?{receivers:view.native.receivers}:{ok:true}}}};
   await vm.runInNewContext(source,{document:{getElementById:id=>elements.get(id),createElement:()=>({})},chrome,URL,setInterval:fn=>{timer=fn},clearInterval(){}});
   return {elements,view,calls,refresh:()=>timer(),fail:()=>{fail=true},hold:()=>{hold=true},release:()=>{hold=false;release()}};
 }

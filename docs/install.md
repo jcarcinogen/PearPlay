@@ -1,20 +1,22 @@
 # Install PearPlay
 
-## Packaged setup — development preview
+**Linux only. Mac support is coming soon.** No Mac installation is offered while compatibility work is paused.
 
-The extension opens a setup tab on first installation. Use **Helper setup** in the popup to reopen it. A successful connection check is a real local helper handshake; it does not contact the TV. Choose **Find my TV** only when you want network discovery.
+## Guided setup — development preview
 
-The packaged installer supplies Python and the helper dependencies. Open **PearPlay Setup**, choose **Connect or repair browsers**, and select Chrome, Brave and/or Chromium. One installed payload serves those registrations. After adding a browser, fully quit and reopen it, then click **Check connection**. Website permissions remain separate; pairing state is shared under the same OS user.
+The extension opens a setup tab on first installation. Use **Helper setup** in the popup to reopen it. A successful check is a local helper handshake, not TV playback. Choose **Find my TV** only when you want network discovery.
 
-**Public installers are not published yet.** The setup page intentionally offers no download until the release catalog contains a verified asset for the platform, architecture and permanent extension ID. Local development packages exist for macOS Apple Silicon and Arch/Omarchy x86_64; they are not consumer releases. See [build instructions and release gates](helper-onboarding.md).
+The Linux package supplies Python and dependencies. Open **PearPlay Setup**, select your browser, fully quit/reopen it, then choose **Check connection**. Later launches offer repair and disconnection. Website permissions remain separate.
 
-For updates, end casting, quit browsers and install the newer package at the same location. Chrome Web Store updates do not update the helper. To remove it, use PearPlay Setup to disconnect browsers, then move the Mac app to Trash or remove the Linux package through your software manager. Credentials are preserved. Modified or unknown registration files are never overwritten or deleted. A legacy source installation must be removed with its original installer before switching to a packaged helper.
+**Public installers are not published yet.** The setup page offers no download until a verified asset matches Linux, architecture and extension identity. The Arch/Omarchy x86_64 development package is for rehearsal, not every Linux distribution. See [build instructions and release gates](helper-onboarding.md).
 
-Sandboxed Snap/Flatpak browsers are not supported by this installer. Browser beta/dev channels and custom configuration layouts need separate testing. **Brave playback, Chromium playback and packaged macOS playback remain unverified.**
+End casting and quit browsers before updating the package. Chrome Web Store updates do not update the helper. Disconnect browsers before package removal; saved TV pairing is preserved. Modified or unknown registrations are never overwritten or deleted. Remove a legacy source registration using its original installer before switching helper types.
 
-## Source installation — developer fallback
+Chrome is the Linux playback baseline. Brave and Chromium registration exist, but playback needs separate verification. Snap/Flatpak browsers, beta/dev channels and custom layouts are not supported installer targets.
 
-PearPlay is experimental and manually installed. Linux Chrome playback is the verified path. macOS has a native-host installer and discovery adapter; end-to-end playback remains unverified. Brave playback and Chromium playback are not verified targets; Edge is not an installer option.
+## Source installation — Linux developer fallback
+
+These instructions apply to Linux only. Mac source/runtime research is retained as paused history, not current setup advice.
 
 ## Before you start
 
@@ -58,31 +60,15 @@ CONFIG_PARENT="$HOME/.config"
 
 The installer writes under `google-chrome/NativeMessagingHosts` beneath that configuration parent. It does not install packages, services or firewall rules. When multicast discovery is empty, the helper can use an existing `avahi-browse` installation before trying unicast discovery.
 
-### macOS Chrome — experimental
-
-```sh
-EXTENSION_ID="paste_your_extension_id_here"
-PY="$HOME/.local/share/pearplay/venv/bin/python"
-CONFIG_PARENT="$HOME/Library/Application Support"
-"$PY" helper/install.py install --extension-id "$EXTENSION_ID" \
-  --browser chrome --config-parent "$CONFIG_PARENT" --python "$PY"
-```
-
-The installer writes under `Google/Chrome/NativeMessagingHosts`. Registration is not a discovery or playback test. **Python must be allowed to access the local network.** In the recorded development setup, the uv-managed interpreter was blocked when Chrome launched it, and scans returned empty. The proven workaround on that machine used an already-granted Python executable plus the venv’s site-packages via the installer’s optional `--pythonpath` argument.
-
-That machine-specific workaround is documented in [helper/README.md](../helper/README.md#macos-chrome-unpacked-install); it is not a universal macOS installation recipe. If discovery remains empty, inspect macOS Local Network permissions and the interpreter Chrome actually launches. Do not copy or replace an interpreter binary to change its identity. Using a different granted interpreter requires compatible Python versions and an absolute site-packages path. Retain the exact `--python` and `--pythonpath` arguments for a later uninstall.
-
-The discovery adapter falls back to `dns-sd` when Avahi is absent. It filters for Apple TV IPv4 addresses. This does not establish macOS playback support.
-
 ### Other registered browsers
 
 Repeat the registration command with `--browser brave` or `--browser chromium`, using the same Python environment. Unpacked extension IDs may differ by browser or path; use that browser’s actual ID. A published Web Store install uses the listing’s stable ID.
 
-| Browser | Linux directory beneath configuration parent | macOS directory beneath configuration parent |
-|---|---|---|
-| Chrome | `google-chrome` | `Google/Chrome` |
-| Brave | `BraveSoftware/Brave-Browser` | `BraveSoftware/Brave-Browser` |
-| Chromium | `chromium` | `Chromium` |
+| Browser | Linux directory beneath configuration parent |
+|---|---|
+| Chrome | `google-chrome` |
+| Brave | `BraveSoftware/Brave-Browser` |
+| Chromium | `chromium` |
 
 A browser installed later can be connected by reopening PearPlay Setup; installing another copy of the helper is unnecessary. If another browser is casting or pairing, end its helper session there first. No browser can stop another browser’s session through its own helper process.
 
@@ -121,4 +107,4 @@ If the original install included `--pythonpath`, include the identical argument.
 
 ## Evidence and scope
 
-Installer arguments and path handling: [helper/install.py](../helper/install.py). Native contract, identity checks, state meaning and privacy: [contract/v1.md](../contract/v1.md). Human playback results: [STATUS.md](../STATUS.md), newest first. These are manual instructions reviewed against source; this refresh did not perform a fresh daily-profile installation on either platform.
+Installer arguments and path handling: [helper/install.py](../helper/install.py). Native contract, identity checks, state meaning and privacy: [contract/v1.md](../contract/v1.md). Human playback results: [STATUS.md](../STATUS.md), newest first. These are manual instructions reviewed against source; this Linux-only scope update did not perform a new daily-profile installation or playback trial.

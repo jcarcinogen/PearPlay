@@ -2,13 +2,13 @@
 
 ## Audience and alternative
 
-A desktop Chrome user with an Apple TV on the same network who wants a compatible website video on the TV without mirroring the desktop. Linux is the proven playback source; macOS currently has an installer and discovery adapter, not a recorded end-to-end playback verdict. Alternatives include screen mirroring, Safari AirPlay on macOS, and paid desktop senders. No comparative speed, quality, or compatibility claim is established here.
+A desktop Chrome user with an Apple TV on the same network who wants a compatible website video on the TV without mirroring the desktop. Linux is the only current target. Mac support is coming soon. Mac work is paused, without a promised date. Alternatives include screen mirroring, Safari AirPlay on macOS, and paid desktop senders. No comparative speed, quality, or compatibility claim is established here.
 
 ## One-line promise
 
 **Your browser’s video. Your Apple TV.**
 
-Always pair this promise with: “Compatible streams, sent directly. Linux playback verified in Chrome; macOS playback unverified.” Never imply every website works.
+Always pair this promise with: “Compatible streams, sent directly. Linux only. Mac support is coming soon.” Never imply every website works.
 
 ## Three genuine differences
 
@@ -19,14 +19,14 @@ Always pair this promise with: “Compatible streams, sent directly. Linux playb
 ## Three honest limitations
 
 1. **The URL must work on the receiver.** HTTP(S) media only; a blob URL cannot be handed off. Cookies are not transferred. DRM, geography and other access controls are not bypassed. No ad blocking. Evidence: `contract/v1.md:3,24–28`, `STATUS.md:8,28,59`, URL validation in `extension/core.mjs`.
-2. **Compatibility is deliberately narrow.** Linux Chrome FOX playback is human-confirmed. macOS supplies an installer/discovery adapter; playback remains unverified. Brave and Edge are unverified. Invalid/expired-stream and broader receiver-lifecycle behavior remain open. Evidence: `STATUS.md:3–24,52–64`, `helper/README.md:3–11`, `extension/manifest.json`.
+2. **Compatibility is deliberately narrow.** Linux Chrome FOX playback is human-confirmed. Mac support is coming soon. Linux Brave/Chromium playback remains unverified; Edge is not a supported installer target. Invalid/expired-stream and broader receiver-lifecycle behavior remain open. Evidence: `STATUS.md:3–24,52–64`, `helper/README.md:3–11`, `extension/manifest.json`.
 3. **It is still an experimental, manually installed product.** Requires an unpacked extension and local Python helper. TV pause/resume are unavailable. End helper session is not a guarantee the TV stopped; the physical remote is the fallback. The current popup gates Find videos on all-sites permission even though a per-site grant control exists. Preserve and disclose that limitation rather than promising effective per-site discovery. Evidence: `helper/README.md:13–34,124–138`, `extension/popup.js:60–66,151–165`.
 
 ## Claims boundaries
 
 `STATUS.md` is chronological: the newest result at the top supersedes contradictory historical checkpoints below. The confirmed stop/recast and pre-roll transition apply to that FOX trial, not every stream. Public HLS audio/video was verified through the command adapter, not asserted as a new popup test. A protocol “playing” event is never human playback proof.
 
-Prefer “no account or cloud service required” over “no server”: there is a local native helper, and origin sites and Apple TV still communicate over the network. “No telemetry” must be backed by a source audit of the extension/helper, not assumed from the brief. Do not present the macOS network-permission workaround for one development machine as a universal installer recipe. No license is selected by this refresh.
+Prefer “no account or cloud service required” over “no server”: there is a local native helper, and origin sites and Apple TV still communicate over the network. “No telemetry” must be backed by a source audit of the extension/helper, not assumed from the brief. Do not offer Mac installation or permission workarounds while compatibility work is paused. The owner selected MIT for original project code before source publication; third-party notices remain applicable.
 
 ## Tone and visual direction
 

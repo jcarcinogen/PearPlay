@@ -1,6 +1,6 @@
 {
   "browser": "Chrome/153.0.8010.53",
-  "scope": "Actual unpacked extension popup.html, synthetic browser/native responses injected before its script. No live receiver, PIN, credentials or playback. Mac headless Chrome; not macOS playback evidence.",
+  "scope": "Actual unpacked extension popup.html, synthetic browser/native responses injected before its script. No live receiver, PIN, credentials or playback. Synthetic Linux platform response on Mac headless Chrome; not macOS compatibility or new Linux playback evidence.",
   "controls": [
     "grantAll",
     "grantSite",
@@ -23,7 +23,7 @@
     {
       "file": "assets/store/popup-light.png",
       "width": 360,
-      "height": 1131
+      "height": 1193
     },
     {
       "file": "assets/store/popup-light-viewport.png",
@@ -33,7 +33,7 @@
     {
       "file": "assets/store/popup-dark.png",
       "width": 360,
-      "height": 1131
+      "height": 1193
     },
     {
       "file": "assets/store/popup-dark-viewport.png",
@@ -43,22 +43,22 @@
     {
       "file": "assets/evidence/popup-playing.png",
       "width": 360,
-      "height": 1249
+      "height": 1323
     },
     {
       "file": "assets/evidence/popup-working.png",
       "width": 360,
-      "height": 1249
+      "height": 1323
     },
     {
       "file": "assets/evidence/popup-empty.png",
       "width": 360,
-      "height": 1267
+      "height": 1323
     },
     {
       "file": "assets/evidence/popup-error.png",
       "width": 360,
-      "height": 1267
+      "height": 1357
     },
     {
       "file": "assets/brand/icon-legibility.png",
@@ -103,12 +103,12 @@
     {
       "file": "assets/evidence/landing-mobile-light.png",
       "width": 390,
-      "height": 7925
+      "height": 7579
     },
     {
       "file": "assets/evidence/landing-mobile-dark.png",
       "width": 390,
-      "height": 7925
+      "height": 7579
     }
   ],
   "pages": [
@@ -437,10 +437,12 @@
         "#install",
         "https://github.com/jcarcinogen/PearPlay",
         "https://github.com/jcarcinogen/PearPlay/blob/main/STATUS.md",
-        "claims.md",
-        "install.md",
+        "https://github.com/jcarcinogen/PearPlay/blob/main/docs/claims.md",
+        "https://github.com/jcarcinogen/PearPlay/blob/main/docs/install.md",
         "https://github.com/jcarcinogen/PearPlay/blob/main/contract/v1.md",
         "https://github.com/jcarcinogen/PearPlay/tree/main/tests",
+        "https://github.com/jcarcinogen/PearPlay/blob/main/LICENSE",
+        "privacy.html",
         "https://github.com/jcarcinogen/PearPlay",
         "https://x.com/scottito22",
         "https://ko-fi.com/scottangel"
@@ -478,10 +480,12 @@
         "#install",
         "https://github.com/jcarcinogen/PearPlay",
         "https://github.com/jcarcinogen/PearPlay/blob/main/STATUS.md",
-        "claims.md",
-        "install.md",
+        "https://github.com/jcarcinogen/PearPlay/blob/main/docs/claims.md",
+        "https://github.com/jcarcinogen/PearPlay/blob/main/docs/install.md",
         "https://github.com/jcarcinogen/PearPlay/blob/main/contract/v1.md",
         "https://github.com/jcarcinogen/PearPlay/tree/main/tests",
+        "https://github.com/jcarcinogen/PearPlay/blob/main/LICENSE",
+        "privacy.html",
         "https://github.com/jcarcinogen/PearPlay",
         "https://x.com/scottito22",
         "https://ko-fi.com/scottangel"
@@ -534,8 +538,10 @@
         "tests/",
         "docs/claims.md",
         "assets/evidence/helper-onboarding-verification.md",
-        "docs/index.html",
+        "https://jcarcinogen.github.io/PearPlay/",
+        "https://jcarcinogen.github.io/PearPlay/privacy.html",
         "assets/brand/README.md",
+        "LICENSE",
         "spikes/002-command/LICENSE.md"
       ],
       "metadata": [],
@@ -569,10 +575,12 @@
         "#install",
         "https://github.com/jcarcinogen/PearPlay",
         "https://github.com/jcarcinogen/PearPlay/blob/main/STATUS.md",
-        "claims.md",
-        "install.md",
+        "https://github.com/jcarcinogen/PearPlay/blob/main/docs/claims.md",
+        "https://github.com/jcarcinogen/PearPlay/blob/main/docs/install.md",
         "https://github.com/jcarcinogen/PearPlay/blob/main/contract/v1.md",
         "https://github.com/jcarcinogen/PearPlay/tree/main/tests",
+        "https://github.com/jcarcinogen/PearPlay/blob/main/LICENSE",
+        "privacy.html",
         "https://github.com/jcarcinogen/PearPlay",
         "https://x.com/scottito22",
         "https://ko-fi.com/scottangel"
@@ -610,10 +618,12 @@
         "#install",
         "https://github.com/jcarcinogen/PearPlay",
         "https://github.com/jcarcinogen/PearPlay/blob/main/STATUS.md",
-        "claims.md",
-        "install.md",
+        "https://github.com/jcarcinogen/PearPlay/blob/main/docs/claims.md",
+        "https://github.com/jcarcinogen/PearPlay/blob/main/docs/install.md",
         "https://github.com/jcarcinogen/PearPlay/blob/main/contract/v1.md",
         "https://github.com/jcarcinogen/PearPlay/tree/main/tests",
+        "https://github.com/jcarcinogen/PearPlay/blob/main/LICENSE",
+        "privacy.html",
         "https://github.com/jcarcinogen/PearPlay",
         "https://x.com/scottito22",
         "https://ko-fi.com/scottangel"
@@ -629,6 +639,7 @@
     }
   ],
   "keyboardControls": [
+    "helperSetup",
     "About website access",
     "grantSite",
     "enable",
@@ -639,7 +650,6 @@
     "candidate",
     "discover",
     "hello",
-    "helperSetup",
     "receiver",
     "Connection and address",
     "status",

@@ -1,0 +1,21 @@
+{
+  "scope": "Actual isolated Mac Chrome platform detection and unsupported-platform UI; no native-helper or TV acceptance claim.",
+  "browser": "Chrome/153.0.8010.53",
+  "results": [
+    {
+      "page": "popup.html",
+      "actualPlatform": "mac",
+      "installOrCastingHidden": true,
+      "helperOrDownloadRequests": 0,
+      "consoleErrors": 0
+    },
+    {
+      "page": "setup.html",
+      "actualPlatform": "mac",
+      "installOrCastingHidden": true,
+      "helperOrDownloadRequests": 0,
+      "consoleErrors": 0
+    }
+  ],
+  "cleanup": "Owned browser and disposable profile closed/removed; no daily registration changed."
+}

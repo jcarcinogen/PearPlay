@@ -1,0 +1,17 @@
+{
+  "build_commit": "d382ccbf1e32c3565b32ea1f1c3e09acd6eb9457",
+  "pages": [
+    {
+      "url": "https://jcarcinogen.github.io/PearPlay/",
+      "http_status": 200,
+      "matches_committed_source": true,
+      "sha256": "3b833755e3b243190601233b58ff46cbb3871b01edbcd01c9cc9aa5aa9e68dd8"
+    },
+    {
+      "url": "https://jcarcinogen.github.io/PearPlay/privacy.html",
+      "http_status": 200,
+      "matches_committed_source": true,
+      "sha256": "163dcf135cdecff2aa9cc4650cd6d7f09aa6cacd2f8d321d953104101244174c"
+    }
+  ]
+}

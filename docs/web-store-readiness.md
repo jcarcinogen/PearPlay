@@ -47,12 +47,13 @@ Reviewer flow: install extension → install matching helper → restart Chrome 
 - [x] Ubuntu 24.04.5 x86_64/glibc 2.39 `.deb` built on the actual Ubuntu baseline; APT install, real graphical helper setup, sandboxed Google Chrome hello/status/repair/native-host removal and package remove/reinstall passed. Evidence: `assets/evidence/ubuntu-0.2.5-installer.json`.
 - [x] Non-Omarchy same-LAN discovery and fresh-PIN playback: Xubuntu live USB (detected Ubuntu 26.04.1/glibc 2.43), production 0.2.5 `.deb`, isolated sandboxed Chrome, actual toolbar popup, user-confirmed moving Apple TV video/audio and protocol readback. Evidence: `assets/evidence/xubuntu-live-0.2.5.json`. The earlier VM NAT limitation remains a separate result; neither installed drive nor firewall was changed.
 - [x] Graphical package-manager installation on Xubuntu 26.04.1: its pre-existing App Center installed the production `.deb` from package-absent state; UI, package database/logs, payload integrity and post-install Chrome connection/discovery passed. User pairing/registration metadata were preserved. Native XFCE defaults to GDebi, whose elevated window failed in this session; the earlier Engrampa default claim was an incomplete-SSH-environment error. Documented route: Open With → App Center. Dependencies were retained; this is not a universal distro/clean-reboot/authentication pass. Evidence: `assets/evidence/xubuntu-gui-install-0.2.5.json`. The extension was unpacked, not Store-installed.
-- [ ] Real download assets published, checksums verified and release catalog wired to matching OS/architecture/ID. No placeholder URLs.
+- [x] Public v0.2.5 `.deb`, Arch package and checksums re-downloaded without authentication: HTTP 200 and exact tested hashes. Final catalog and exact Store ZIP verified in real isolated Linux Chrome. See `assets/evidence/public-downloads-0.2.5.json` and `final-zip-browser-0.2.5.json`.
 - [x] Arch no-GUI `pacman -U` and Ubuntu/Debian `apt install` fallbacks are documented; no universal no-Terminal Linux install claim.
-- [ ] Fresh storefront screenshots from isolated synthetic UI; no Scott personal information, daily browser UI, real tokens or private network details.
-- [ ] Listing claims restricted to tested platforms/receivers; LG detection is not playback support.
-- [ ] Privacy policy publicly accessible; dashboard disclosures/permission explanations reconciled with final source.
-- [ ] Independent review findings resolved, final regression suite and exact release artifacts verified.
+- [x] Fresh storefront screenshots regenerated from isolated synthetic UI and visually inspected; no personal data or clipped labels.
+- [x] Draft listing and consumer copy restricted to verified Linux Chrome/Apple TV results; Brave/Chromium and LG playback not claimed.
+- [x] Privacy policy 0.2.5 and website returned HTTP 200 with exact committed bytes.
+- [ ] Actual dashboard disclosures/permission explanations reconciled with final source before submission.
+- [x] Independent release review passed; 69 Python/39 JS tests passed; exact release downloads and final ZIP verified.
 - [ ] Scott explicitly approves submission. Keep automatic publication disabled on first submission.
 
 ## Paused Mac work — not a Linux release gate

@@ -2,7 +2,19 @@
 
 **Current scope: Linux-only release target. Chrome and Brave are requested Linux targets. Mac support is coming soon. Mac tasks are paused and are NOT blockers for Linux release.**
 
-## Production identity, Ubuntu VM and Xubuntu live playback — 0.2.5 candidate
+## Published Linux helper preview and final Store ZIP — 0.2.5
+
+The [v0.2.5 helper preview](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5) is public, tagged at `d382ccbf1e32c3565b32ea1f1c3e09acd6eb9457`. It contains the verified x86_64 Ubuntu/Debian `.deb`, Arch/Omarchy `.pkg.tar.zst` and `SHA256SUMS.txt`. Unauthenticated re-downloads returned HTTP 200 and exactly matched the tested package/checksum bytes. The extension catalog contains those same public URLs and hashes. Packages remain unsigned; no Fedora/RPM, ARM or Mac artifact is offered.
+
+The website and 0.2.5 privacy page deployed successfully and returned HTTP 200 with exact committed bytes. Consumer docs use package-first onboarding and clearly document Arch's terminal fallback. **The Chrome Web Store item is still not submitted or public.** Reuse `eoadahoncjfpnennmkjifohclbafjkol`; do not create another item.
+
+Final upload: `Stuff/PearPlay Web Store/0.2.5/pearplay-0.2.5.zip`, SHA256 `54d190d2aa861ef3a8e4b78c51f777a98f3e15f298540c9297f9136a07953f84`. All 18 ZIP entries matched source, with manifest at root and no fixture key/rehearsal flag/native payload. That exact ZIP was transferred, hash-verified, extracted and loaded into real isolated Chrome on Linux: matching production identity, both downloads, missing-helper recovery and installed-helper readiness passed without source/fixture overrides. Test browser sessions closed afterward. No new TV playback trial is claimed.
+
+**69 Python + 39 JavaScript tests passed**; independent release review had no blockers. Brand regeneration exercised 18 captures/13 pages, no console errors or remote page-resource requests. Store screenshots were visually checked for synthetic data and unclipped text. Evidence: `assets/evidence/{publication-review,public-downloads,pages-publication,final-zip-browser}-0.2.5.json`.
+
+Remaining Store work: upload the ZIP into the existing item, complete/reconcile actual dashboard fields and reviewer instructions, then obtain explicit approval before submission with automatic publication disabled. Broader browser/receiver claims remain gated on separate tests. Mac support is coming soon.
+
+## Pre-publication verification record — production identity, Ubuntu VM and Xubuntu live playback
 
 The supplied Web Store public key derives exactly to **`eoadahoncjfpnennmkjifohclbafjkol`**. The manifest and release catalog now pin that identity, and production helper builds reject missing, malformed or mismatched public keys. The fixture key remains separate. Extension and helper versions are 0.2.5; Linux packages include the original project's MIT notice. These changes are not yet committed or published.
 

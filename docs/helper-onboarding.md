@@ -8,7 +8,7 @@
 - **Mac:** no current installer or download. Source/runtime/signing experiments remain archived for a future explicit decision to resume; do not replace security settings or reuse another application's permitted Python.
 - A Web Store extension cannot silently install its native helper; installation is an explicit separate step.
 
-The existing Web Store item's public key was verified to derive to `eoadahoncjfpnennmkjifohclbafjkol`. The current manifest, release catalog and production 0.2.5 helper pin that identity; `extension/releases.json` lists the matching x86_64 `.deb` and Arch downloads at the [0.2.5 preview release](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5). The extension is not yet submitted or public in the Web Store. The earlier development ID `hljhooeofdjbikkhbklccnlnladdbkfb` is historical, not this store item's ID. The rehearsal fixture ID `iojhjdcndgfoalcialdlgklfdnlpmobf` and `tests/browser/fixture-key.json` must never become the production allowlist/key.
+The existing Web Store item's public key was verified to derive to `eoadahoncjfpnennmkjifohclbafjkol`. The current manifest, release catalog and production 0.2.5 helper pin that identity; `extension/releases.json` lists the matching x86_64 `.deb`, Fedora RPM and Arch downloads at the [0.2.5 preview release](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5). The Store already offers extension 0.2.5; extension 0.2.6 is the pending update, using the same helper 0.2.5 and identity. The earlier development ID `hljhooeofdjbikkhbklccnlnladdbkfb` is historical, not this store item's ID. The rehearsal fixture ID `iojhjdcndgfoalcialdlgklfdnlpmobf` and `tests/browser/fixture-key.json` must never become the production allowlist/key.
 
 ## Boundaries
 
@@ -26,7 +26,7 @@ python scripts/build_helper.py --extension-id YOUR_EXACT_EXTENSION_ID --developm
 
 This is a developer command, not consumer onboarding. Build reports include artifact SHA-256, dependency versions/notices and smoke results. Linux packages declare Zenity, distro Avahi utilities and the build host's glibc floor. Verify Avahi service availability and receiver-scoped network requirements on a clean desktop.
 
-Do not convert Acer's glibc 2.44 Arch artifact into a generic Ubuntu package. Build `.deb` on the chosen Debian/Ubuntu baseline. Unavailable formats remain explicit gaps. Fedora and other distributions need separate evidence. The current builder rejects non-Linux hosts before creating build output; retained Mac internals are not a release route.
+Do not convert the earlier glibc 2.44 Arch artifact into a generic Ubuntu package. Build `.deb` on the chosen Debian/Ubuntu baseline. The existing RPM branch was exercised on Fedora 44 x86_64 / glibc 2.43; its tested artifact is now published in the 0.2.5 helper preview, with an unauthenticated re-download matching the SHA-256. [Fedora build/install/removal instructions](fedora-install.md) distinguish the successful initial GNOME Software installation from its authorization-failed graphical reinstall and successful DNF fallback. CIFS-synthesized execute bits on bundled data are normalized during staging, with regression and real-RPM checks. Other distributions and architectures still need separate evidence. The current builder rejects non-Linux hosts before creating build output; retained Mac internals are not a release route.
 
 ## Graphical installation evidence
 

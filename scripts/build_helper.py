@@ -38,7 +38,12 @@ def stage_payload(payload, stage, config):
         # Change only staged objects, never symlink targets or the source payload.
         for path in [stage, *stage.rglob('*')]:
             if not path.is_symlink():
-                path.chmod(0o755 if path.is_dir() or path.stat().st_mode & 0o111 else 0o644)
+                # CIFS may present every source file as executable. These are
+                # bundled data, even when the share synthesizes execute bits.
+                data = (path.name == 'LICENSE' or path.suffix in ('.py', '.json', '.png')
+                        or path.is_relative_to(stage/'opt/pearplay/PearPlayHelper/THIRD_PARTY_LICENSES'))
+                executable = path.stat().st_mode & 0o111 and not data
+                path.chmod(0o755 if path.is_dir() or executable else 0o644)
     return stage
 
 

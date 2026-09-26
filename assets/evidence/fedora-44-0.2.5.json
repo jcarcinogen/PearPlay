@@ -1,0 +1,231 @@
+{
+  "scope": "Local Fedora 44 GNOME x86_64 RPM rehearsal; unpublished; no pairing/playback or Brave use",
+  "artifact": {
+    "path": "/Volumes/IronWolf/Stuff/PearPlay/Installer Test/0.2.5/fedora-44/pearplay-helper-0.2.5-linux-x86_64.rpm",
+    "sha256": "a4fc413ef072732e4993b8f2fa9de3f76bb7f93df834378c7e7d3b3d3066193f",
+    "sizeBytes": 25976381
+  },
+  "host": {
+    "distro": "Fedora 44 Workstation",
+    "arch": "x86_64",
+    "glibc": "2.43",
+    "selinux": "Enforcing",
+    "firewalld": "active"
+  },
+  "tests": {
+    "fedoraPytest": 83,
+    "fedoraSubtests": 26,
+    "miniUnittest": 71,
+    "javascriptEachHost": 39
+  },
+  "initialInstall": {
+    "route": "GNOME Software local file -> Install; Scott authenticated locally",
+    "verified": true,
+    "candidateSha256": "f99c12557cce8d2026c59cadb51f61ba295ab63c426f54d8d35fbd09c1fcaf18"
+  },
+  "guiSetup": {
+    "desktopEntry": "pearplay-setup.desktop",
+    "browser": "Chromium only, disposable config root",
+    "connect": true,
+    "repeatRepair": true,
+    "disconnect": true,
+    "reconnectAfterReinstall": true,
+    "manifestMode": "0600",
+    "manifestSha256": "99e1b0fa10b6bef63b0fe2cc98584f523d265af9615fe1073ec6be9e11a5981b",
+    "note": "Initial-candidate GUI repair/disconnect evidence; delivered-artifact actual GUI connect and browser repair/disconnect were repeated."
+  },
+  "removal": {
+    "route": "GNOME Software Uninstall -> confirmation",
+    "rpmAbsent": true,
+    "payloadAbsent": true,
+    "freshBrowserMissing": true,
+    "dependenciesPreserved": true,
+    "candidateSha256": "f99c12557cce8d2026c59cadb51f61ba295ab63c426f54d8d35fbd09c1fcaf18"
+  },
+  "reinstall": {
+    "graphical": false,
+    "graphicalError": "Failed to run transaction: Not authorized",
+    "fallback": "sudo dnf --repo=fedora --repo=updates install /home/scott/.cache/pearplay-fedora/final-build/pearplay-helper-0.2.5-linux-x86_64.rpm",
+    "dnfVerified": true
+  },
+  "installedVerification": {
+    "identity": "pearplay-helper 0.2.5 x86_64",
+    "files": 853,
+    "requirements": [
+      "avahi-tools",
+      "glibc >= 2.43",
+      "rpmlib(CompressedFileNames) <= 3.0.4-1",
+      "rpmlib(FileDigests) <= 4.6.0-1",
+      "rpmlib(PayloadFilesHavePrefix) <= 4.0-1",
+      "rpmlib(PayloadIsZstd) <= 5.4.18-1",
+      "zenity"
+    ],
+    "rootOwned": true,
+    "modesChecked": true,
+    "scriptlets": false,
+    "sha256": "a4fc413ef072732e4993b8f2fa9de3f76bb7f93df834378c7e7d3b3d3066193f",
+    "installed": true,
+    "selfTest": {
+      "ok": true,
+      "version": "0.2.5",
+      "dependencies": "loaded",
+      "network": "not used"
+    },
+    "productionIdentity": "eoadahoncjfpnennmkjifohclbafjkol"
+  },
+  "automaticBrowser": [
+    {
+      "browser": "Chrome/153.0.8010.52",
+      "variant": "chromium",
+      "productionIdentity": true,
+      "extensionId": "eoadahoncjfpnennmkjifohclbafjkol",
+      "installer": "Linux/Mac package",
+      "installed": false,
+      "connection": "missing",
+      "repairChecked": false,
+      "uninstallChecked": false,
+      "scope": "Real setup page and helper hello/status; no network discovery or playback"
+    },
+    {
+      "browser": "Chrome/153.0.8010.52",
+      "variant": "chromium",
+      "productionIdentity": true,
+      "extensionId": "eoadahoncjfpnennmkjifohclbafjkol",
+      "installer": "Linux/Mac package",
+      "installed": true,
+      "connection": "ready",
+      "repairChecked": true,
+      "uninstallChecked": true,
+      "scope": "Real setup page and helper hello/status; no network discovery or playback"
+    }
+  ],
+  "headedDiscovery": {
+    "browser": "Chrome/153.0.8010.52",
+    "variant": "Fedora native Chromium",
+    "extensionId": "eoadahoncjfpnennmkjifohclbafjkol",
+    "productionSource": true,
+    "connection": "ready",
+    "rounds": [
+      {
+        "found": true,
+        "appleTV": true,
+        "otherVideoReceiver": true,
+        "failed": false,
+        "empty": false
+      },
+      {
+        "found": true,
+        "appleTV": true,
+        "otherVideoReceiver": true,
+        "failed": false,
+        "empty": false
+      },
+      {
+        "found": true,
+        "appleTV": true,
+        "otherVideoReceiver": true,
+        "failed": false,
+        "empty": false
+      }
+    ],
+    "paired": false,
+    "played": false,
+    "hello": {
+      "ok": true,
+      "version": "0.2.5",
+      "state": "idle"
+    },
+    "sandbox": true
+  },
+  "headedAfterPackageRemoval": {
+    "browser": "Chrome/153.0.8010.52",
+    "variant": "Fedora native Chromium",
+    "extensionId": "eoadahoncjfpnennmkjifohclbafjkol",
+    "productionSource": true,
+    "connection": "missing",
+    "sandbox": true
+  },
+  "headedAfterReinstall": {
+    "browser": "Chrome/153.0.8010.52",
+    "variant": "Fedora native Chromium",
+    "extensionId": "eoadahoncjfpnennmkjifohclbafjkol",
+    "productionSource": true,
+    "connection": "ready",
+    "rounds": [
+      {
+        "found": true,
+        "appleTV": true,
+        "otherVideoReceiver": true,
+        "failed": false,
+        "empty": false
+      },
+      {
+        "found": true,
+        "appleTV": true,
+        "otherVideoReceiver": true,
+        "failed": false,
+        "empty": false
+      },
+      {
+        "found": true,
+        "appleTV": true,
+        "otherVideoReceiver": true,
+        "failed": false,
+        "empty": false
+      }
+    ],
+    "paired": false,
+    "played": false,
+    "hello": {
+      "ok": true,
+      "version": "0.2.5",
+      "state": "idle"
+    },
+    "sandbox": true
+  },
+  "cleanup": {
+    "ownedBrowserProcesses": [],
+    "testRegistrationRemoved": true,
+    "personalChromeChromiumRegistrationAndPairingAbsentBeforeAndAfter": true,
+    "testOnlyChromiumTree": true,
+    "package": "pearplay-helper-0.2.5-1.x86_64",
+    "selinux": "Enforcing",
+    "firewall": "active",
+    "sourceHashes": {
+      "scripts/build_helper.py": "bee1664c1dc8831abbfa249548c9a335f720225b96ada6fb95948f20fd77ab7a",
+      "helper/install.py": "4b556f475ceb49620e5d2e996d4202179341a7a38e79e3fc080032f1d7d41ab0",
+      "helper/app.py": "80fbd4400358b7541f8ff247fd275c1d19f2894aa7d8c5ac373b97c798a82bb9",
+      "helper/setup.py": "93f621534a9d8d0d35d09c5d13cffd2c128694283c8cbaa41ad0a8313fb6f89a",
+      "extension/manifest.json": "1adc4a791bcfa91202cbdbe30d87b8ad45a21d2220b0f23bc81d09efe04629cc",
+      "extension/releases.json": "a4faf2bd403c9b9d69572311a1e8db1250d4c103e84368ed20c23581e4a3764c",
+      "tests/test_helper_package.py": "aa16e2510f9860ca4541c3a9758a10a58835d0ba0ed992f723fbd4c44cd78e4e",
+      "tests/verify_fedora_rpm.py": "17a13e5796e6ef4b8a8535d327a411bf45e1020f3de33d1eeef1c9accbafca7c"
+    }
+  },
+  "limitations": [
+    "Unpacked extension, not a Chrome Web Store install",
+    "RPM unsigned and unpublished; public catalog unchanged",
+    "Brave and personal Chrome untouched; Flatpak browsers not used or supported",
+    "No Fedora pairing or TV video/audio verdict",
+    "Same-version removal/reinstall, not cross-version upgrade",
+    "Zenity and Avahi dependencies already installed",
+    "File-manager double-click not automated; direct GNOME Software local-file invocation verified",
+    "Initial headed browser attempt used X11 and failed display authentication; explicit Wayland launch passed without weakening security",
+    "Nonfatal builder warnings: Windows-only Iphlpapi unavailable; RPM changelog absent",
+    "GNOME Software package-install/removal evidence is earlier-candidate scope; final artifact package lifecycle was repeated through DNF, with actual GNOME setup and headed discovery repeated afterward."
+  ],
+  "rawEvidenceDirectory": "/Volumes/IronWolf/Stuff/PearPlay/Installer Test/0.2.5/fedora-44/evidence",
+  "review": "Second independent read-only review passed: no introduced security concerns or logic errors. Initial review prompted third-party-license mode correction; incorrect octal-parsing claim disproved by actual RPM numeric output. Non-blocking verifier suggestions retained for future hardening: explicit archive executable assertion, signatureVerified:false reporting, and dependency-versions.json presence check. Installed execution and full staged-byte comparison passed for this exact artifact; the RPM remains unsigned.",
+  "finalArtifactLifecycle": {
+    "route": "Approved DNF reinstall -> remove only pearplay-helper -> install, each verified",
+    "exitCode": 0,
+    "log": "reviewed-lifecycle.log",
+    "exactInstalledBytes": {
+      "exactStagedFileBytesMatchInstalled": 703,
+      "package": "pearplay-helper-0.2.5-1.x86_64",
+      "lifecyclePassed": true
+    },
+    "graphicalSetupRetested": true,
+    "graphicalPackageInstallNotRetested": true
+  }
+}

@@ -13,9 +13,9 @@ Download from the **[0.2.5 helper release](https://github.com/jcarcinogen/PearPl
 - [Ubuntu/Debian x86_64 `.deb`](https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.deb): Ubuntu 24.04 baseline, glibc 2.39+.
 - [Arch/Omarchy x86_64 package](https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.pkg.tar.zst): glibc 2.44+.
 
-No Fedora/RPM or ARM package is offered. Packages are unsigned: use the trusted GitHub release, compare its `SHA256SUMS.txt`, and use normal package-manager authentication without disabling security. Checksums detect mismatched bytes; they are not a signing certificate.
+[Fedora 44 x86_64 RPM](https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.rpm) is also published, requiring glibc 2.43+. See [Fedora instructions and limits](fedora-install.md). No ARM package is offered. The existing Store extension is 0.2.5; the 0.2.6 update adds the Fedora download button. Packages are unsigned: use the trusted GitHub release, compare Debian/Arch with `SHA256SUMS.txt` and Fedora with `pearplay-helper-0.2.5-linux-x86_64.rpm.sha256`, and use normal package-manager authentication without disabling security. Checksums detect mismatched bytes; they are not a signing certificate.
 
-The Chrome Web Store listing is **not yet submitted or public**. Until then, get this repository and load its `extension/` directory using Chrome’s **Load unpacked**. The pinned public key supplies the matching production identity. The packaged helper requires no Python setup or manual extension-ID command.
+Install the extension from the **[Chrome Web Store](https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol)** (currently 0.2.5). The pending 0.2.6 update adds Fedora downloads and clearer setup instructions. To test that update before Store approval, load this repository’s `extension/` directory using Chrome’s **Load unpacked**. The pinned public key supplies the matching production identity. The packaged helper requires no Python setup or manual extension-ID command.
 
 End casting and quit browsers before updating the package. Chrome Web Store updates do not update the helper. Disconnect browsers before package removal; saved TV pairing is preserved. Modified or unknown registrations are never overwritten or deleted. Remove a legacy source registration using its original installer before switching helper types.
 
@@ -40,14 +40,24 @@ cd ~/Downloads
 sudo apt install ./pearplay-helper-0.2.5-linux-x86_64.deb
 ```
 
-Arch/Omarchy without a graphical package installer:
+### Arch / Omarchy — step-by-step installation
 
-```sh
-cd ~/Downloads
-sudo pacman -U ./pearplay-helper-0.2.5-linux-x86_64.pkg.tar.zst
-```
+Without a graphical package installer, use the **Terminal** app. Do not extract the downloaded file.
 
-If your browser saved elsewhere, open a terminal in that folder instead. Then open **PearPlay Setup**, select Chrome, and fully quit/reopen Chrome. To remove the packaged helper, first use PearPlay Setup to disconnect browsers, then remove `pearplay-helper` with your normal package manager. Saved TV pairing remains.
+1. Click **Download for Arch / Omarchy** in PearPlay’s setup page. Save it in **Downloads**, keeping its original filename.
+2. Open **Terminal**, paste this whole command, and press Enter:
+
+   ```sh
+   sudo pacman -U "$HOME/Downloads/pearplay-helper-0.2.5-linux-x86_64.pkg.tar.zst"
+   ```
+
+3. If asked, type your computer password and press Enter. **Nothing appears while you type the password—that is normal.** Review the installation prompt, then type **Y** and press Enter to continue. Wait until installation finishes.
+4. Open **PearPlay Setup** from the app launcher and select your browser.
+5. Fully quit and reopen the browser. Open PearPlay’s **Helper setup** and click **Check connection**.
+
+If Terminal says the file cannot be found, check that it is in Downloads and has the filename shown above. If installation fails for another reason, stop and seek help; do not disable package-signature checks.
+
+For the Arch command above, move the package into Downloads first if your browser saved it elsewhere. For Ubuntu/Debian’s relative-path command, open a terminal in the download folder. Then open **PearPlay Setup**, select your browser, and fully quit/reopen it. To remove the packaged helper, first use PearPlay Setup to disconnect browsers, then remove `pearplay-helper` with your normal package manager. Saved TV pairing remains.
 
 ## Source installation — Linux developer fallback
 

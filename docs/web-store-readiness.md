@@ -1,13 +1,13 @@
-# Chrome Web Store preparation — not submitted
+# Chrome Web Store 0.2.6 update preparation — update not submitted
 
 **Linux only. Mac support is coming soon.** Mac compatibility work is paused and is not a Linux release blocker.
 
 ## Deliverables and identity
 
-The final upload artifact is `pearplay-0.2.5.zip` in `Stuff/PearPlay Web Store/0.2.5/`. Its manifest is at the ZIP root. It excludes helpers, Python, build caches, tests, fixture keys and the local installer-rehearsal flag. It contains the verified Store public key and the matching Linux helper download catalog. This is an upload handoff, not Store submission approval.
+The final upload artifact is `pearplay-0.2.6.zip` in `Stuff/PearPlay/Web Store/0.2.6/`. Its manifest is at the ZIP root. It excludes helpers, Python, build caches, tests, fixture keys and the local installer-rehearsal flag. It contains the verified Store public key and the matching Linux helper download catalog. Extension 0.2.6 uses the separately versioned, unchanged helper 0.2.5. Scott approved submission/publication, but dashboard Google sign-in currently blocks this session; actual 0.2.6 submission/publication remains unverified. The public Store page was checked and lists existing version 0.2.5, updated September 25, 2026.
 
-1. Open the existing **PearPlay** draft `eoadahoncjfpnennmkjifohclbafjkol`. Do not create a second listing or confuse it with Open Autofill.
-2. Upload the final ZIP under **Package** and confirm version 0.2.5. **Do not click Submit for Review or Publish.**
+1. Open the existing **PearPlay** item `eoadahoncjfpnennmkjifohclbafjkol`. Do not create a second listing or confuse it with Open Autofill.
+2. Upload the final ZIP under **Package** and confirm version 0.2.6. Reconcile the dashboard fields, then submit for review under Scott’s approval; publish the update after Google approves it.
 3. **Completed:** Scott supplied Item ID `eoadahoncjfpnennmkjifohclbafjkol` and its Package public key. Format and SHA256-derived identity match exactly. Reuse this existing item; do not create another.
 4. **Completed in candidate source:** the 0.2.5 manifest, release catalog and Ubuntu production helper use this identity. Real Chrome tests in the clean Ubuntu VM verified the matching ID, native allowlist, connection, repair and removal. Other release gates remain below.
 5. Replace the draft ZIP with the final version only after matching helper downloads are actually published and verified. Rehearsal uses a dedicated fixture ID and does not establish the store ID.
@@ -54,11 +54,11 @@ Reviewer flow: install extension → install matching helper → restart Chrome 
 - [x] Privacy policy 0.2.5 and website returned HTTP 200 with exact committed bytes.
 - [ ] Actual dashboard disclosures/permission explanations reconciled with final source before submission.
 - [x] Independent release review passed; 69 Python/39 JS tests passed; exact release downloads and final ZIP verified.
-- [ ] Scott explicitly approves submission. Keep automatic publication disabled on first submission.
+- [x] Scott explicitly approved submission/publication of the 0.2.6 update. Existing version 0.2.5 is already public; approval to update it is not evidence that 0.2.6 submission occurred.
 
 ## Paused Mac work — not a Linux release gate
 
-Mac research and old artifacts are preserved, but no Mac install, signing purchase, consent or playback test is scheduled. Resume only if Scott explicitly reopens Mac work. The current Ubuntu candidate is in `Stuff/PearPlay Installer Test/0.2.5/ubuntu/`; the 0.2.4 and older mixed-platform kits are historical. The source and project website are authorized for publication separately; helper publication is now approved, but Google review submission remains unapproved.
+Mac research and old artifacts are preserved, but no Mac install, signing purchase, consent or playback test is scheduled. Resume only if Scott explicitly reopens Mac work. The current Ubuntu candidate is in `Stuff/PearPlay/Installer Test/0.2.5/ubuntu/`; the 0.2.4 and older mixed-platform kits are historical. The source and project website are authorized for publication separately; helper publication and the 0.2.6 Google review submission/publication are approved. Dashboard sign-in is still required to carry out and verify Store actions.
 
 Official references:
 - https://developer.chrome.com/docs/extensions/reference/manifest/key

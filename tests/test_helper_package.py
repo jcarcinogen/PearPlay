@@ -32,6 +32,46 @@ class PackageTests(unittest.TestCase):
             self.assertEqual(stat.S_IMODE(outside.stat().st_mode),0o600)
             self.assertEqual(stat.S_IMODE(binary.stat().st_mode),0o700)
 
+    def test_linux_stage_does_not_inherit_network_share_data_execute_bits(self):
+        import stat
+        from unittest.mock import patch
+        spec=importlib.util.spec_from_file_location('build_helper',ROOT/'scripts/build_helper.py')
+        assert spec is not None and spec.loader is not None
+        build=importlib.util.module_from_spec(spec);spec.loader.exec_module(build)
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary)
+            source=root/'source';(source/'extension/icons').mkdir(parents=True)
+            for path in (source/'LICENSE',source/'extension/icons/icon128.png'):
+                path.write_bytes(b'data');path.chmod(0o755)
+            payload=root/'payload';(payload/'_internal/spikes').mkdir(parents=True)
+            binary=payload/'PearPlayHelper';binary.write_bytes(b'executable');binary.chmod(0o755)
+            script=payload/'_internal/spikes/command.py';script.write_text('# bundled data');script.chmod(0o755)
+            with patch.object(build,'ROOT',source):
+                stage=build.stage_payload(payload,root/'stage',{'platform':'linux'})
+            for relative in ('opt/pearplay/PearPlayHelper/LICENSE',
+                             'usr/share/icons/hicolor/128x128/apps/pearplay.png',
+                             'opt/pearplay/PearPlayHelper/_internal/spikes/command.py'):
+                self.assertEqual(stat.S_IMODE((stage/relative).stat().st_mode),0o644,relative)
+            self.assertEqual(stat.S_IMODE((stage/'opt/pearplay/PearPlayHelper/PearPlayHelper').stat().st_mode),0o755)
+            self.assertEqual(stat.S_IMODE(script.stat().st_mode),0o755,'Original payload must stay unchanged')
+
+    def test_linux_stage_license_directory_is_data_regardless_of_filename(self):
+        import stat
+        spec=importlib.util.spec_from_file_location('build_helper',ROOT/'scripts/build_helper.py')
+        assert spec is not None and spec.loader is not None
+        build=importlib.util.module_from_spec(spec);spec.loader.exec_module(build)
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary)
+            payload=root/'payload'
+            licenses=payload/'THIRD_PARTY_LICENSES';licenses.mkdir(parents=True)
+            for name in ('airplay-adapter.md','COPYING','license.txt'):
+                path=licenses/name;path.write_text('notice');path.chmod(0o755)
+            stage=build.stage_payload(payload,root/'stage',{'platform':'linux'})
+            for name in ('airplay-adapter.md','COPYING','license.txt'):
+                path=stage/'opt/pearplay/PearPlayHelper/THIRD_PARTY_LICENSES'/name
+                self.assertEqual(stat.S_IMODE(path.stat().st_mode),0o644,name)
+                self.assertEqual(stat.S_IMODE((licenses/name).stat().st_mode),0o755)
+
     def test_macos_stage_keeps_native_bundle_resources_out_of_code_directories(self):
         spec=importlib.util.spec_from_file_location('build_helper',ROOT/'scripts/build_helper.py')
         assert spec is not None and spec.loader is not None

@@ -1,0 +1,145 @@
+{
+  "extensionVersion": "0.2.6",
+  "helperVersion": "0.2.5",
+  "zip": {
+    "extensionVersion": "0.2.6",
+    "helperVersion": "0.2.5",
+    "extensionId": "eoadahoncjfpnennmkjifohclbafjkol",
+    "sha256": "34e3ab6cce8f96d7a667a5159cc4c985e3588d5e1bf8d2aa9fb2440c6b19f170",
+    "entries": [
+      "content.js",
+      "core.mjs",
+      "icons/icon.png",
+      "icons/icon128.png",
+      "icons/icon16.png",
+      "icons/icon32.png",
+      "icons/icon48.png",
+      "manifest.json",
+      "native.mjs",
+      "popup.html",
+      "popup.js",
+      "releases.json",
+      "setup-model.mjs",
+      "setup.html",
+      "setup.mjs",
+      "tip-with-x-money.png",
+      "worker.mjs",
+      "LICENSE"
+    ],
+    "allEntriesMatchSource": true,
+    "manifestAtRoot": true,
+    "fixtureOverrides": false,
+    "includesArchInstructions": true
+  },
+  "browser": {
+    "results": [
+      {
+        "browser": "Chrome/153.0.8010.52",
+        "variant": "Fedora native Chromium",
+        "extensionId": "eoadahoncjfpnennmkjifohclbafjkol",
+        "extensionVersion": "0.2.6",
+        "connection": "missing",
+        "exactExtractedZip": true,
+        "downloads": [
+          {
+            "label": "Download for Ubuntu / Debian",
+            "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.deb"
+          },
+          {
+            "label": "Download for Fedora",
+            "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.rpm"
+          },
+          {
+            "label": "Download for Arch / Omarchy",
+            "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.pkg.tar.zst"
+          }
+        ],
+        "warning": {
+          "text": "Flatpak-installed versions of Google Chrome and Chromium are not supported.",
+          "weight": "700",
+          "visible": true,
+          "beforeInstall": true,
+          "overflow": false
+        },
+        "sandbox": true,
+        "consoleExceptions": 0
+      },
+      {
+        "browser": "Chrome/153.0.8010.52",
+        "variant": "Fedora native Chromium",
+        "extensionId": "eoadahoncjfpnennmkjifohclbafjkol",
+        "extensionVersion": "0.2.6",
+        "connection": "ready",
+        "exactExtractedZip": true,
+        "downloads": [
+          {
+            "label": "Download for Ubuntu / Debian",
+            "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.deb"
+          },
+          {
+            "label": "Download for Fedora",
+            "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.rpm"
+          },
+          {
+            "label": "Download for Arch / Omarchy",
+            "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.pkg.tar.zst"
+          }
+        ],
+        "warning": {
+          "text": "Flatpak-installed versions of Google Chrome and Chromium are not supported.",
+          "weight": "700",
+          "visible": true,
+          "beforeInstall": true,
+          "overflow": false
+        },
+        "hello": {
+          "ok": true,
+          "v": 1,
+          "helperVersion": "0.2.5"
+        },
+        "repairAndRemovalPassed": true,
+        "sandbox": true,
+        "consoleExceptions": 0
+      }
+    ],
+    "scope": "Exact extension ZIP 0.2.6 with installed Fedora helper 0.2.5; missing/ready/repair/removal; no TV discovery, pairing or playback"
+  },
+  "publicDownloads": [
+    {
+      "format": "deb",
+      "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.deb",
+      "status": 200,
+      "bytes": 23092862,
+      "sha256": "9d53f65b38724750f8f428ead0f7fe976cc4ec0253fea2c73da0459ef90b0b5f",
+      "catalogMatch": true
+    },
+    {
+      "format": "rpm",
+      "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.rpm",
+      "status": 200,
+      "bytes": 25976381,
+      "sha256": "a4fc413ef072732e4993b8f2fa9de3f76bb7f93df834378c7e7d3b3d3066193f",
+      "catalogMatch": true
+    },
+    {
+      "format": "pkg.tar.zst",
+      "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.pkg.tar.zst",
+      "status": 200,
+      "bytes": 29702746,
+      "sha256": "aa2008cfb1107ff12a203f7d87fef80854d88618a741ca16026311fb8e24be93",
+      "catalogMatch": true
+    }
+  ],
+  "tests": {
+    "pythonUnittest": 71,
+    "javascript": 39,
+    "failed": 0
+  },
+  "archInstructions": {
+    "setupExpanded": true,
+    "publicPageCopyCommandVerified": true,
+    "passwordAndConfirmationExplained": true,
+    "screenshotsVisuallyChecked": true
+  },
+  "scope": "Connection and setup only; no new playback claim. Scott reported testing complete. Store actions blocked by Google sign-in; submission/publication not verified."
+}

@@ -21,10 +21,10 @@ Then run the helper installer. For a download extracted in Downloads:
 bash "$HOME/Downloads/pearplay-helper-macos/install-macos.sh"
 ```
 
-For Scott's shared test kit instead:
+For Scott's archived shared test kit (historical only; Mac work is paused):
 
 ```sh
-bash "/Volumes/IronWolf/Stuff/PearPlay Installer Test/0.2.3/pearplay-helper-macos/install-macos.sh"
+bash "/Volumes/IronWolf/Stuff/PearPlay/Installer Test/archive/0.2.3/pearplay-helper-macos/install-macos.sh"
 ```
 
 Use the matching test extension supplied with this development bundle. It has fixture ID `iojhjdcndgfoalcialdlgklfdnlpmobf`, **not a production Web Store identity**. Do not use the test bundle's key for the store upload.

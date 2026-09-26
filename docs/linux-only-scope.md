@@ -8,7 +8,7 @@
 - New Mac Terminal installs and non-Linux helper builds stop before setup/build side effects. Historical Mac functions/tests and receipt-guarded removal remain; no installed runtime or pairing was removed.
 - README, install/helper guides, store listing/readiness/privacy drafts, positioning/claims, landing page, marketing sources and regenerated screenshots now agree on Linux-only scope. Mac signing/playback are not Linux release blockers.
 - Mac research and previous evidence are visibly archived rather than erased. Current project guidance and the Stuff design prompt were aligned.
-- Current Stuff kit is `PearPlay Installer Test/0.2.4/`: extension 0.2.4, unchanged Linux helper 0.2.3, isolated-fixture extension, draft-only ZIP and matching privacy/readiness drafts. Old mixed-platform artifacts are preserved byte-for-byte under `archive/0.2.3/`, with a redirect at the old entry point.
+- Current Stuff kit is `PearPlay/Installer Test/0.2.4/`: extension 0.2.4, unchanged Linux helper 0.2.3, isolated-fixture extension, draft-only ZIP and matching privacy/readiness drafts. Old mixed-platform artifacts are preserved byte-for-byte under `archive/0.2.3/`, with a redirect at the old entry point.
 
 ## Executed verification
 

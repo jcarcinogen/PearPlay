@@ -88,7 +88,7 @@
     {
       "file": "assets/evidence/landing.png",
       "width": 1440,
-      "height": 5076
+      "height": 4935
     },
     {
       "file": "assets/evidence/landing-first-screen.png",
@@ -103,12 +103,12 @@
     {
       "file": "assets/evidence/landing-mobile-light.png",
       "width": 390,
-      "height": 8032
+      "height": 7926
     },
     {
       "file": "assets/evidence/landing-mobile-dark.png",
       "width": 390,
-      "height": 8032
+      "height": 7926
     }
   ],
   "pages": [

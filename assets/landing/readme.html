@@ -21,8 +21,8 @@
 <li><strong>Guided helper setup.</strong> A first-run tab checks whether the helper is connected and explains installation, updates, and repair. Reopen it with <strong>Setup</strong> in the popup.</li>
 <li><strong>One helper, multiple browsers.</strong> The packaged helper can register with Chrome, Brave, and Chromium separately. Install the extension in each browser you want to use; pairing credentials are shared under the same operating-system user.</li>
 </ul>
-<p><strong><a href="https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol">Install PearPlay from the Chrome Web Store</a></strong> (currently 0.2.6), then install the separate <strong><a href="https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5">Linux helper 0.2.5</a></strong>. The compact 0.2.7 extension update is being prepared. Browser registration support does not mean playback has been verified in every browser.</p>
-<p><strong>Release scope:</strong> the compact 0.2.7 popup uses existing helper 0.2.5 downloads. Helper changes in this checkout are unreleased; they do not establish a receiver-specific HLS fix or a shipped firewall-management feature.</p>
+<p><strong><a href="https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol">Install PearPlay from the Chrome Web Store</a></strong> (currently 0.2.6), then install the separate <strong><a href="https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5">Linux helper 0.2.5</a></strong>. The compact 0.2.7 extension update is being prepared. Playback has been user-confirmed in Linux Chrome, Brave and Chromium on tested streams.</p>
+<p><strong>Release scope:</strong> the compact 0.2.7 popup uses existing helper 0.2.5 downloads. Helper changes in this checkout are unreleased; they do not establish a shipped firewall-management feature.</p>
 <h2>Compatibility</h2>
 <table>
 <thead>
@@ -42,11 +42,11 @@
 </tr>
 <tr>
 <td><strong>Linux + Chromium</strong></td>
-<td>Connection, status and registration-removal checks passed. Video playback was also user-observed in a separate test; audio and broader stream compatibility were not separately confirmed.</td>
+<td>Video playback was user-confirmed in a separate test; audio and broader stream compatibility were not separately recorded.</td>
 </tr>
 <tr>
 <td><strong>Linux + Brave</strong></td>
-<td>Registration support is implemented. <strong>End-to-end integration and playback remain unverified.</strong></td>
+<td>Playback was user-confirmed in a separate test; audio and broader stream compatibility were not separately recorded.</td>
 </tr>
 </tbody>
 </table>
@@ -69,14 +69,14 @@ cd PearPlay
 <ol>
 <li><strong>Allow and find.</strong> In the popup, choose <strong>Allow all websites</strong>, start the website’s video, and select <strong>Find videos</strong>.</li>
 <li><strong>Choose the video and TV.</strong> Select the stream, connect the helper, and choose <strong>Find TVs</strong>. Pick a TV and enter its on-screen pairing PIN if asked.</li>
-<li><strong>Send.</strong> Select <strong>Send to TV</strong>. Check that the TV has picture and sound, then pause browser playback using the website’s own controls if needed.</li>
+<li><strong>Send.</strong> Select <strong>Send to TV</strong>. Check that the TV has picture and sound, then stop the browser video using the website’s controls if both are playing.</li>
 </ol>
-<p>PearPlay does not automatically pause the browser video. One helper playback or pairing session can be active per operating-system user; end the session in the browser that started it before switching browsers.</p>
+<p>One helper playback or pairing session can be active per operating-system user; end the session in the browser that started it before switching browsers.</p>
 <h2>Limitations</h2>
 <ul>
 <li><strong>Not every website works.</strong> The Apple TV must be able to fetch an HTTP(S) media URL directly. Browser-only <code>blob:</code> URLs cannot be sent, and browser cookies are not transferred.</li>
 <li><strong>No DRM or access-control bypass.</strong> Geographic restrictions and normal ad delivery still apply. PearPlay does not block ads. Use media you are authorized to access.</li>
-<li><strong>No TV pause/resume controls.</strong> <strong>End helper session</strong> closes the helper connection; it does <strong>not</strong> confirm that TV playback stopped. Use the physical remote if playback continues.</li>
+<li><strong>End helper session</strong> closes the helper connection; it does <strong>not</strong> confirm that TV playback stopped.</li>
 <li><strong>All-sites access is currently required for discovery.</strong> The popup offers a per-site grant, but <strong>Find videos</strong> remains disabled without all-sites access.</li>
 <li><strong>Compatibility is limited to recorded results.</strong> A successful connection or “playing” status is not proof of picture and sound. Invalid/expired-stream handling and broader receiver lifecycle trials still need live verification.</li>
 <li><strong>Preview release.</strong> The Store extension and Linux helper downloads are available; 0.2.7 is a pending extension update. Only the documented x86_64 targets are offered; broader Linux browser/distribution testing remains open. Paused Mac work does not block Linux.</li>

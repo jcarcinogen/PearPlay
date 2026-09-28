@@ -6,9 +6,9 @@ import {mountSetup} from '../../extension/setup.mjs';
 
 test('Store listing qualifies playback without naming trial sites or machines',()=>{
   const listing=readFileSync(new URL('../../docs/store-listing.md',import.meta.url),'utf8');
-  assert.match(listing,/tested Linux Chrome video and audio/);
-  assert.match(listing,/Linux Chromium video playback has also been observed/);
-  assert.match(listing,/Chromium audio and broader stream compatibility remain unverified/);
+  assert.match(listing,/playback has been user-confirmed through the extension and helper in Linux Chrome, Brave and Chromium/);
+  assert.match(listing,/Chrome video and audible sound were separately confirmed/);
+  assert.match(listing,/Audio and broader stream compatibility in Brave and Chromium have not been separately documented/);
   assert.doesNotMatch(listing,/FOX|Acer|LG C5|Xubuntu|Fedora\/GNOME/);
 });
 

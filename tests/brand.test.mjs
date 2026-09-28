@@ -23,10 +23,23 @@ test('required raster assets have exact dimensions', () => {
   }
 });
 test('public marketing copy avoids naming trial sites and test machines', () => {
-  for (const path of ['README.md','assets/landing/readme.html','assets/landing/page.html','docs/index.html','docs/store-listing.md']) {
+  for (const path of ['README.md','assets/landing/readme.html','assets/landing/page.html','docs/index.html','docs/store-listing.md','docs/claims.md','docs/positioning.md']) {
     const content=read(path).toString();
     assert.doesNotMatch(content,/\b(?:FOX(?: 13)?|Acer|LG C5|Xubuntu|Fedora\/GNOME)\b/,path);
     assert.match(content,/Apple TV/,path);
+  }
+});
+
+test('public screenshots and Pages reflect reported browser playback without unwanted claims', () => {
+  for (const path of ['assets/store/listing-light.html','assets/store/listing-dark.html','assets/landing/page.html','docs/store-listing.md','README.md']) {
+    const content=read(path).toString();
+    assert.match(content,/Chrome/i,path);
+    assert.match(content,/Brave/i,path);
+    assert.match(content,/Chromium/i,path);
+    assert.doesNotMatch(content,/Brave\/Chromium unverified|Brave playback remains unverified|Brave registration is implemented; end-to-end integration remains unverified|TV pause\/resume unavailable|not a live TV claim|not a live-playback claim|LG HLS/i,path);
+  }
+  for(const path of ['assets/store/listing-light.html','assets/store/listing-dark.html','assets/landing/page.html']) {
+    assert.match(read(path).toString(),/Chrome, Brave (?:and |&amp; )?Chromium/i,path);
   }
 });
 

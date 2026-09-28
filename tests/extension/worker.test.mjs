@@ -33,6 +33,27 @@ test('worker wires permitted frame discovery, selection, native start and confir
  chrome.webNavigation.getAllFrames=async()=>{chrome.webNavigation.onCommitted.emit({tabId:1,frameId:0,documentId:'raced'});return [{frameId:4,documentId:'b'}];};
  await send({op:'rescan'});await w.message({op:'videos',videos:[{videoId:'v2',url:'https://x/stale'}]},{tab:{id:1},frameId:4,documentId:'b'});assert.equal((await send({op:'view'})).candidates.length,0);
 });
+test('firewall changes require popup confirmation for the selected receiver; checks never mutate',async()=>{
+ const {createWorker}=await import('../../extension/worker.mjs');const calls=[];
+ const chrome={runtime:{getURL:p=>`chrome-extension://ext/${p}`,onMessage:signal()},tabs:{onRemoved:signal()},webNavigation:{onCommitted:signal(),onHistoryStateUpdated:signal()},webRequest:{onBeforeRequest:{removeListener(){}},onResponseStarted:{removeListener(){}}},permissions:{getAll:async()=>({origins:[]}),onAdded:signal(),onRemoved:signal()},alarms:{create(){},onAlarm:signal()}};
+ let support=true;
+ const native={view:()=>({firewallSupport:support,receivers:[{identifier:'r',address:'192.168.1.50'}]}),request:async(op,args)=>{calls.push({op,args});return {supported:true,enabled:true,allowance:'missing',owned:false,...(args.action==='allow'?{change:{ok:false,error:'auth_cancelled'}}:{})}}};
+ const w=createWorker(chrome,native);const popup={url:chrome.runtime.getURL('popup.html')};
+ const send=m=>w.message(m,popup);
+ await send({op:'receiver',id:'r'});
+ assert.deepEqual(calls,[{op:'firewall',args:{receiver:'r',host:'192.168.1.50',action:'check'}}]);
+ await assert.rejects(send({op:'firewall',action:'allow',receiver:'r'}));
+ await assert.rejects(send({op:'firewall',action:'allow',receiver:'stale',confirmed:true}));
+ await assert.rejects(w.message({op:'firewall',action:'allow',receiver:'r',confirmed:true},{url:'https://evil/',tab:{id:1}}));
+ assert.equal(calls.length,1);
+ await send({op:'firewall',action:'allow',receiver:'r',confirmed:true});
+ assert.equal(calls.at(-1).args.action,'allow');
+ assert.equal((await send({op:'view'})).firewall.host,'192.168.1.50');
+ await send({op:'discover'});
+ assert.equal((await send({op:'view'})).firewall.change.error,'auth_cancelled');
+ support=false;await send({op:'receiver',id:'r'});
+ assert.equal((await send({op:'view'})).firewall,null);
+});
 test('webRequest is attached only after optional host permission and detached on revoke',async()=>{
  const {createWorker}=await import('../../extension/worker.mjs');
  const before={listeners:[],filters:[],addListener(f,filter){this.listeners.push(f);this.filters.push(filter);},removeListener(f){this.listeners=this.listeners.filter(x=>x!==f);this.filters=[];}};
@@ -48,4 +69,23 @@ test('webRequest is attached only after optional host permission and detached on
  assert.deepEqual(started.extra,['responseHeaders']);
  origins=[];chrome.permissions.onRemoved.emit({origins:['http://*/*','https://*/*']});await new Promise(r=>setImmediate(r));
  assert.equal(before.listeners.length,0);assert.equal(started.listeners.length,0);
+});
+test('onMessage replies preserve known static native error codes and collapse unknown secret errors to ACTION_FAILED',async()=>{
+ const {createWorker}=await import('../../extension/worker.mjs');
+ const request=Object.assign(signal(),{removeListener(){}});
+ const chrome={runtime:{id:'ext',getURL:p=>`chrome-extension://ext/${p}`,onMessage:signal(),onInstalled:signal()},tabs:{onRemoved:signal(),sendMessage:async()=>({ok:true})},webNavigation:{onCommitted:signal(),onHistoryStateUpdated:signal(),getAllFrames:async()=>[{frameId:0,documentId:'a'}]},webRequest:{onBeforeRequest:request,onResponseStarted:Object.assign(signal(),{removeListener(){}})},permissions:{getAll:async()=>({origins:['http://*/*','https://*/*']}),onAdded:signal(),onRemoved:signal()},scripting:{executeScript:async()=>{}},alarms:{create(){},onAlarm:signal()}};
+ const errorFor={start:'receiver_unavailable',pair:'pairing_failed',status:'connect 192.168.1.9 failed: token=SECRET123'};
+ const native={view:()=>({state:'idle',evidence:'none',capabilities:['start','pair','status'],receivers:[{identifier:'r',address:'192.168.1.9'}]}),request:async op=>{if(errorFor[op])throw Error(errorFor[op]);return native.view();}};
+ createWorker(chrome,native);
+ const handler=chrome.runtime.onMessage.listeners[0];
+ const popup={url:chrome.runtime.getURL('popup.html')};
+ const call=(m,sender=popup)=>new Promise(resolve=>handler(m,sender,resolve));
+ await call({op:'enable',tabId:1});
+ await call({op:'videos',videos:[{videoId:'v1',url:'https://x/movie'}]},{tab:{id:1},frameId:0,documentId:'a'});
+ const view=await call({op:'view',tabId:1});
+ await call({op:'select',tabId:1,id:view.candidates[0].id});
+ await call({op:'receiver',id:'r'});
+ assert.deepEqual(await call({op:'start',tabId:1}),{ok:false,error:'receiver_unavailable'});
+ assert.deepEqual(await call({op:'pair',tabId:1,pin:'1234'}),{ok:false,error:'pairing_failed'});
+ assert.deepEqual(await call({op:'status',tabId:1}),{ok:false,error:'ACTION_FAILED'});
 });

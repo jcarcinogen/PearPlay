@@ -1,0 +1,98 @@
+{
+  "extensionVersion": "0.2.7",
+  "helperVersion": "0.2.5",
+  "scope": "Reviewed source checkpoint and extension candidate; no new helper release; Store upload held pending exact ZIP browser acceptance and authenticated dashboard.",
+  "zip": {
+    "extensionVersion": "0.2.7",
+    "helperVersion": "0.2.5",
+    "extensionId": "eoadahoncjfpnennmkjifohclbafjkol",
+    "sha256": "280a910011e748f3ea45fe8f0a87f4451356d426cb2a5f5b853a583c0616185b",
+    "entries": [
+      "content.js",
+      "core.mjs",
+      "icons/icon.png",
+      "icons/icon128.png",
+      "icons/icon16.png",
+      "icons/icon32.png",
+      "icons/icon48.png",
+      "manifest.json",
+      "native.mjs",
+      "popup.html",
+      "popup.js",
+      "releases.json",
+      "setup-model.mjs",
+      "setup.html",
+      "setup.mjs",
+      "tip-with-x-money.png",
+      "worker.mjs",
+      "LICENSE"
+    ],
+    "allEntriesMatchSource": true,
+    "manifestAtRoot": true,
+    "fixtureOverrides": false,
+    "helperIncluded": false,
+    "permissionsUnchanged": true
+  },
+  "tests": {
+    "acerPytestPassed": 375,
+    "acerSubtestsPassed": 40,
+    "javascriptPassed": 61,
+    "diffCheckClean": true
+  },
+  "assets": {
+    "captures": 18,
+    "pages": 13,
+    "consoleErrors": 0,
+    "remotePageRequests": 0,
+    "privacyFindings": []
+  },
+  "publicDownloads": [
+    {
+      "format": "deb",
+      "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.deb",
+      "status": 200,
+      "bytes": 23092862,
+      "sha256": "9d53f65b38724750f8f428ead0f7fe976cc4ec0253fea2c73da0459ef90b0b5f",
+      "catalogMatch": true,
+      "authenticated": false
+    },
+    {
+      "format": "rpm",
+      "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.rpm",
+      "status": 200,
+      "bytes": 25976381,
+      "sha256": "a4fc413ef072732e4993b8f2fa9de3f76bb7f93df834378c7e7d3b3d3066193f",
+      "catalogMatch": true,
+      "authenticated": false
+    },
+    {
+      "format": "pkg.tar.zst",
+      "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.pkg.tar.zst",
+      "status": 200,
+      "bytes": 29702746,
+      "sha256": "aa2008cfb1107ff12a203f7d87fef80854d88618a741ca16026311fb8e24be93",
+      "catalogMatch": true,
+      "authenticated": false
+    }
+  ],
+  "independentReview": {
+    "passed": true,
+    "security_concerns": [],
+    "logic_errors": [],
+    "delegation": "deleg_4e49fd62",
+    "reviewer": "deepseek-v4-pro",
+    "note": "Avahi IPv6 transport carrying IPv4 address is intentional and regression-tested; not dead code. Quarantine already has a fixed boolean marker."
+  },
+  "browserAcceptance": {
+    "executed": false,
+    "blocker": "Acer SSH timed out before final exact-ZIP browser check; existing Python/CDP harness can avoid missing Node.",
+    "helperAudit": "Subagent reports installed helper self-test and isolated registration passed before disconnect; not equivalent to browser acceptance."
+  },
+  "store": {
+    "publicVersionObserved": "0.2.6",
+    "publicUpdatedObserved": "September 27, 2026",
+    "candidateUploaded": false,
+    "candidateSubmitted": false,
+    "dashboard": "Google sign-in required"
+  }
+}

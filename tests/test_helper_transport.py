@@ -146,7 +146,7 @@ class TransportTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_pairing_holds_shared_lease_until_cancel_or_finish(self):
         m=load(); command=m.spike()
-        device=SimpleNamespace(identifier='AA:BB:CC:DD:EE:FF')
+        device=SimpleNamespace(identifier='AA:BB:CC:DD:EE:FF', address='127.0.0.1', get_service=lambda _: SimpleNamespace(port=7000))
         async def scan(*args, **kwargs): return [device]
         class Pair:
             device_provides_pin=True; has_paired=True

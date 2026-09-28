@@ -32,7 +32,40 @@ test('current product pages consistently present Linux-only scope', () => {
 
 test('onboarding keeps the established manifest permissions and identity', () => {
   const m=JSON.parse(read('extension/manifest.json'));
-  assert.equal(m.version,'0.2.6');
+  assert.equal(m.version,'0.2.7');
   assert.deepEqual(m.permissions,['activeTab','scripting','webRequest','webNavigation','nativeMessaging','alarms','storage']);
   assert.deepEqual(m.optional_host_permissions,['http://*/*','https://*/*']);
+});
+
+test('landing template stays synchronized with the edited site (preserved install edits)', () => {
+  const page=read('assets/landing/page.html').toString();
+  for (const phrase of ['Flatpak-installed','Chrome Web Store','currently 0.2.6','Fedora helper','Store installs do not need that folder','Closing only a tab or reloading the extension is not enough']) {
+    assert.match(page,new RegExp(phrase.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')),phrase);
+  }
+  assert.doesNotMatch(page,/not yet submitted or public/);
+  assert.doesNotMatch(page,/Keep the unpacked extension folder in place until the Store listing is available/);
+});
+
+test('compact popup and marketing frames use 400px width, not the old 360px viewport', () => {
+  assert.match(read('extension/popup.html').toString(),/width:400px/);
+  for (const path of ['assets/store/listing-light.html','assets/store/listing-dark.html']) {
+    const c=read(path).toString();
+    assert.match(c,/width:400px/,path);
+    assert.doesNotMatch(c,/width:360px/,path);
+  }
+  const page=read('assets/landing/page.html').toString();
+  assert.match(page,/width:min\(100%,400px\)/,'page product width');
+  assert.doesNotMatch(page,/width="360"/,'page product img width');
+});
+
+test('store and landing copy drop the stale scroll-for-session instruction', () => {
+  for (const path of ['assets/landing/page.html','assets/store/listing-light.html','assets/store/listing-dark.html']) {
+    assert.doesNotMatch(read(path).toString(),/scroll for session|Scroll in the popup/,path);
+  }
+});
+
+test('manifest version is well-formed and the offline verifier does not pin a stale version', () => {
+  const m=JSON.parse(read('extension/manifest.json'));
+  assert.match(m.version,/^\d+\.\d+\.\d+$/);
+  assert.doesNotMatch(read('scripts/verify-brand-assets.py').toString(),/current\["version"\] == "0\.2\.5"/);
 });

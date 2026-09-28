@@ -32,7 +32,7 @@ try {
     if(fixture) await c.send('Page.addScriptToEvaluateOnNewDocument',{source:read('tests/browser/brand-fixture.js')},s);
     await c.send('Page.navigate',{url},s);
     for(let i=0;i<100;i++){
-      if(await c.evaluate(s,`location.href===${JSON.stringify(url)} && document.readyState==='complete' && ${fixture?"!!document.getElementById('candidate')?.options.length":"true"}`))break;
+      if(await c.evaluate(s,`location.href===${JSON.stringify(url)} && document.readyState==='complete' && ${fixture?"!!document.getElementById('candidate')?.options.length && document.getElementById('phase')?.dataset.state==='idle'":"true"}`))break;
       if(i===99)throw Error('Page did not finish loading');
       await delay(50);
     }
@@ -45,7 +45,7 @@ try {
     await c.send('Page.bringToFront',{},s);
     // Let layout and the compositor settle after emulation/decoded image updates.
     await c.evaluate(s,'new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))');
-    const h=full?await c.evaluate(s,'Math.ceil(Math.max(document.documentElement.scrollHeight,document.body.scrollHeight))'):height;
+    const h=full?await c.evaluate(s,'Math.ceil(document.body.scrollHeight)'):height;
     const image=await c.send('Page.captureScreenshot',{format:'png',captureBeyondViewport:full,clip:{x:0,y:0,width,height:h,scale:1}},s);
     save(path,Buffer.from(image.data,'base64'));
     evidence.captures.push({file:path,width,height:h});
@@ -62,9 +62,9 @@ try {
     evidence.pages.push({page:label,...refs,consoleErrors:errors.length,remoteRequests:external});
   }
   for(const theme of ['light','dark']){
-    const {s,targetId}=await page(`chrome-extension://${id}/popup.html`,360,600,theme,true);
-    await capture(s,`assets/store/popup-${theme}.png`,360,600,true);
-    await capture(s,`assets/store/popup-${theme}-viewport.png`,360,600);
+    const {s,targetId}=await page(`chrome-extension://${id}/popup.html`,400,600,theme,true);
+    await capture(s,`assets/store/popup-${theme}.png`,400,600,true);
+    await capture(s,`assets/store/popup-${theme}-viewport.png`,400,600,true);
     await checkPage(s,`popup-${theme}`);
     if(theme==='dark') {
       await c.evaluate(s,"document.querySelectorAll('details').forEach(d=>d.open=true)");
@@ -89,12 +89,10 @@ try {
       }
       await c.evaluate(s,"(async()=>{document.getElementById('candidate').value='example-video';await document.getElementById('candidate').onchange();document.getElementById('receiver').value='example-receiver';await document.getElementById('receiver').onchange()})()");
       assert.ok(await called('select'));assert.ok(await called('receiver'));evidence.controls.push('candidate','receiver');
-      assert.equal(await called('localPause'),false,'local video must never pause automatically');
+      assert.equal(await called('pause'),false,'TV pause must never fire without an explicit click');
       await click('start');assert.ok(await called('start'));evidence.controls.push('start');
-      await capture(s,'assets/evidence/popup-playing.png',360,600,true);
+      await capture(s,'assets/evidence/popup-playing.png',400,600,true);
       assert.match(await c.evaluate(s,'document.body.innerText'),/confirm/i);
-      assert.equal(await c.evaluate(s,"!!document.getElementById('confirmTV')||!!document.getElementById('localResume')"),false);
-      assert.equal(await called('localPause'),false);assert.equal(await called('localResume'),false);
       await click('stop');assert.ok(await called('stop'));evidence.controls.push('stop');
       // Pairing UI exercised without a code: the transport boundary is synthetic and records no PIN.
       await c.evaluate(s,"__fixture.view.native.error='pairing_required';document.getElementById('status').click()");await delay(100);
@@ -104,13 +102,13 @@ try {
       await c.evaluate(s,"__fixture.calls=[];document.getElementById('host').value='192.0.2.10';document.getElementById('host').dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}))");await delay(100);
       assert.ok(await c.evaluate(s,"__fixture.calls.some(c=>c.op==='discover'&&c.host==='192.0.2.10')"));evidence.controls.push('host Enter');
       await c.evaluate(s,"__fixture.hold=true;document.getElementById('discover').click()");await delay(60);
-      await capture(s,'assets/evidence/popup-working.png',360,600,true);
+      await capture(s,'assets/evidence/popup-working.png',400,600,true);
       await c.evaluate(s,'__fixture.hold=null;__fixture.release()');await delay(100);
       await c.evaluate(s,"__fixture.view.candidates=[];__fixture.view.selected=null;__fixture.view.native.receivers=[];__fixture.view.receiver=null;document.getElementById('status').click()");await delay(100);
       assert.equal(await c.evaluate(s,"document.getElementById('start').disabled"),true);
-      await capture(s,'assets/evidence/popup-empty.png',360,600,true);
+      await capture(s,'assets/evidence/popup-empty.png',400,600,true);
       await c.evaluate(s,"__fixture.fail=true;__fixture.view.native.error='NATIVE_DISCONNECTED';document.getElementById('hello').click()");await delay(100);
-      await capture(s,'assets/evidence/popup-error.png',360,600,true);
+      await capture(s,'assets/evidence/popup-error.png',400,600,true);
       await checkPage(s,'popup-all-controls-and-states');
     }
     await c.send('Target.closeTarget',{targetId});

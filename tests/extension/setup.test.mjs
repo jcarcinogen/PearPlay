@@ -1,6 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Native} from '../../extension/native.mjs';
+import {readFileSync} from 'node:fs';
+
+test('helper setup emphasizes a full browser restart after connecting', () => {
+  const html=readFileSync(new URL('../../extension/setup.html',import.meta.url),'utf8');
+  for (const section of [html.match(/<ol id="linux"[\s\S]*?<\/ol>/)?.[0],
+      html.match(/<details open>[\s\S]*?<\/details>/)?.[0],
+      html.match(/<p id="packagedRepair">[\s\S]*?<\/p>/)?.[0]]) {
+    assert.match(section,/<strong>Fully quit and reopen (?:the browser|it)\.<\/strong>/);
+  }
+  assert.match(html,/Closing only a tab or reloading the extension is not enough\./);
+});
 
 test('setup offers only compatible, real release links and requires a current handshake', async () => {
   const {connectionState, downloadsFor}=await import('../../extension/setup-model.mjs');

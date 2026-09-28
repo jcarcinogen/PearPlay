@@ -49,7 +49,7 @@ test('MV3 popup requests optional access on clicks, never renders URLs, explicit
   assert.match(html, /Choose an AirPlay TV/);
   assert.match(html, /Connect helper/);
   assert.match(html, /cannot find your TV/i);
-  assert.match(html, /id="banner"/);
+  assert.doesNotMatch(html, /id="(?:banner|notice)"/, 'one main status message, not duplicated notices');
   assert.match(html, /id="tvStatus"/);
   assert.ok(html.indexOf('id="discover"') < html.indexOf('id="tvStatus"') && html.indexOf('id="tvStatus"') < html.indexOf('id="hostDetails"'));
   assert.doesNotMatch(html, />Candidate</);
@@ -57,8 +57,9 @@ test('MV3 popup requests optional access on clicks, never renders URLs, explicit
   assert.doesNotMatch(html, /id="(?:confirmTV|localResume)"/);
   assert.doesNotMatch(await read('popup.js'), /localPause|localResume|confirmTV/);
   assert.ok(html.indexOf('id="grantAll"') < html.indexOf('id="enable"'));
-  assert.match(html, /1\. Allow all websites/);
-  assert.match(html, /2\. Find videos/);
+  assert.match(html, /id="permissionBox"/);
+  assert.match(html, /<details id="helpDetails"><summary>Help &amp; options<\/summary>/);
+  assert.ok(html.indexOf('id="start"') < html.indexOf('id="helpDetails"'), 'primary action precedes advanced help');
   const elements = new Map([...html.matchAll(/id="([^"]+)"/g)].map(m => [m[1], { value: '', textContent: '', disabled: false, dataset: {}, replaceChildren() { }, append() { }, addEventListener() { } }]));
   const actions = [];
   let requests = 0;
@@ -84,5 +85,6 @@ test('popup exposes idle/working/empty/error/playing states with live regions an
   assert.match(html, /id="phase" role="status" aria-live="polite"/);
   assert.match(html, /aria-live="polite"/);
   assert.match(html, /tabindex="-1"/);
-  assert.match(html, /360px/);
+  assert.match(html, /width:400px/);
+  assert.match(html, /min-height:40px/, 'keep comfortable desktop hit targets');
 });

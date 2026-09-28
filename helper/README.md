@@ -29,7 +29,7 @@ Linux Chrome uses `google-chrome/NativeMessagingHosts`; Brave uses
 `BraveSoftware/Brave-Browser/NativeMessagingHosts`; Chromium uses
 `chromium/NativeMessagingHosts`. The normal configuration parent is `$HOME/.config`.
 An isolated browser must actually use the matching configuration tree.
-Quit Chrome fully after initial registration; reloading the extension is not enough.
+**Fully quit and reopen Chrome after initial registration.** Reloading the extension is not enough.
 
 Mac install directions are retired. Prior runtime/signing findings are preserved
 in [paused Mac research](../docs/mac-runtime-identity.md), not offered as a workaround.

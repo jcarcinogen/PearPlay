@@ -28,6 +28,60 @@ test('discovery gets a separate deadline longer than ordinary requests',async()=
  setTimeout(()=>p.onMessage.emit({v:1,id:p.sent[0].id,ok:true,state:'idle',evidence:'none',capabilities:['discover'],receivers:[]}),20);
  assert.equal((await pending).state,'idle');
 });
+test('pairing requests get their own 35s deadline without widening ordinary or discovery timeouts',async()=>{
+ const {Native}=await import('../../extension/native.mjs');
+ const p=fakePort();const n=new Native(()=>p,{timeout:5,discoveryTimeout:100});
+ assert.equal(n.pairingTimeout,35000);
+ const pb=n.request('pair_begin',{receiver:'AA:BB:CC:DD:EE:FF',host:'192.168.1.50'});
+ setTimeout(()=>p.onMessage.emit({v:1,id:p.sent[0].id,ok:true,state:'idle',evidence:'none',capabilities:['pair_begin']}),20);
+ assert.equal((await pb).state,'idle');
+ const pr=n.request('pair',{receiver:'AA:BB:CC:DD:EE:FF',host:'192.168.1.50',pin:'1234'});
+ setTimeout(()=>p.onMessage.emit({v:1,id:p.sent[1].id,ok:true,state:'idle',evidence:'none',capabilities:['pair']}),20);
+ assert.equal((await pr).state,'idle');
+ await assert.rejects(n.request('hello'),/NATIVE_TIMEOUT/);
+});
+test('a successful hello after a pairing error does not erase the safe error code',async()=>{
+ const {Native}=await import('../../extension/native.mjs');const p=fakePort();const n=new Native(()=>p);
+ const pb=n.request('pair_begin',{receiver:'AA:BB:CC:DD:EE:FF',host:'192.168.1.50'});
+ p.onMessage.emit({v:1,id:p.sent[0].id,ok:false,state:'idle',evidence:'unverified',capabilities:['pair_begin','hello'],error:'receiver_unavailable'});
+ await assert.rejects(pb,/receiver_unavailable/);assert.equal(n.view().error,'receiver_unavailable');
+ const hello=n.request('hello');
+ p.onMessage.emit({v:1,id:p.sent[1].id,ok:true,state:'idle',evidence:'none',capabilities:['hello'],receivers:[]});
+ await hello;
+ assert.equal(n.view().error,'receiver_unavailable');
+});
+test('playback diagnostics retain only safe bounded fields',async()=>{
+ const {Native}=await import('../../extension/native.mjs');const p=fakePort();const n=new Native(()=>p);
+ const pending=n.request('hello');p.onMessage.emit({v:1,id:p.sent[0].id,ok:true,state:'idle',evidence:'none',capabilities:['start']});await pending;
+ const reply={v:1,id:'event',ok:false,state:'error',evidence:'unverified',capabilities:['start'],error:'transport_failed'};
+ p.onMessage.emit({...reply,diagnostic:{stage:'command',reason:'rejected',httpStatus:403,url:'SECRET'}});
+ assert.deepEqual(n.view().diagnostic,{stage:'command',reason:'rejected',httpStatus:403});
+ p.onMessage.emit({...reply,diagnostic:{stage:'SECRET',reason:'timeout',httpStatus:999}});
+ assert.equal(n.view().diagnostic,null);assert.doesNotMatch(JSON.stringify(n.view()),/SECRET/);
+ p.onMessage.emit({...reply,diagnostic:{stage:'await-playing',reason:'timeout',httpStatus:true}});
+ assert.deepEqual(n.view().diagnostic,{stage:'await-playing',reason:'timeout'});
+});
+test('firewall replies are sanitized separately and survive later playback events',async()=>{
+ const {Native}=await import('../../extension/native.mjs');const p=fakePort();const n=new Native(()=>p,{timeout:5,firewallTimeout:100});
+ const hello=n.request('hello');const base={v:1,ok:true,state:'idle',evidence:'none',capabilities:['start']};
+ p.onMessage.emit({...base,id:p.sent[0].id,firewallSupport:true});await hello;
+ assert.equal(n.view().firewallSupport,true);
+ const pending=n.request('firewall',{receiver:'AA:BB:CC:DD:EE:FF',host:'192.168.1.50',action:'allow'});
+ p.onMessage.emit({...base,id:'event',state:'playing',evidence:'protocol',firewallSupport:true});
+ await new Promise(r=>setTimeout(r,15));
+ p.onMessage.emit({...base,id:p.sent[1].id,firewall:{supported:true,enabled:true,allowance:'missing',owned:false,change:{ok:false,error:'SECRET'},secret:'URL'}});
+ assert.deepEqual(await pending,{supported:true,enabled:true,allowance:'missing',owned:false,change:{ok:false,error:'ufw_failed'}});
+ assert.equal(n.view().state,'playing');assert.equal(n.view().firewallSupport,true);
+ await assert.rejects(n.request('firewall',{receiver:'tv',host:'192.168.1.50',action:'disable'}),/INVALID_REQUEST/);
+});
+test('ambiguous_rule firewall error passes sanitization for a clear popup refusal',async()=>{
+ const {Native}=await import('../../extension/native.mjs');const p=fakePort();const n=new Native(()=>p);
+ const hello=n.request('hello');const base={v:1,ok:true,state:'idle',evidence:'none',capabilities:['start']};
+ p.onMessage.emit({...base,id:p.sent[0].id,firewallSupport:true});await hello;
+ const pending=n.request('firewall',{receiver:'AA:BB:CC:DD:EE:FF',host:'192.168.1.50',action:'remove'});
+ p.onMessage.emit({...base,id:p.sent[1].id,firewall:{supported:true,enabled:true,allowance:'present',owned:true,change:{ok:false,error:'ambiguous_rule'},secret:'URL'}});
+ assert.deepEqual(await pending,{supported:true,enabled:true,allowance:'present',owned:true,change:{ok:false,error:'ambiguous_rule'}});
+});
 function signal(){const listeners=[];return {addListener:f=>listeners.push(f),emit:v=>listeners.forEach(f=>f(v))};}
 export function fakePort(){return {onMessage:signal(),onDisconnect:signal(),sent:[],postMessage(m){this.sent.push(m);},disconnect(){this.onDisconnect.emit();}};}
 test('late replies cannot roll newer native state back; helper failures and invalid frames fail closed',async()=>{

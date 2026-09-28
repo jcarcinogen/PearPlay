@@ -259,6 +259,31 @@ def test_command_path_authenticates_before_setup_uses_type130_and_unique_ids():
     asyncio.run(check())
 
 
+def test_queue_item_serializes_explicit_zero_second_start_for_mp4_and_hls():
+    mod = module()
+    async def check():
+        for suffix in ('clip.mp4', 'index.m3u8'):
+            wire = Wire()
+            session = mod.Session(wire, timeout=.1)
+            url = 'https://example.org/' + suffix
+            await session.start(1234, url)
+            commands = [plistlib.loads(plistlib.loads(c[1])['params']['data'])
+                        for c in wire.calls if c[0] == 'command']
+            item = commands[0]['item']
+            assert type(item.get('Start-Position-Seconds')) is float
+            assert item['Start-Position-Seconds'] == 0.0
+            assert commands == [
+                {'type': 'insertPlayQueueItem', 'item': {
+                    'uuid': session.item_id, 'mediaType': 'file',
+                    'Content-Location': url, 'Start-Position-Seconds': 0.0}},
+                {'type': 'setProperty', 'value': True,
+                 'property': 'isInterestedInDateRange', 'item': {'uuid': session.item_id}},
+                {'type': 'setProperty', 'value': 1, 'property': 'actionAtItemEnd'},
+                {'type': 'setRate', 'rate': 1.0},
+            ]
+    asyncio.run(check())
+
+
 def test_events_require_playing_then_stopped_and_bound_missing_start():
     mod = module()
     assert hasattr(mod.Session, 'on_event'), 'event state tracking missing'

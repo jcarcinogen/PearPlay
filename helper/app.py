@@ -15,6 +15,49 @@ ACTIONS = {'Connect or repair browsers': 'connect', 'Disconnect browsers': 'remo
 def valid_build(config):
     return isinstance(config, dict) and isinstance(config.get('extension_id'), str) and re.fullmatch(r'[a-p]{32}', config['extension_id']) is not None
 
+def native_options(config, environ=None, frozen=None):
+    """Resolve opt-in diagnostic trace/startup/event-labels/metadata.
+
+    Returns ``(trace, startup_timeout, event_labels, event_metadata)``; all
+    are ``None`` in production or when the opt-in environment variables are
+    absent. The trace is a ``DiagnosticTrace`` bound to the pre-created
+    owner-only file; the event-label sidecar is an ``EventLabelCollector`` and
+    the event-metadata sidecar is an ``EventMetadataCollector``, each honored
+    only when the trace is also opted in. Startup accepts only ``'10'``/``'30'``
+    and only when the trace is opted in.
+    """
+    from helper.diagnostics import resolve_env, resolve_event_labels, resolve_event_metadata, DiagnosticTrace, EventLabelCollector, EventMetadataCollector
+    environ = os.environ if environ is None else environ
+    if frozen is None:
+        frozen = bool(getattr(sys, 'frozen', False))
+    development = bool(config.get('development'))
+    path, startup = resolve_env(environ, frozen=frozen, development=development)
+    if path is None:
+        return (None, None, None, None)
+    trace = DiagnosticTrace(path)
+    if trace.disabled:
+        return (None, None, None, None)
+    labels_path = resolve_event_labels(environ, frozen=frozen, development=development)
+    labels = EventLabelCollector(labels_path) if labels_path else None
+    metadata_path = resolve_event_metadata(environ, frozen=frozen, development=development)
+    metadata = EventMetadataCollector(metadata_path) if metadata_path else None
+    return (trace, startup, labels, metadata)
+
+def probe_playback_info_option(config, environ=None, frozen=None):
+    """Resolve the opt-in playback-info probe origin, or None.
+
+    Kept separate from ``native_options`` so the existing 4-tuple is unchanged;
+    the caller gates this on an active trace (``native_options`` returning a
+    non-None trace). Accepts only ``'origin-mp4'``/``'origin-hls'`` and only in a
+    frozen development build with the trace opted in.
+    """
+    from helper.diagnostics import resolve_probe_playback_info
+    environ = os.environ if environ is None else environ
+    if frozen is None:
+        frozen = bool(getattr(sys, 'frozen', False))
+    development = bool(config.get('development'))
+    return resolve_probe_playback_info(environ, frozen=frozen, development=development)
+
 def dialog(text):
     if sys.platform == 'darwin':
         subprocess.run(['/usr/bin/osascript','-e','display dialog '+json.dumps(text)+' with title "PearPlay Setup" buttons {"OK"} default button "OK"'],capture_output=True)
@@ -59,8 +102,14 @@ def main(argv=None, config=None):
         try: config=json.loads((Path(getattr(sys,'_MEIPASS',Path(__file__).parent))/'build.json').read_text())
         except (OSError,ValueError): config={}
     if not valid_build(config): return 2
+    if argv and argv[0] == 'firewall-privileged':
+        if len(argv) != 3: return 2
+        from helper.firewall import privileged_main
+        return 0 if privileged_main(argv[1], argv[2])['ok'] else 1
     if len(argv)==1 and '://' in argv[0]:
-        return native.main(['native','--extension-id',config['extension_id'],argv[0]])
+        trace, startup, labels, metadata = native_options(config)
+        probe = probe_playback_info_option(config) if trace is not None else None
+        return native.main(['native','--extension-id',config['extension_id'],argv[0]], trace=trace, startup_timeout=startup, event_labels=labels, event_metadata=metadata, probe_playback_info=probe)
     parser=argparse.ArgumentParser(description='PearPlay Helper setup (no TV actions)')
     parser.add_argument('action',nargs='?',choices=['connect','remove','self-test'])
     parser.add_argument('--browsers',nargs='+',choices=list(setup.LABELS))

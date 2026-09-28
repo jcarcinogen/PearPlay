@@ -6,16 +6,16 @@
 
 The extension opens a setup tab on first installation. Use **Helper setup** in the popup to reopen it. A successful check is a local helper handshake, not TV playback. Choose **Find my TV** only when you want network discovery.
 
-The Linux package supplies Python and dependencies. Open **PearPlay Setup**, select your browser, fully quit/reopen it, then choose **Check connection**. Later launches offer repair and disconnection. Website permissions remain separate.
+The Linux package supplies Python and dependencies. Open **PearPlay Setup**, select your browser, **fully quit and reopen it**, then choose **Check connection**. Later launches offer repair and disconnection. Website permissions remain separate.
 
 Download from the **[0.2.5 helper release](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5)**:
 
 - [Ubuntu/Debian x86_64 `.deb`](https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.deb): Ubuntu 24.04 baseline, glibc 2.39+.
 - [Arch/Omarchy x86_64 package](https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.pkg.tar.zst): glibc 2.44+.
 
-[Fedora 44 x86_64 RPM](https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.rpm) is also published, requiring glibc 2.43+. See [Fedora instructions and limits](fedora-install.md). No ARM package is offered. The existing Store extension is 0.2.5; the 0.2.6 update adds the Fedora download button. Packages are unsigned: use the trusted GitHub release, compare Debian/Arch with `SHA256SUMS.txt` and Fedora with `pearplay-helper-0.2.5-linux-x86_64.rpm.sha256`, and use normal package-manager authentication without disabling security. Checksums detect mismatched bytes; they are not a signing certificate.
+[Fedora 44 x86_64 RPM](https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.rpm) is also published, requiring glibc 2.43+. See [Fedora instructions and limits](fedora-install.md). No ARM package is offered. The existing Store extension is 0.2.6; the 0.2.7 update adds the compact popup and clearer errors. Packages are unsigned: use the trusted GitHub release, compare Debian/Arch with `SHA256SUMS.txt` and Fedora with `pearplay-helper-0.2.5-linux-x86_64.rpm.sha256`, and use normal package-manager authentication without disabling security. Checksums detect mismatched bytes; they are not a signing certificate.
 
-Install the extension from the **[Chrome Web Store](https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol)** (currently 0.2.5). The pending 0.2.6 update adds Fedora downloads and clearer setup instructions. To test that update before Store approval, load this repository’s `extension/` directory using Chrome’s **Load unpacked**. The pinned public key supplies the matching production identity. The packaged helper requires no Python setup or manual extension-ID command.
+Install the extension from the **[Chrome Web Store](https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol)** (currently 0.2.6). The pending 0.2.7 update adds a compact popup and clearer errors. To test that update before Store approval, load this repository’s `extension/` directory using Chrome’s **Load unpacked**. The pinned public key supplies the matching production identity. The packaged helper requires no Python setup or manual extension-ID command.
 
 End casting and quit browsers before updating the package. Chrome Web Store updates do not update the helper. Disconnect browsers before package removal; saved TV pairing is preserved. Modified or unknown registrations are never overwritten or deleted. Remove a legacy source registration using its original installer before switching helper types.
 
@@ -27,7 +27,7 @@ For the published `.deb`, the tested Xubuntu route is:
 
 1. In the file manager, right-click the downloaded PearPlay `.deb` and choose **Open With → App Center**.
 2. Choose **Install**. Read the third-party-package warning and proceed only with a package you obtained from the trusted PearPlay release. Approve the normal administrator prompt if your system requires one; no security setting needs to be disabled.
-3. Wait for **Installed**, then open **PearPlay Setup** from the applications menu, select Chrome, and fully quit/reopen Chrome before **Check connection**.
+3. Wait for **Installed**, then open **PearPlay Setup** from the applications menu, select Chrome, and **fully quit and reopen Chrome** before **Check connection**.
 
 This route passed on the Xubuntu 26.04.1 live desktop using its already-installed App Center. No additional package manager or changed default association was needed. GDebi was the desktop's default, but its elevated window failed in that live session; use the tested App Center route instead. Other Debian/Ubuntu desktops may offer a different graphical installer. If no package installer is available, follow that distribution's package-install instructions rather than extracting the `.deb` as an archive. This is not a universal no-terminal Linux-install claim.
 
@@ -53,11 +53,11 @@ Without a graphical package installer, use the **Terminal** app. Do not extract 
 
 3. If asked, type your computer password and press Enter. **Nothing appears while you type the password—that is normal.** Review the installation prompt, then type **Y** and press Enter to continue. Wait until installation finishes.
 4. Open **PearPlay Setup** from the app launcher and select your browser.
-5. Fully quit and reopen the browser. Open PearPlay’s **Helper setup** and click **Check connection**.
+5. **Fully quit and reopen the browser.** Closing only a tab or reloading the extension is not enough. Open PearPlay’s **Helper setup** and click **Check connection**.
 
 If Terminal says the file cannot be found, check that it is in Downloads and has the filename shown above. If installation fails for another reason, stop and seek help; do not disable package-signature checks.
 
-For the Arch command above, move the package into Downloads first if your browser saved it elsewhere. For Ubuntu/Debian’s relative-path command, open a terminal in the download folder. Then open **PearPlay Setup**, select your browser, and fully quit/reopen it. To remove the packaged helper, first use PearPlay Setup to disconnect browsers, then remove `pearplay-helper` with your normal package manager. Saved TV pairing remains.
+For the Arch command above, move the package into Downloads first if your browser saved it elsewhere. For Ubuntu/Debian’s relative-path command, open a terminal in the download folder. Then open **PearPlay Setup**, select your browser, and **fully quit and reopen it**. To remove the packaged helper, first use PearPlay Setup to disconnect browsers, then remove `pearplay-helper` with your normal package manager. Saved TV pairing remains.
 
 ## Source installation — Linux developer fallback
 
@@ -119,7 +119,7 @@ A browser installed later can be connected by reopening PearPlay Setup; installi
 
 ### Restart Chrome
 
-Fully quit and reopen Chrome after the initial native-host registration. Reloading the extension alone is not enough. For later extension-only edits, reload the extension and then the webpage.
+**Fully quit and reopen Chrome after the initial native-host registration.** Reloading the extension alone is not enough. For later extension-only edits, reload the extension and then the webpage.
 
 The configuration parent is not Chrome’s `Default` profile folder. Custom `--user-data-dir` launches may look for native hosts under a different tree: see the [isolated-browser evidence](../tests/browser/README.md#important-configuration-lookup-result). Do not automate a daily profile for testing.
 
@@ -135,7 +135,11 @@ TV pause/resume are unavailable. **End helper session** closes local transport a
 
 ## Linux timing and network troubleshooting
 
-The tested Linux host required inbound UDP timing on port 49170 from the selected Apple TV. A local administrator should scope any needed firewall exception to that receiver, not the entire internet or LAN. Do not disable the firewall or blindly paste an example IP into a rule. This guide intentionally supplies no broad allow command. PearPlay does not modify firewall or DNS settings.
+The tested Linux host required inbound UDP timing on port 49170 from the selected Apple TV. A local administrator should scope any needed firewall exception to that receiver, not the entire internet or LAN. Do not disable the firewall or blindly paste an example IP into a rule. This guide intentionally supplies no broad allow command. The published 0.2.5 helper does not modify firewall or DNS settings.
+
+**Unreleased source work:** a newer helper/extension pair adds **TV firewall permission** below the selected TV. It checks saved UFW settings without administrator access. You can explicitly approve a permission for that TV's address and UDP 49170 only; the system then asks for administrator approval, which you can cancel. The installer still adds no rules. PearPlay-created permissions can be removed from the same panel; existing administrator rules are left alone. Other firewalls require manual review. Source/extracted diagnostic helpers cannot perform privileged changes. This feature is not yet available in the published packages and still needs a packaged Linux authentication/rollback test.
+
+A saved UFW rule is not proof that packets arrive, and a missing exact rule does not mean traffic is blocked: a broader existing rule may already allow it. No firewall permission fixes an unsupported video or incompatible TV.
 
 A visible receiver in discovery is not proof that its media or timing path works. An HTTP success or protocol playing event is not proof of TV picture and sound. Verify both on the actual receiver.
 

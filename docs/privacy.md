@@ -2,7 +2,7 @@
 
 **Linux only. Mac support is coming soon.**
 
-Effective September 26, 2026. This policy describes PearPlay extensions 0.2.5–0.2.6 and their separate Linux helper 0.2.5. PearPlay is a development preview; the Linux helper 0.2.5 is published at https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5. The Chrome Web Store currently offers extension 0.2.5; the 0.2.6 update is being prepared.
+Effective September 27, 2026. This policy describes PearPlay extensions 0.2.5–0.2.7 and their separate Linux helper 0.2.5. PearPlay is a development preview; the Linux helper 0.2.5 is published at https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5. The Chrome Web Store currently offers extension 0.2.6; the 0.2.7 update is being prepared.
 
 ## What PearPlay does with data
 

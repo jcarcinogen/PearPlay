@@ -8,7 +8,11 @@
 - **Mac:** no current installer or download. Source/runtime/signing experiments remain archived for a future explicit decision to resume; do not replace security settings or reuse another application's permitted Python.
 - A Web Store extension cannot silently install its native helper; installation is an explicit separate step.
 
-The existing Web Store item's public key was verified to derive to `eoadahoncjfpnennmkjifohclbafjkol`. The current manifest, release catalog and production 0.2.5 helper pin that identity; `extension/releases.json` lists the matching x86_64 `.deb`, Fedora RPM and Arch downloads at the [0.2.5 preview release](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5). The Store already offers extension 0.2.5; extension 0.2.6 is the pending update, using the same helper 0.2.5 and identity. The earlier development ID `hljhooeofdjbikkhbklccnlnladdbkfb` is historical, not this store item's ID. The rehearsal fixture ID `iojhjdcndgfoalcialdlgklfdnlpmobf` and `tests/browser/fixture-key.json` must never become the production allowlist/key.
+The existing Web Store item's public key was verified to derive to `eoadahoncjfpnennmkjifohclbafjkol`. The current manifest, release catalog and production 0.2.5 helper pin that identity; `extension/releases.json` lists the matching x86_64 `.deb`, Fedora RPM and Arch downloads at the [0.2.5 preview release](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5). The Store already offers extension 0.2.6; extension 0.2.7 is the pending update, using the same helper 0.2.5 and identity. The earlier development ID `hljhooeofdjbikkhbklccnlnladdbkfb` is historical, not this store item's ID. The rehearsal fixture ID `iojhjdcndgfoalcialdlgklfdnlpmobf` and `tests/browser/fixture-key.json` must never become the production allowlist/key.
+
+## Unreleased helper source
+
+Extension 0.2.7 continues to use published helper 0.2.5. Current helper source contains unreleased discovery repairs, bounded opt-in diagnostics and scoped UFW assistance. These are not part of the existing downloads. Packaged privileged allow/remove/rollback and cross-version upgrade checks must pass before a new helper release; diagnostic fixture builds are never consumer packages. LG HLS remains unresolved.
 
 ## Boundaries
 

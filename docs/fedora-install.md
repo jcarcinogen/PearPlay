@@ -1,6 +1,6 @@
 # Fedora 44 GNOME — RPM installation
 
-**Linux x86_64 only. The verified Fedora RPM is published in the [0.2.5 helper preview](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5). The Chrome Web Store offers extension 0.2.5; 0.2.6 is the pending extension update.** Requires glibc 2.43+. Mac support is coming soon.
+**Linux x86_64 only. The verified Fedora RPM is published in the [0.2.5 helper preview](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5). The Chrome Web Store offers extension 0.2.6; 0.2.7 is the pending extension update.** Requires glibc 2.43+. Mac support is coming soon.
 
 ## What was verified
 
@@ -22,7 +22,7 @@ Download [the Fedora RPM](https://github.com/jcarcinogen/PearPlay/releases/downl
 1. Compare `sha256sum pearplay-helper-0.2.5-linux-x86_64.rpm` with `pearplay-helper-0.2.5-linux-x86_64.rpm.sha256` (the local test kit also includes `SHA256SUMS.txt`).
 2. In Files, open the RPM with **Software Install / GNOME Software**. The verified invocation is `gnome-software --local-filename=/absolute/path/to/pearplay-helper-0.2.5-linux-x86_64.rpm`; the desktop's `application/x-rpm` association is `gnome-software-local-file-packagekit.desktop`. The file-manager double-click itself was not automated in this test.
 3. Choose **Install**, review the third-party-package warning, and approve normal administrator authentication. The package is unsigned; a checksum checks bytes, not publisher identity. Do not disable signature checks, SELinux, or the firewall.
-4. Open **PearPlay Setup** from the applications menu. Select only the browser you intend to connect. Fully quit/reopen that browser, then choose **Check connection** in the extension's Helper setup page.
+4. Open **PearPlay Setup** from the applications menu. Select only the browser you intend to connect. **Fully quit and reopen that browser**, then choose **Check connection** in the extension's Helper setup page.
 
 If GNOME Software reports an authorization failure, confirm that the package is absent with `rpm -q pearplay-helper`, then use the normal terminal path from the download directory:
 

@@ -116,11 +116,16 @@ def guard():
         raise RuntimeError('requires unmodified pyatv 0.18.0')
 
 
-def event_factory(callback):
+def event_factory(callback, report=None):
+    def observed(status):
+        if report is not None:
+            try: report('event-channel', status=status)
+            except Exception: pass  # Diagnostics cannot change playback behavior.
     from pyatv.protocols.airplay.channels import BaseEventChannel
     from pyatv.support.http import HttpResponse
     class Events(BaseEventChannel):
         def handle_received(self):
+            observed('received')
             try:
                 if len(self.buffer) > 1024 * 1024:
                     raise ValueError('oversized event')
@@ -138,8 +143,13 @@ def event_factory(callback):
                     outer = plistlib.loads(raw)
                     data = outer.get('params', {}).get('data')
                     if isinstance(data, bytes):
-                        callback(plistlib.loads(data))
+                        decoded = plistlib.loads(data)
+                        observed('decoded')
+                        callback(decoded)
+                    else:
+                        observed('ignored')
             except Exception:
+                observed('parse-error')
                 self.buffer = b''
                 self.close()
     return Events
@@ -168,10 +178,11 @@ class Backend:
         self.report('timing-bound', udp_port=self.timing_port)
 
     async def request(self, stage, body=None, headers=None):
-        from pyatv.protocols.airplay.auth import verify_connection
-        self.stage[0] = stage
-        self.report('stage', stage=stage)
+        if stage != 'feedback':
+            self.stage[0] = stage
+            self.report('stage', stage=stage)
         if stage == 'authenticate':
+            from pyatv.protocols.airplay.auth import verify_connection
             self.verifier = await verify_connection(self.credentials, self.connection)
             self.report('authenticated', control_encryption='upstream-HAP')
             return {}
@@ -202,7 +213,7 @@ class Backend:
             raise ValueError('invalid event setup')
         self.stage[0] = 'event-connect'
         self.event_transport, _ = await asyncio.wait_for(setup_channel(
-            event_factory(callback), self.verifier, self.connection.remote_ip, port,
+            event_factory(callback, self.report), self.verifier, self.connection.remote_ip, port,
             'Events-Salt', 'Events-Read-Encryption-Key', 'Events-Write-Encryption-Key'), self.timeout)
 
     async def baseline(self, url, hold):
@@ -238,9 +249,10 @@ def uid():
 
 
 class Session:
-    def __init__(self, wire, timeout=10):
+    def __init__(self, wire, timeout=10, feedback_interval=2):
         self.wire = wire
         self.timeout = timeout
+        self.feedback_interval = feedback_interval
         self.headers = {'User-Agent': 'AirPlay/870.14.1',
                         'Content-Type': 'application/x-apple-binary-plist',
                         'X-Apple-ProtocolVersion': '1',
@@ -249,6 +261,7 @@ class Session:
         self.started = False
         self.playing = asyncio.Event()
         self.finished = asyncio.Event()
+        self._feedback_task = None
 
     def on_event(self, data):
         if not isinstance(data, dict) or data.get('type') != 'playbackState':
@@ -265,16 +278,32 @@ class Session:
     async def call(self, stage, body=None):
         return await asyncio.wait_for(self.wire.request(stage, body, dict(self.headers)), self.timeout)
 
+    async def _feedback_loop(self):
+        while not self.finished.is_set():
+            try:
+                await asyncio.wait_for(self.finished.wait(), self.feedback_interval)
+            except TimeoutError:
+                try:
+                    await self.call('feedback')
+                except Exception:
+                    pass  # A failed heartbeat must never leak or hide the real outcome.
+
+    async def play(self, startup_timeout):
+        """Shared lifecycle: periodic feedback from setup until playback ends."""
+        self._feedback_task = asyncio.create_task(self._feedback_loop())
+        try:
+            await asyncio.wait_for(self.playing.wait(), startup_timeout)
+            await self.finished.wait()
+        finally:
+            self._feedback_task.cancel()
+            await asyncio.gather(self._feedback_task, return_exceptions=True)
+            self._feedback_task = None
+
     async def run(self, timing_port, url, duration):
         try:
             async with asyncio.timeout(duration):
                 await self.start(timing_port, url)
-                await asyncio.wait_for(self.playing.wait(), self.timeout)
-                while not self.finished.is_set():
-                    try:
-                        await asyncio.wait_for(self.finished.wait(), 2)
-                    except TimeoutError:
-                        await self.call('feedback')
+                await self.play(self.timeout)
         finally:
             self.wire.close()
 
@@ -301,7 +330,7 @@ class Session:
         self.headers['X-Apple-StreamID'] = str(stream_id)
         item = {'uuid': self.item_id}
         for command in [
-            {'type': 'insertPlayQueueItem', 'item': {**item, 'mediaType': 'file', 'Content-Location': url}},
+            {'type': 'insertPlayQueueItem', 'item': {**item, 'mediaType': 'file', 'Content-Location': url, 'Start-Position-Seconds': 0.0}},
             {'type': 'setProperty', 'value': True, 'property': 'isInterestedInDateRange', 'item': item},
             {'type': 'setProperty', 'value': 1, 'property': 'actionAtItemEnd'},
             {'type': 'setRate', 'rate': 1.0},

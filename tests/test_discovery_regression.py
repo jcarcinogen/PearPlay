@@ -11,6 +11,25 @@ def device(address, identifier, model, features):
 
 
 class DiscoveryRegression(unittest.IsolatedAsyncioTestCase):
+    async def test_ipv6_advertisement_with_ipv4_endpoint_is_discovered_once(self):
+        m=load()
+        row='=;wlan0;IPv6;TV;_airplay._tcp;local;tv.local;192.0.2.10;7000;"model=AppleTV14,1" "deviceid=AA:BB:CC:DD:EE:FF"'
+        self.assertEqual(m.parse_avahi_hosts(row), ['192.0.2.10'])
+        self.assertEqual([r['address'] for r in m.parse_avahi_receivers(row)], ['192.0.2.10'])
+        text='\n'.join([row, row.replace(';IPv6;', ';IPv4;'),
+            row.replace('192.0.2.10', 'fe80::1'),
+            row.replace(';IPv6;', ';unknown;'),
+            row.replace('_airplay._tcp', '_ssh._tcp'),
+            row.replace('192.0.2.10', 'not-an-address')])
+        self.assertEqual(m.parse_avahi_hosts(text), ['192.0.2.10'])
+        self.assertEqual(len(m.parse_avahi_receivers(text)), 1)
+        async def scan(*a, **kw): return []
+        async def output(*a): return row
+        t=m.Transport(api=SimpleNamespace(scan=scan,Protocol=SimpleNamespace(AirPlay=1)),connect=lambda *a:None,parse=lambda x:x)
+        t._exec_text=output
+        receivers=await t.discover(None)
+        self.assertEqual([(r['address'],r['kind']) for r in receivers], [('192.0.2.10','apple-tv')])
+
     async def test_advertised_lg_survives_silent_unicast_and_speakers_are_excluded(self):
         m=load()
         text='\n'.join([

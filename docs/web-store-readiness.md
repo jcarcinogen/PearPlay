@@ -1,13 +1,13 @@
-# Chrome Web Store 0.2.6 update preparation — update not submitted
+# Chrome Web Store 0.2.7 update preparation — update not submitted
 
 **Linux only. Mac support is coming soon.** Mac compatibility work is paused and is not a Linux release blocker.
 
 ## Deliverables and identity
 
-The final upload artifact is `pearplay-0.2.6.zip` in `Stuff/PearPlay/Web Store/0.2.6/`. Its manifest is at the ZIP root. It excludes helpers, Python, build caches, tests, fixture keys and the local installer-rehearsal flag. It contains the verified Store public key and the matching Linux helper download catalog. Extension 0.2.6 uses the separately versioned, unchanged helper 0.2.5. Scott approved submission/publication, but dashboard Google sign-in currently blocks this session; actual 0.2.6 submission/publication remains unverified. The public Store page was checked and lists existing version 0.2.5, updated September 25, 2026.
+The final upload artifact is `pearplay-0.2.7.zip` in `Stuff/PearPlay/Web Store/0.2.7/`. Its manifest is at the ZIP root. It excludes helpers, Python, build caches, tests, fixture keys and the local installer-rehearsal flag. It contains the verified Store public key and the matching Linux helper download catalog. Extension 0.2.7 uses the separately versioned, unchanged helper 0.2.5. Scott approved submission/publication, but dashboard Google sign-in currently blocks this session; actual 0.2.7 submission/publication remains unverified. The public Store page was checked and lists existing version 0.2.6, updated September 27, 2026.
 
 1. Open the existing **PearPlay** item `eoadahoncjfpnennmkjifohclbafjkol`. Do not create a second listing or confuse it with Open Autofill.
-2. Upload the final ZIP under **Package** and confirm version 0.2.6. Reconcile the dashboard fields, then submit for review under Scott’s approval; publish the update after Google approves it.
+2. Upload the final ZIP under **Package** and confirm version 0.2.7. Reconcile the dashboard fields, then submit for review under Scott’s approval; publish the update after Google approves it.
 3. **Completed:** Scott supplied Item ID `eoadahoncjfpnennmkjifohclbafjkol` and its Package public key. Format and SHA256-derived identity match exactly. Reuse this existing item; do not create another.
 4. **Completed in candidate source:** the 0.2.5 manifest, release catalog and Ubuntu production helper use this identity. Real Chrome tests in the clean Ubuntu VM verified the matching ID, native allowlist, connection, repair and removal. Other release gates remain below.
 5. Replace the draft ZIP with the final version only after matching helper downloads are actually published and verified. Rehearsal uses a dedicated fixture ID and does not establish the store ID.
@@ -53,12 +53,14 @@ Reviewer flow: install extension → install matching helper → restart Chrome 
 - [x] Draft listing and consumer copy restricted to verified Linux Chrome/Apple TV results; Brave/Chromium and LG playback not claimed.
 - [x] Privacy policy 0.2.5 and website returned HTTP 200 with exact committed bytes.
 - [ ] Actual dashboard disclosures/permission explanations reconciled with final source before submission.
-- [x] Independent release review passed; 69 Python/39 JS tests passed; exact release downloads and final ZIP verified.
-- [x] Scott explicitly approved submission/publication of the 0.2.6 update. Existing version 0.2.5 is already public; approval to update it is not evidence that 0.2.6 submission occurred.
+- [x] Historical helper 0.2.5 release verification passed (69 Python/39 JS tests and matching public downloads).
+- [x] Extension 0.2.7 independent source review passed; 375 Python tests +40 subtests and 61 JS tests passed. ZIP bytes/identity and all public helper hashes verified.
+- [ ] Exact unchanged 0.2.7 ZIP browser missing/ready/repair/remove acceptance: Acer went offline before execution. Store upload stays on hold.
+- [x] Scott explicitly approved submission/publication of the 0.2.7 update. Existing version 0.2.6 is already public; approval to update it is not evidence that 0.2.7 submission occurred.
 
 ## Paused Mac work — not a Linux release gate
 
-Mac research and old artifacts are preserved, but no Mac install, signing purchase, consent or playback test is scheduled. Resume only if Scott explicitly reopens Mac work. The current Ubuntu candidate is in `Stuff/PearPlay/Installer Test/0.2.5/ubuntu/`; the 0.2.4 and older mixed-platform kits are historical. The source and project website are authorized for publication separately; helper publication and the 0.2.6 Google review submission/publication are approved. Dashboard sign-in is still required to carry out and verify Store actions.
+Mac research and old artifacts are preserved, but no Mac install, signing purchase, consent or playback test is scheduled. Resume only if Scott explicitly reopens Mac work. The current Ubuntu candidate is in `Stuff/PearPlay/Installer Test/0.2.5/ubuntu/`; the 0.2.4 and older mixed-platform kits are historical. The source and project website are authorized for publication separately; helper publication and the 0.2.7 Google review submission/publication are approved. Dashboard sign-in is still required to carry out and verify Store actions.
 
 Official references:
 - https://developer.chrome.com/docs/extensions/reference/manifest/key

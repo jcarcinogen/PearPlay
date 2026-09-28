@@ -14,4 +14,4 @@ Only receiver-fetchable HTTP(S) media works. Browser-only URLs, DRM and access r
 
 The popup includes optional X and Ko-fi support links. Their badges are bundled with the extension; neither service is contacted unless you open its link.
 
-Internal submission note — omit from the listing: reuse item `eoadahoncjfpnennmkjifohclbafjkol`. Scott approved submission/publication of extension 0.2.6. It uses the unchanged published helper 0.2.5. Reconcile dashboard declarations and reviewer instructions with the final ZIP before submission. Dashboard access currently requires Scott’s Google sign-in; existing Store version 0.2.5 is public, but upload/submission/publication of update 0.2.6 is not yet verified.
+Internal submission note — omit from the listing: reuse item `eoadahoncjfpnennmkjifohclbafjkol`. Scott approved submission/publication of extension 0.2.7. It uses the unchanged published helper 0.2.5. Reconcile dashboard declarations and reviewer instructions with the final ZIP before submission. Dashboard access currently requires Scott’s Google sign-in; existing Store version 0.2.6 is public, but upload/submission/publication of update 0.2.7 is not yet verified.

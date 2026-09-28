@@ -22,43 +22,43 @@
   "captures": [
     {
       "file": "assets/store/popup-light.png",
-      "width": 360,
-      "height": 1193
+      "width": 400,
+      "height": 409
     },
     {
       "file": "assets/store/popup-light-viewport.png",
-      "width": 360,
-      "height": 600
+      "width": 400,
+      "height": 409
     },
     {
       "file": "assets/store/popup-dark.png",
-      "width": 360,
-      "height": 1193
+      "width": 400,
+      "height": 409
     },
     {
       "file": "assets/store/popup-dark-viewport.png",
-      "width": 360,
-      "height": 600
+      "width": 400,
+      "height": 409
     },
     {
       "file": "assets/evidence/popup-playing.png",
-      "width": 360,
-      "height": 1323
+      "width": 400,
+      "height": 479
     },
     {
       "file": "assets/evidence/popup-working.png",
-      "width": 360,
-      "height": 1323
+      "width": 400,
+      "height": 409
     },
     {
       "file": "assets/evidence/popup-empty.png",
-      "width": 360,
-      "height": 1323
+      "width": 400,
+      "height": 430
     },
     {
       "file": "assets/evidence/popup-error.png",
-      "width": 360,
-      "height": 1357
+      "width": 400,
+      "height": 447
     },
     {
       "file": "assets/brand/icon-legibility.png",
@@ -88,7 +88,7 @@
     {
       "file": "assets/evidence/landing.png",
       "width": 1440,
-      "height": 4823
+      "height": 5028
     },
     {
       "file": "assets/evidence/landing-first-screen.png",
@@ -103,12 +103,12 @@
     {
       "file": "assets/evidence/landing-mobile-light.png",
       "width": 390,
-      "height": 7536
+      "height": 7959
     },
     {
       "file": "assets/evidence/landing-mobile-dark.png",
       "width": 390,
-      "height": 7536
+      "height": 7959
     }
   ],
   "pages": [
@@ -133,8 +133,8 @@
         "https://ko-fi.com/scottangel"
       ],
       "metadata": [],
-      "width": 360,
-      "scrollWidth": 360,
+      "width": 400,
+      "scrollWidth": 400,
       "imagesOK": true,
       "consoleErrors": 0,
       "remoteRequests": []
@@ -160,8 +160,8 @@
         "https://ko-fi.com/scottangel"
       ],
       "metadata": [],
-      "width": 360,
-      "scrollWidth": 360,
+      "width": 400,
+      "scrollWidth": 400,
       "imagesOK": true,
       "consoleErrors": 0,
       "remoteRequests": []
@@ -187,8 +187,8 @@
         "https://ko-fi.com/scottangel"
       ],
       "metadata": [],
-      "width": 360,
-      "scrollWidth": 360,
+      "width": 400,
+      "scrollWidth": 400,
       "imagesOK": true,
       "consoleErrors": 0,
       "remoteRequests": []
@@ -438,8 +438,11 @@
         "https://github.com/jcarcinogen/PearPlay",
         "https://github.com/jcarcinogen/PearPlay/blob/main/STATUS.md",
         "https://github.com/jcarcinogen/PearPlay/blob/main/docs/claims.md",
+        "https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol",
         "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.deb",
         "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.pkg.tar.zst",
+        "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.rpm",
+        "https://github.com/jcarcinogen/PearPlay/blob/main/docs/fedora-install.md",
         "https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5",
         "https://github.com/jcarcinogen/PearPlay/blob/main/docs/install.md",
         "https://github.com/jcarcinogen/PearPlay/blob/main/contract/v1.md",
@@ -484,8 +487,11 @@
         "https://github.com/jcarcinogen/PearPlay",
         "https://github.com/jcarcinogen/PearPlay/blob/main/STATUS.md",
         "https://github.com/jcarcinogen/PearPlay/blob/main/docs/claims.md",
+        "https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol",
         "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.deb",
         "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.pkg.tar.zst",
+        "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.rpm",
+        "https://github.com/jcarcinogen/PearPlay/blob/main/docs/fedora-install.md",
         "https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5",
         "https://github.com/jcarcinogen/PearPlay/blob/main/docs/install.md",
         "https://github.com/jcarcinogen/PearPlay/blob/main/contract/v1.md",
@@ -532,6 +538,7 @@
         "#documentation",
         "https://x.com/scottito22",
         "https://ko-fi.com/scottangel",
+        "https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol",
         "https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5",
         "assets/evidence/helper-onboarding-verification.md",
         "docs/helper-onboarding.md#release-gates",
@@ -584,8 +591,11 @@
         "https://github.com/jcarcinogen/PearPlay",
         "https://github.com/jcarcinogen/PearPlay/blob/main/STATUS.md",
         "https://github.com/jcarcinogen/PearPlay/blob/main/docs/claims.md",
+        "https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol",
         "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.deb",
         "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.pkg.tar.zst",
+        "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.rpm",
+        "https://github.com/jcarcinogen/PearPlay/blob/main/docs/fedora-install.md",
         "https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5",
         "https://github.com/jcarcinogen/PearPlay/blob/main/docs/install.md",
         "https://github.com/jcarcinogen/PearPlay/blob/main/contract/v1.md",
@@ -630,8 +640,11 @@
         "https://github.com/jcarcinogen/PearPlay",
         "https://github.com/jcarcinogen/PearPlay/blob/main/STATUS.md",
         "https://github.com/jcarcinogen/PearPlay/blob/main/docs/claims.md",
+        "https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol",
         "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.deb",
         "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.pkg.tar.zst",
+        "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.rpm",
+        "https://github.com/jcarcinogen/PearPlay/blob/main/docs/fedora-install.md",
         "https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5",
         "https://github.com/jcarcinogen/PearPlay/blob/main/docs/install.md",
         "https://github.com/jcarcinogen/PearPlay/blob/main/contract/v1.md",
@@ -654,22 +667,25 @@
   ],
   "keyboardControls": [
     "helperSetup",
-    "About website access",
-    "grantSite",
     "enable",
+    "candidate",
+    "discover",
+    "receiver",
+    "start",
+    "Help & options",
     "Video not showing up?",
     "rescan",
     "reload",
     "disable",
-    "candidate",
-    "discover",
-    "hello",
-    "receiver",
     "Connection and address",
+    "hello",
     "status",
     "host",
-    "start",
-    "stop"
+    "TV firewall permission",
+    "firewallConsent",
+    "About website access",
+    "grantSite",
+    "Support PearPlay"
   ],
   "clipboard": "Exact-command copy and denied-permission selection fallback passed (clipboard boundary injected).",
   "cleanup": "Unpacked extension uninstalled; owned browser closed and disposable profile removed by finally."

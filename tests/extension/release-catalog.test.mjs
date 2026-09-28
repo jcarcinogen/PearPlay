@@ -4,6 +4,14 @@ import {readFileSync} from 'node:fs';
 import {downloadsFor} from '../../extension/setup-model.mjs';
 import {mountSetup} from '../../extension/setup.mjs';
 
+test('Store listing qualifies playback without naming trial sites or machines',()=>{
+  const listing=readFileSync(new URL('../../docs/store-listing.md',import.meta.url),'utf8');
+  assert.match(listing,/tested Linux Chrome video and audio/);
+  assert.match(listing,/Linux Chromium video playback has also been observed/);
+  assert.match(listing,/Chromium audio and broader stream compatibility remain unverified/);
+  assert.doesNotMatch(listing,/FOX|Acer|LG C5|Xubuntu|Fedora\/GNOME/);
+});
+
 test('published Linux catalog offers the verified production packages without developer setup',async()=>{
   const catalog=JSON.parse(readFileSync(new URL('../../extension/releases.json',import.meta.url),'utf8'));
   // Extension-only updates keep the separately tested helper release.

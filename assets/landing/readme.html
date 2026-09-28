@@ -22,7 +22,7 @@
 <li><strong>One helper, multiple browsers.</strong> The packaged helper can register with Chrome, Brave, and Chromium separately. Install the extension in each browser you want to use; pairing credentials are shared under the same operating-system user.</li>
 </ul>
 <p><strong><a href="https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol">Install PearPlay from the Chrome Web Store</a></strong> (currently 0.2.6), then install the separate <strong><a href="https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5">Linux helper 0.2.5</a></strong>. The compact 0.2.7 extension update is being prepared. Browser registration support does not mean playback has been verified in every browser.</p>
-<p><strong>Release scope:</strong> the compact 0.2.7 popup uses existing helper 0.2.5 downloads. Helper changes in this checkout are unreleased; they do not establish an LG HLS fix or a shipped firewall-management feature.</p>
+<p><strong>Release scope:</strong> the compact 0.2.7 popup uses existing helper 0.2.5 downloads. Helper changes in this checkout are unreleased; they do not establish a receiver-specific HLS fix or a shipped firewall-management feature.</p>
 <h2>Compatibility</h2>
 <table>
 <thead>
@@ -34,7 +34,7 @@
 <tbody>
 <tr>
 <td><strong>Linux + Chrome</strong></td>
-<td>Video and audio through the extension on a tested FOX live stream, including a pre-roll-to-program transition. Pairing, reconnect, and recasting have also been observed.</td>
+<td>Video and audio through the extension on a tested stream, including a pre-roll-to-program transition. Pairing, reconnect, and recasting have also been observed.</td>
 </tr>
 <tr>
 <td><strong>Mac</strong></td>
@@ -42,7 +42,7 @@
 </tr>
 <tr>
 <td><strong>Linux + Chromium</strong></td>
-<td>Connection and status checks using an extracted development helper package, plus browser-registration removal. <strong>TV playback remains unverified.</strong></td>
+<td>Connection, status and registration-removal checks passed. Video playback was also user-observed in a separate test; audio and broader stream compatibility were not separately confirmed.</td>
 </tr>
 <tr>
 <td><strong>Linux + Brave</strong></td>

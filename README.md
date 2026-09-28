@@ -33,15 +33,15 @@ PearPlay connects a browser extension to **PearPlay Helper**, a small applicatio
 
 **[Install PearPlay from the Chrome Web Store](https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol)** (currently 0.2.6), then install the separate **[Linux helper 0.2.5](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5)**. The compact 0.2.7 extension update is being prepared. Browser registration support does not mean playback has been verified in every browser.
 
-**Release scope:** the compact 0.2.7 popup uses existing helper 0.2.5 downloads. Helper changes in this checkout are unreleased; they do not establish an LG HLS fix or a shipped firewall-management feature.
+**Release scope:** the compact 0.2.7 popup uses existing helper 0.2.5 downloads. Helper changes in this checkout are unreleased; they do not establish a receiver-specific HLS fix or a shipped firewall-management feature.
 
 ## Compatibility
 
 | Platform and browser | What has been verified |
 | --- | --- |
-| **Linux + Chrome** | Video and audio through the extension on a tested FOX live stream, including a pre-roll-to-program transition. Pairing, reconnect, and recasting have also been observed. |
+| **Linux + Chrome** | Video and audio through the extension on a tested stream, including a pre-roll-to-program transition. Pairing, reconnect, and recasting have also been observed. |
 | **Mac** | **Mac support is coming soon.** Compatibility work is paused; not currently available. |
-| **Linux + Chromium** | Connection and status checks using an extracted development helper package, plus browser-registration removal. **TV playback remains unverified.** |
+| **Linux + Chromium** | Connection, status and registration-removal checks passed. Video playback was also user-observed in a separate test; audio and broader stream compatibility were not separately confirmed. |
 | **Linux + Brave** | Registration support is implemented. **End-to-end integration and playback remain unverified.** |
 
 Windows is not supported. Other Chromium-based browsers, browser beta/dev channels, and Snap/Flatpak browser packages are not supported installer targets.

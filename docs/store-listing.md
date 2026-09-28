@@ -6,9 +6,9 @@ PearPlay sends a compatible video stream from your browser directly to your Appl
 
 **Linux only. Mac support is coming soon. Requires a separate PearPlay Helper for Linux.** After installing the extension, a setup tab guides you through connecting the helper. Install the helper once and connect each supported browser you use. No PearPlay account is required. Arch / Omarchy setup includes step-by-step Terminal installation instructions.
 
-Available helper packages: Linux x86_64 Ubuntu/Debian (Ubuntu 24.04 baseline, glibc 2.39+) and Arch/Omarchy (glibc 2.44+). Fedora 44 x86_64 RPM is also available (glibc 2.43+); native helper connection/discovery is verified, not Fedora TV playback. No ARM package is offered.
+Available helper packages: Linux x86_64 Ubuntu/Debian (Ubuntu 24.04 baseline, glibc 2.39+) and Arch/Omarchy (glibc 2.44+). Fedora 44 x86_64 RPM is also available (glibc 2.43+). No ARM package is offered.
 
-Current verification: Linux Chrome playback on tested FOX and public HLS streams. Native-helper connection checks are separate from TV playback evidence. Linux Brave/Chromium playback remains unverified. Mac compatibility work is paused; no release date is promised.
+Current verification: tested Linux Chrome video and audio through the extension and helper. Linux Chromium video playback has also been observed in a separate user trial; Chromium audio and broader stream compatibility remain unverified. Native-helper connection checks are separate from TV playback evidence. Linux Brave playback remains unverified. Mac compatibility work is paused; no release date is promised.
 
 Only receiver-fetchable HTTP(S) media works. Browser-only URLs, DRM and access restrictions are not bypassed. TV pause/resume are unavailable, and ending a helper session is not a universal TV-stop guarantee. PearPlay does not block ads.
 

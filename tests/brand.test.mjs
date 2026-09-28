@@ -22,6 +22,14 @@ test('required raster assets have exact dimensions', () => {
     if(file.endsWith('social-preview.png')) assert.ok(png.length < 1_000_000);
   }
 });
+test('public marketing copy avoids naming trial sites and test machines', () => {
+  for (const path of ['README.md','assets/landing/readme.html','assets/landing/page.html','docs/index.html','docs/store-listing.md']) {
+    const content=read(path).toString();
+    assert.doesNotMatch(content,/\b(?:FOX(?: 13)?|Acer|LG C5|Xubuntu|Fedora\/GNOME)\b/,path);
+    assert.match(content,/Apple TV/,path);
+  }
+});
+
 test('current product pages consistently present Linux-only scope', () => {
   for (const path of ['README.md','helper/README.md','docs/install.md','docs/helper-onboarding.md','docs/web-store-readiness.md','docs/privacy.md','docs/positioning.md','docs/claims.md','docs/index.html','docs/store-listing.md','assets/landing/page.html','assets/landing/hero.html','assets/landing/social-preview.html','assets/store/listing-light.html','assets/store/listing-dark.html']) {
     const content=read(path).toString();

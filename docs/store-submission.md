@@ -4,7 +4,7 @@
 
 ## Current publication scope
 
-The owner approved the MIT license, committing/pushing the source, and publishing the project website and privacy policy. The Linux helper preview release is now also authorized. Scott subsequently approved committing/pushing and submitting/publishing extension 0.2.7. Google sign-in currently prevents this agent session from accessing the dashboard; submission/publication of the 0.2.7 update is not yet verified. The public Store page lists 0.2.6 (updated September 27, 2026), verified during this release preparation. Root LICENSE covers original project code; existing third-party notices remain applicable.
+The owner approved the MIT license, committing/pushing the source, and publishing the project website and privacy policy. The Linux helper preview release is now also authorized. Scott subsequently approved committing/pushing and submitting/publishing extension 0.2.7, and submitted the 0.2.7 update for review from the dashboard on 2026-09-28; Google approval is pending and publication after approval is not yet done. The public Store page lists 0.2.6 (updated September 28, 2026), verified during this release preparation. Root LICENSE covers original project code; existing third-party notices remain applicable.
 
 - Website: https://jcarcinogen.github.io/PearPlay/
 - Privacy: https://jcarcinogen.github.io/PearPlay/privacy.html

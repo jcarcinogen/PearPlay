@@ -244,9 +244,10 @@ def test_command_path_authenticates_before_setup_uses_type130_and_unique_ids():
         session = mod.Session(wire, timeout=.1)
         await session.start(1234, 'https://example.org/video.mp4')
         stages = [c[0] for c in wire.calls]
-        assert stages == ['authenticate', 'setup-base', 'info', 'record', 'setup-stream', 'command', 'command', 'command', 'command']
+        assert stages == ['authenticate', 'setup-base', 'feedback', 'info', 'record', 'setup-stream', 'command', 'command', 'command', 'command']
+        assert wire.calls[2][1] is None
         base = wire.calls[1][1]
-        stream = wire.calls[4][1]['streams'][0]
+        stream = wire.calls[5][1]['streams'][0]
         assert stream['type'] == 130
         assert base['sessionUUID'] == session.headers['X-Apple-Session-ID']
         assert session.headers['X-Apple-StreamID'] == '19'
@@ -328,4 +329,47 @@ def test_timeout_and_cancel_close_transport_without_pending_tasks():
             await task
         assert wire2.closed
         assert not [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+    asyncio.run(check())
+
+
+def test_rate_resend_is_bounded_while_playback_never_starts():
+    mod = module()
+    async def check():
+        import pytest
+        wire = Wire()
+        session = mod.Session(wire, timeout=.01, feedback_interval=.02,
+                              rate_resend_interval=.004, rate_resend_limit=3)
+        with pytest.raises(TimeoutError):
+            await session.play(.05)
+        resends = [c for c in wire.calls if c[0] == 'command-resend']
+        feedbacks = [c for c in wire.calls if c[0] == 'feedback']
+        assert len(resends) == 3, 'rate re-sends must stop at the limit'
+        assert len(feedbacks) >= 3, 'feedback cadence must continue'
+        assert not [c for c in wire.calls if c[0] == 'command'], 're-sends must not announce as plain commands'
+        sent = [plistlib.loads(plistlib.loads(c[1])['params']['data']) for c in resends]
+        assert all(command == {'type': 'setRate', 'rate': 1.0} for command in sent)
+        assert not session.started
+    asyncio.run(check())
+
+
+def test_rate_resend_stops_after_playing_starts():
+    mod = module()
+    async def check():
+        class PlayingOnFirstResend(Wire):
+            async def request(self, stage, body=None, headers=None):
+                result = await super().request(stage, body, headers)
+                if stage == 'command-resend':
+                    self.callback({'type': 'playbackState', 'name': 'playing'})
+                if stage == 'feedback':
+                    self.callback({'type': 'playbackState', 'params': {'playbackState': 'stopped'}})
+                return result
+        wire = PlayingOnFirstResend()
+        session = mod.Session(wire, timeout=.05, feedback_interval=.02,
+                              rate_resend_interval=.004, rate_resend_limit=3)
+        await session.run(1234, 'https://example.org/a', .3)
+        assert session.started and wire.closed
+        commands = [c for c in wire.calls if c[0] == 'command']
+        resends = [c for c in wire.calls if c[0] == 'command-resend']
+        assert len(commands) == 4, 'the initial batch stays on the plain command stage'
+        assert len(resends) == 1, 'no re-send may follow the playing event'
     asyncio.run(check())

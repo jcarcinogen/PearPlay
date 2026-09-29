@@ -37,7 +37,7 @@ CHANNEL_STATUS = ('received', 'decoded', 'ignored', 'parse-error')
 STAGES = frozenset((
     'credentials', 'receiver-scan', 'connect', 'timing-bind',
     'authenticate', 'setup-base', 'event-connect', 'info', 'record', 'setup-stream',
-    'command', 'await-playing', 'feedback', 'unknown'))
+    'command', 'command-resend', 'await-playing', 'feedback', 'unknown'))
 
 # Final playback outcomes.
 OUTCOMES = ('stopped', 'timeout', 'rejected', 'network', 'failed', 'cancelled',

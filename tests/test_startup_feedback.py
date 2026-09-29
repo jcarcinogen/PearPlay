@@ -60,9 +60,10 @@ class StandaloneWire:
 def native_backend(log, playing_delay, feedback_error=None):
     """Fake native backend mirroring Backend's shared-stage contract.
 
-    For non-feedback stages it mutates the shared stage list and reports, exactly
-    like the real ``Backend.request``; for feedback it only reports the HTTP
-    response (the real backend must not clobber the shared stage on a heartbeat).
+    For non-exempt stages it mutates the shared stage list and reports, exactly
+    like the real ``Backend.request``; feedback and rate re-sends only report
+    the HTTP response (the real backend must not clobber the shared stage on a
+    heartbeat or a re-send).
     """
     class Wire:
         def __init__(self, connection, credentials, timeout, report, stage):
@@ -78,7 +79,7 @@ def native_backend(log, playing_delay, feedback_error=None):
             self.timing_port = port
 
         async def request(self, stage, body=None, headers=None):
-            if stage != 'feedback':
+            if stage not in ('feedback', 'command-resend'):
                 self.stage[0] = stage
                 self.report('stage', stage=stage)
             if stage == 'setup-base':
@@ -126,6 +127,25 @@ class StartupFeedbackTests(unittest.IsolatedAsyncioTestCase):
                         backend=backend, timeout=timeout, startup_timeout=startup_timeout,
                         feedback_interval=feedback_interval)
         return t, device
+
+    async def test_immediate_feedback_precedes_info_after_event_channel(self):
+        m = load(); command = m.spike()
+        order = []
+
+        class OrderingWire(StandaloneWire):
+            async def request(self, stage, body=None, headers=None):
+                order.append(stage)
+                return await super().request(stage, body, headers)
+
+            async def events(self, port, callback):
+                order.append('events')
+                return await super().events(port, callback)
+
+        wire = OrderingWire([], playing_delay=0.05)
+        session = command.Session(wire, timeout=1.0, feedback_interval=0.5)
+        await session.run(49170, 'https://example.org/a.mp4', 2.0)
+        self.assertLess(order.index('events'), order.index('feedback'))
+        self.assertLess(order.index('feedback'), order.index('info'))
 
     async def test_standalone_session_sends_feedback_before_playing(self):
         m = load(); command = m.spike()
@@ -215,7 +235,14 @@ class StartupFeedbackTests(unittest.IsolatedAsyncioTestCase):
 
         wire.rtsp.feedback = feedback
         wire.rtsp.record = record
+
+        async def post(*args, **kwargs):
+            return SimpleNamespace(code=200)
+
+        wire.connection = SimpleNamespace(post=post)
         await wire.request('feedback')
+        self.assertEqual(stage[0], 'await-playing')
+        await wire.request('command-resend', b'payload', {})
         self.assertEqual(stage[0], 'await-playing')
         await wire.request('record')
         self.assertEqual(stage[0], 'record')

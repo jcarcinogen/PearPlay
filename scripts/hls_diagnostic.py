@@ -21,8 +21,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from helper.diagnostics import sanitize
 
 ARTIFACT_DIR = Path('/Volumes/IronWolf/Stuff/PearPlay/Investigations')
-ARCHIVE_NAME = 'PearPlay-HLS-playback-info-runtime.tar.gz'
-EXPECTED_SHA256 = 'c3c6fa256d2da88411ac4cc0af666319245627090b039f0f97969dcca69c024b'
+ARCHIVE_NAME = 'PearPlay-HLS-rate-resend-runtime.tar.gz'
+EXPECTED_SHA256 = 'f86f2c0fe47a47fedf99d32a8dd456b890ddb765c0df9c07c1f0c279b3d876d1'
 PUBLIC_HLS = 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8'
 CONTROLS = {
     'hls-master': ('HLS control — exact public master', PUBLIC_HLS),

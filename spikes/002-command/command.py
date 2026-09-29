@@ -178,7 +178,7 @@ class Backend:
         self.report('timing-bound', udp_port=self.timing_port)
 
     async def request(self, stage, body=None, headers=None):
-        if stage != 'feedback':
+        if stage not in ('feedback', 'command-resend'):
             self.stage[0] = stage
             self.report('stage', stage=stage)
         if stage == 'authenticate':
@@ -188,7 +188,7 @@ class Backend:
             return {}
         if stage in ('setup-base', 'setup-stream'):
             response = await self.rtsp.setup(body=body)
-        elif stage == 'command':
+        elif stage in ('command', 'command-resend'):
             response = await self.connection.post('/command', headers=headers, body=body, allow_error=True)
         elif stage == 'info':
             return await self.rtsp.info()
@@ -249,10 +249,14 @@ def uid():
 
 
 class Session:
-    def __init__(self, wire, timeout=10, feedback_interval=2):
+    def __init__(self, wire, timeout=10, feedback_interval=2, rate_resend_interval=None, rate_resend_limit=15):
         self.wire = wire
         self.timeout = timeout
         self.feedback_interval = feedback_interval
+        self.rate_resend_interval = feedback_interval / 2 if rate_resend_interval is None else rate_resend_interval
+        self.rate_resend_limit = rate_resend_limit
+        self.rate_resends = 0
+        self.rate_command = {'type': 'setRate', 'rate': 1.0}
         self.headers = {'User-Agent': 'AirPlay/870.14.1',
                         'Content-Type': 'application/x-apple-binary-plist',
                         'X-Apple-ProtocolVersion': '1',
@@ -279,14 +283,24 @@ class Session:
         return await asyncio.wait_for(self.wire.request(stage, body, dict(self.headers)), self.timeout)
 
     async def _feedback_loop(self):
+        """Periodic feedback plus bounded setRate re-sends until playback starts."""
+        tick = 0
         while not self.finished.is_set():
             try:
-                await asyncio.wait_for(self.finished.wait(), self.feedback_interval)
+                await asyncio.wait_for(self.finished.wait(), self.rate_resend_interval)
             except TimeoutError:
-                try:
+                pass
+            else:
+                break
+            tick += 1
+            try:
+                if tick % 2 == 0:
                     await self.call('feedback')
-                except Exception:
-                    pass  # A failed heartbeat must never leak or hide the real outcome.
+                elif not self.started and self.rate_resends < self.rate_resend_limit:
+                    self.rate_resends += 1
+                    await self.call('command-resend', plistlib.dumps({'params': {'data': plistlib.dumps(self.rate_command, fmt=plistlib.FMT_BINARY)}}, fmt=plistlib.FMT_BINARY))
+            except Exception:
+                pass  # A failed heartbeat must never leak or hide the real outcome.
 
     async def play(self, startup_timeout):
         """Shared lifecycle: periodic feedback from setup until playback ends."""
@@ -319,6 +333,10 @@ class Session:
             'osName': 'iPhone OS', 'osVersion': '16.5', 'senderSupportsRelay': False,
             'sourceVersion': '690.7.1', 'statsCollectionEnabled': False})
         await asyncio.wait_for(self.wire.events(base['eventPort'], self.on_event), self.timeout)
+        try:
+            await self.call('feedback')
+        except Exception:
+            pass  # A failed heartbeat must never leak or hide the real outcome.
         await self.call('info')
         await self.call('record')
         result = await self.call('setup-stream', {'streams': [{
@@ -333,7 +351,7 @@ class Session:
             {'type': 'insertPlayQueueItem', 'item': {**item, 'mediaType': 'file', 'Content-Location': url, 'Start-Position-Seconds': 0.0}},
             {'type': 'setProperty', 'value': True, 'property': 'isInterestedInDateRange', 'item': item},
             {'type': 'setProperty', 'value': 1, 'property': 'actionAtItemEnd'},
-            {'type': 'setRate', 'rate': 1.0},
+            self.rate_command,
         ]:
             await self.call('command', plistlib.dumps({'params': {'data': plistlib.dumps(command, fmt=plistlib.FMT_BINARY)}}, fmt=plistlib.FMT_BINARY))
 

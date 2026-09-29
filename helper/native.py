@@ -736,7 +736,7 @@ class Transport:
 
 PLAYBACK_STAGES = frozenset(('credentials', 'receiver-scan', 'connect', 'timing-bind',
     'authenticate', 'setup-base', 'event-connect', 'info', 'record', 'setup-stream',
-    'command', 'await-playing', 'feedback', 'unknown'))
+    'command', 'command-resend', 'await-playing', 'feedback', 'unknown'))
 
 class PlaybackInfoProbe:
     """Diagnostic-only serialization and bounded receive hook on pinned pyatv.

@@ -1,6 +1,8 @@
 # PearPlay status
 
-## 0.2.8 final release gates PASS — publication authorized
+## 0.2.8 published — final gates and anonymous downloads verified
+
+GitHub release: https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.8 — tag targets source checkpoint `d5ced7a695a7ed08e0cbd038d8f2438f28363c26`. Published exact tested extension ZIP, Arch/DEB/RPM packages and SHA256SUMS. All five public URLs returned HTTP 200 without authentication and full downloaded SHA256s matched local frozen assets. Evidence: `Stuff/PearPlay/Release Prep/0.2.8/publication/public-download-verification.json`. Chrome Web Store submission/approval and byte-changing helper catalog activation remain separate; no Store action performed.
 
 Scott authorized GitHub publication of the exact tested extension ZIP and Linux Arch/DEB/RPM assets; Chrome Web Store submission is separate. Fresh pre-publication verification: **453 pytest tests + 40 subtests and 70 Node tests passed**. Debian builder/repair tests below are included in this source checkpoint.
 

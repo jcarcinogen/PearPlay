@@ -1,6 +1,12 @@
 # PearPlay status
 
-## 0.2.8 source checkpoint approved for commit/push; release artifacts still held
+## 0.2.8 source checkpoint pushed; ZIP/Arch prep verified; DEB/RPM blocked
+
+Source checkpoint **`117ba9da0ef0af2cbfc9ed1b32940787649c4f27`** committed/pushed to `origin/main`, verified by exact remote ref + GitHub API read-back. Local release prep: `Stuff/PearPlay/Release Prep/0.2.8/Release readiness.md` and sibling JSON/checksums. Final extension ZIP SHA256 **`9a56e48c73d3da241dc10fa6d0462ebb7eb9ddbb5feab2f1e56ff5b53ff2c9fd`**, all 17 entries byte-identical to watched candidate; exact ZIP tested in sandboxed official Chrome for Testing 154.0.8037.92: missing → ready/native hello 0.2.8 idle/no diagnostics → missing, complete quit/reopen each time. Headless checks, no new playback claim.
+
+Arch release-prep package SHA256 **`fa5d8a92e8d125d395b094936bcb1ce4492b0d6b66536148868ac7624b1117d8`**, explicit `glibc>=2.44`, unchanged frozen payload: all 853 helper entries (including top directory, modes and links), 704 regular files. Final generated package metadata differs from already accepted `bd6cdb99...` package; **this final metadata variant was NOT installed**. Acer remains 0.2.5-1, 869 files/zero altered. Test profiles/Chrome/CDP/staging removed; no privilege/firewall/pairing changes during prep.
+
+DEB/RPM not produced: baseline-compatible rebuilds and new runtime/package verification required. No publication/tag/Store upload. ZIP retains current real 0.2.5 catalog URLs; future 0.2.8 catalog activation remains held until all intended artifacts are verified and published. This is a documented partial release-prep checkpoint, not completion of the cross-distro release.
 
 Fresh pre-commit checks: **437 Linux pytest tests + 40 subtests**, **70 Node tests**, clean `git diff --check`, no added-code static secret/shell/eval/pickle findings. Independent helper and extension reviews passed with no reported security/logic blockers, covering fenced diagnostic scaffolding and its tests as well as production no-PIN routing. Preserve production `development:false`; diagnostic launcher/module remain explicit development evidence, not release transport defaults. Current verified frozen candidate/package and watched/package acceptance stay pinned below; this source checkpoint is not release publication.
 

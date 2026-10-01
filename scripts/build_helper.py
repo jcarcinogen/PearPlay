@@ -95,6 +95,65 @@ def macos_components(output):
     return path
 
 
+def debian_postinst(stage):
+    """Generate a Debian-only list of packaged runtime directory repairs."""
+    import shlex
+    stage=Path(stage)
+    prefix=stage/'opt/pearplay'
+    if not prefix.is_dir() or prefix.is_symlink():
+        raise ValueError('missing_packaged_runtime_directory')
+    directories=[prefix,*sorted(p for p in prefix.rglob('*') if p.is_dir() and not p.is_symlink())]
+    arguments=' '.join(shlex.quote('/'+p.relative_to(stage).as_posix()) for p in directories)
+    return ('#!/bin/sh\nset -eu\ncase "${1:-}" in configure) ;; *) exit 0 ;; esac\n'
+            'set -- '+arguments+'\n'+'''# No recursive chmod: targets are fixed by the package build.
+validate_directory() {
+ target=$1; phase=$2; component=$target
+ while :; do
+  if [ -L "$component" ] || [ ! -d "$component" ]; then
+   printf '%s\\n' 'PearPlay: unsafe installation directory' >&2; exit 1
+  fi
+  ownership=$(/usr/bin/stat -c %u:%g -- "$component") || exit 1
+  if [ "$ownership" != 0:0 ]; then
+   printf '%s\\n' 'PearPlay: installation directory is not root-owned' >&2; exit 1
+  fi
+  mode=$(/usr/bin/stat -c %a -- "$component") || exit 1
+  case "$mode" in *[2367])
+   printf '%s\\n' 'PearPlay: installation directory is world-writable' >&2; exit 1 ;; esac
+  case "$component" in /opt/pearplay|/opt/pearplay/*) scoped=1 ;; *) scoped=0 ;; esac
+  # Global ancestors must already be protected. During repair, every
+  # packaged ancestor must have been locked by the earlier parent repair.
+  if [ "$scoped" = 0 ] || { [ "$phase" = repair ] && [ "$component" != "$target" ]; }; then
+   case "$mode" in *[2367]?)
+    printf '%s\\n' 'PearPlay: installation ancestor is group-writable' >&2; exit 1 ;; esac
+  fi
+  [ "$component" != / ] || break
+  component=${component%/*}; [ -n "$component" ] || component=/
+ done
+}
+# Reject an already unsafe tree before any permission changes.
+for directory do validate_directory "$directory" preflight; done
+# Parent-first protection prevents an unprivileged root-group member from
+# replacing a child between its final validation and chmod. Root itself
+# remains a trusted actor; interruptions can leave partial, stricter repairs.
+for directory do
+ validate_directory "$directory" repair
+ /usr/bin/chmod 0755 -- "$directory"
+done
+''')
+
+
+def write_debian_control(stage, arch, libc):
+    """Create only Debian metadata; frozen payload is unchanged."""
+    stage=Path(stage)
+    hook=debian_postinst(stage)
+    control=stage/'DEBIAN';control.mkdir();control.chmod(0o755)
+    metadata=control/'control'
+    metadata.write_text(f'Package: pearplay-helper\nVersion: {VERSION}\nArchitecture: {arch}\nMaintainer: PearPlay project\nDepends: {linux_dependencies("deb", libc)}\nDescription: PearPlay native helper and browser setup\n')
+    metadata.chmod(0o644)
+    postinst=control/'postinst';postinst.write_text(hook);postinst.chmod(0o755)
+    return control
+
+
 def linux_dependencies(format, libc):
     if not re.fullmatch(r'\d+\.\d+(?:\.\d+)?', libc):
         raise ValueError('unknown_glibc_baseline')
@@ -163,10 +222,9 @@ def build(args):
     else:
         # Build with native package tools; unavailable formats remain explicit release gates.
         if shutil.which('dpkg-deb'):
-            control=stage/'DEBIAN';control.mkdir()
             arch='arm64' if config['arch']=='arm64' else 'amd64'
             libc=platform.libc_ver()[1]
-            (control/'control').write_text(f'Package: pearplay-helper\nVersion: {VERSION}\nArchitecture: {arch}\nMaintainer: PearPlay project\nDepends: {linux_dependencies("deb", libc)}\nDescription: PearPlay native helper and browser setup\n')
+            control=write_debian_control(stage,arch,libc)
             target=output/(label+'.deb')
             subprocess.run(['dpkg-deb','--root-owner-group','--build',str(stage),str(target)],check=True)
             artifacts.append(target);shutil.rmtree(control)

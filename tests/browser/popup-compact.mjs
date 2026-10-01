@@ -47,16 +47,32 @@ try {
   assert.equal(metrics.helpClosed,true, 'advanced controls start collapsed');
   const scenarios = [
     ['permission', `__fixture.allowed=false`, 'permissionBox', false],
-    ['empty', `__fixture.allowed=true;__fixture.view.candidates=[]`, 'videoHint', false],
-    ['playing', `__fixture.view.candidates=[{id:'example-video',label:'A film from this page'}];__fixture.view.native.state='playing'`, 'sessionControls', false],
+    ['empty', `__fixture.view.candidates=[]`, 'videoHint', false],
+    ['playing', `__fixture.view.native.state='playing';__fixture.view.native.evidence='protocol'`, 'sessionControls', false],
     ['error', `__fixture.view.native.state='error';__fixture.view.native.error='receiver_unavailable'`, 'pairBox', true],
     ['pin', `__fixture.view.native.error='pairing_required'`, 'pairBox', false],
     ['firewall', `__fixture.view.firewallBusy=true`, 'firewallReview', false],
+    ['sent', `Object.assign(__fixture.view.native,{state:'connecting',evidence:'unverified',session:{receiver:'example-receiver',host:'192.0.2.10',transport:'airplay-v1',delivery:'accepted',timingRequired:false}})`, 'sessionControls', false],
+    ...['unsupported_access','incomplete_advertisement','unsupported_protocol'].map(reason => [reason, `Object.assign(__fixture.view.native,{state:'error',evidence:'unverified',error:'transport_failed',receiverIssue:'${reason}'})`, 'pairBox', true]),
+    ['reset', `Object.assign(__fixture.view.native,{state:'stopped',evidence:'unverified',session:null})`, 'sessionControls', true],
   ];
   for (const [state, setup, control, hidden] of scenarios) {
+    // New document per case: PIN/action lexical state must not leak between fixtures.
+    await c.send('Page.navigate',{url:`chrome-extension://${id}/popup.html?case=${state}`},sessionId);
+    for(let i=0;i<100;i++) {
+      if(await c.evaluate(sessionId,`location.search==='?case=${state}' && document.readyState==='complete' && !!__fixture?.calls.some(x=>x.op==='discover')`)) break;
+      await delay(50);
+    }
     await c.evaluate(sessionId, setup);
     await delay(2200); // Production refresh interval, no synthetic click bypass.
     const m = await c.evaluate(sessionId, `(()=>{const e=document.getElementById(${JSON.stringify(control)});return {height:document.body.scrollHeight,width:document.body.scrollWidth,hidden:e.hidden,sendBottom:document.getElementById('start').getBoundingClientRect().bottom,helpOpen:document.getElementById('helpDetails').open,firewallOpen:document.getElementById('firewallBox').open}})()`);
+    if (state==='sent' || state.startsWith('unsupported_') || state==='incomplete_advertisement' || state==='reset') {
+      const status = await c.evaluate(sessionId, `({badge:document.getElementById('phase').textContent,text:document.getElementById('tvStatus').textContent,disabled:document.getElementById('start').disabled,pinCalls:__fixture.calls.filter(x=>x.op==='pairBegin').length})`);
+      assert.equal(status.pinCalls,0,state+' must not auto-pair');
+      if(state==='sent') {assert.match(status.badge,/^Sent\b/);assert.match(status.text,/check the picture and sound/i);assert.equal(status.disabled,true);}
+      else if(state==='reset') assert.notEqual(status.badge,'Sent');
+      else {assert.equal(status.badge,'Needs attention');assert.doesNotMatch(status.text,/4 digits|firewall/i);}
+    }
     assert.equal(m.hidden, hidden, state+' conditional control');
     assert.ok(m.width<=400, state+' horizontal overflow');
     if (state!=='firewall') {

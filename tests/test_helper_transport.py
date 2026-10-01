@@ -40,7 +40,7 @@ class TransportTests(unittest.IsolatedAsyncioTestCase):
             import plistlib
             payload=next(body for stage,body in calls if stage=='command')
             self.assertEqual(plistlib.loads(plistlib.loads(payload)['params']['data'])['item']['Content-Location'],'https://EXAMPLE.org/a%2fb?SECRET')
-            with self.assertRaisesRegex(m.HelperError,'pairing_required'):
+            with self.assertRaisesRegex(m.HelperError,'receiver_unavailable'):
                 await transport.run(dict(receiver='11:22:33:44:55:66',host='127.0.0.1',url='https://a/'),lambda *x:None)
 
     async def test_empty_discover_uses_mdns_hosts_when_multicast_scan_is_empty(self):
@@ -146,7 +146,10 @@ class TransportTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_pairing_holds_shared_lease_until_cancel_or_finish(self):
         m=load(); command=m.spike()
-        device=SimpleNamespace(identifier='AA:BB:CC:DD:EE:FF', address='127.0.0.1', get_service=lambda _: SimpleNamespace(port=7000))
+        try: from pyatv.const import PairingRequirement
+        except ImportError: self.skipTest('real pairing classification runs on Acer')
+        service = SimpleNamespace(port=7000, properties={'features':'0x1', 'flags':'0x200'}, requires_password=False, pairing=PairingRequirement.Mandatory)
+        device=SimpleNamespace(identifier='AA:BB:CC:DD:EE:FF', address='127.0.0.1', get_service=lambda _: service)
         async def scan(*args, **kwargs): return [device]
         class Pair:
             device_provides_pin=True; has_paired=True

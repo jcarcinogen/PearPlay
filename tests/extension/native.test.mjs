@@ -82,6 +82,35 @@ test('ambiguous_rule firewall error passes sanitization for a clear popup refusa
  p.onMessage.emit({...base,id:p.sent[1].id,firewall:{supported:true,enabled:true,allowance:'present',owned:true,change:{ok:false,error:'ambiguous_rule'},secret:'URL'}});
  assert.deepEqual(await pending,{supported:true,enabled:true,allowance:'present',owned:true,change:{ok:false,error:'ambiguous_rule'}});
 });
+test('accepted V1 metadata is bounded, session-scoped and cleared by lifecycle replies',async()=>{
+ const {Native}=await import('../../extension/native.mjs');const p=fakePort();const n=new Native(()=>p);
+ const hello=n.request('hello');const base={v:1,id:p.sent[0].id,ok:true,state:'idle',evidence:'none',capabilities:['start','status','stop']};
+ p.onMessage.emit({...base,receivers:[{identifier:'tv',address:'192.168.1.50',timingRequired:false}]});await hello;
+ assert.equal(n.view().receivers[0].timingRequired,false);
+ const session={receiver:'tv',host:'192.168.1.50',transport:'airplay-v1',delivery:'accepted',timingRequired:false};
+ const accepted={...base,id:'event',state:'connecting',evidence:'unverified',session};
+ p.onMessage.emit(accepted);assert.deepEqual(n.view().session,session);assert.equal(n.view().state,'connecting');
+ for(const invalid of [{...session,host:'secret.test'},{...session,delivery:'playing'},{...session,timingRequired:true},{...session,secret:'SIGNED_URL'},null]){
+  p.onMessage.emit({...accepted,session:invalid});assert.equal(n.view().session,null);
+  assert.doesNotMatch(JSON.stringify(n.view()),/SIGNED_URL|secret.test/);
+ }
+ for(const state of ['stopped','error','playing','idle']){
+  p.onMessage.emit(accepted);p.onMessage.emit({...accepted,state});assert.equal(n.view().session,null);
+ }
+ p.onMessage.emit(accepted);p.onMessage.emit({...base,id:'event',state:'connecting'});assert.equal(n.view().session,null);
+ p.onMessage.emit(accepted);p.disconnect();assert.equal(n.view().session??null,null);
+});
+test('unsupported receiver details survive status refresh without exposing arbitrary text',async()=>{
+ const {Native}=await import('../../extension/native.mjs');const p=fakePort();const n=new Native(()=>p);
+ const hello=n.request('hello');const base={v:1,id:p.sent[0].id,ok:true,state:'idle',evidence:'none',capabilities:['start','status']};
+ p.onMessage.emit(base);await hello;
+ p.onMessage.emit({...base,id:'event',ok:false,state:'error',error:'transport_failed',receiverIssue:'unsupported_access'});
+ assert.equal(n.view().receiverIssue,'unsupported_access');
+ const status=n.request('status');p.onMessage.emit({...base,id:p.sent.at(-1).id});await status;
+ assert.equal(n.view().receiverIssue,'unsupported_access');
+ p.onMessage.emit({...base,id:'event',ok:false,state:'error',error:'transport_failed',receiverIssue:'SECRET_URL'});
+ assert.equal(n.view().receiverIssue,null);assert.doesNotMatch(JSON.stringify(n.view()),/SECRET_URL/);
+});
 function signal(){const listeners=[];return {addListener:f=>listeners.push(f),emit:v=>listeners.forEach(f=>f(v))};}
 export function fakePort(){return {onMessage:signal(),onDisconnect:signal(),sent:[],postMessage(m){this.sent.push(m);},disconnect(){this.onDisconnect.emit();}};}
 test('late replies cannot roll newer native state back; helper failures and invalid frames fail closed',async()=>{

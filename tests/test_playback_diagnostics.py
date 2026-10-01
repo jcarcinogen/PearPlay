@@ -87,11 +87,16 @@ class PlaybackTraceIntegration(unittest.IsolatedAsyncioTestCase):
         with tempfile.TemporaryDirectory() as directory:
             store = m.spike().existing().Store()
             store.root = Path(directory).resolve()/'state'
-            t = m.Transport(api=SimpleNamespace(), store=store, connect=lambda *a: None, parse=lambda x: x, trace=trace)
+            try: from pyatv.const import PairingRequirement
+            except ImportError: self.skipTest('real pairing classification runs on Acer')
+            service = SimpleNamespace(port=7000, properties={'features':'0x1', 'flags':'0x200'}, requires_password=False, pairing=PairingRequirement.Mandatory)
+            async def resolved(*args): return SimpleNamespace(get_service=lambda _: service)
+            t = m.Transport(api=SimpleNamespace(Protocol=SimpleNamespace(AirPlay=1)), store=store, connect=lambda *a: None, parse=lambda x: x, trace=trace)
+            t.resolve_receiver = resolved
             with self.assertRaisesRegex(m.HelperError, 'pairing_required'):
                 await t.run({'receiver': 'AA:BB:CC:DD:EE:FF', 'host': '127.0.0.1', 'url': 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8'}, lambda *a: None)
             self.assertIn({'k': 'input', 'media': 'hls', 'fixture': 'public-hls-master'}, records)
-            self.assertIn({'k': 'outcome', 'outcome': 'pairing_required', 'stage': 'credentials'}, records)
+            self.assertIn({'k': 'outcome', 'outcome': 'pairing_required', 'stage': 'receiver-scan'}, records)
             records.clear()
             t.resolve_receiver = unavailable
             with self.assertRaisesRegex(m.HelperError, 'receiver_unavailable'):

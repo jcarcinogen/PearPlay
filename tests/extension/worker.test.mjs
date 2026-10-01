@@ -54,6 +54,22 @@ test('firewall changes require popup confirmation for the selected receiver; che
  support=false;await send({op:'receiver',id:'r'});
  assert.equal((await send({op:'view'})).firewall,null);
 });
+test('V1 advice skips automatic timing checks but preserves explicit cleanup and suppresses duplicate Send',async()=>{
+ const {createWorker}=await import('../../extension/worker.mjs');const calls=[];
+ const chrome={runtime:{getURL:p=>`chrome-extension://ext/${p}`,onMessage:signal()},tabs:{onRemoved:signal()},webNavigation:{onCommitted:signal(),onHistoryStateUpdated:signal()},webRequest:{onBeforeRequest:{removeListener(){}},onResponseStarted:{removeListener(){}}},permissions:{getAll:async()=>({origins:[]}),onAdded:signal(),onRemoved:signal()},alarms:{create(){},onAlarm:signal()}};
+ const state={firewallSupport:true,receivers:[{identifier:'r',address:'192.168.1.50',timingRequired:false}]};
+ const native={view:()=>structuredClone(state),request:async(op,args)=>{calls.push({op,args});return {supported:true,enabled:true,allowance:'present',owned:true}}};
+ const w=createWorker(chrome,native);const send=m=>w.message(m,{url:chrome.runtime.getURL('popup.html')});
+ await send({op:'receiver',id:'r'});assert.equal(calls.length,0);
+ await send({op:'discover'});assert.equal(calls.filter(c=>c.op==='firewall').length,0);
+ await send({op:'firewall',action:'check',receiver:'r'});assert.equal(calls.at(-1).args.action,'check');
+ await assert.rejects(send({op:'firewall',action:'allow',receiver:'r',confirmed:true}));
+ await send({op:'firewall',action:'remove',receiver:'r',confirmed:true});assert.equal(calls.at(-1).args.action,'remove');
+ state.session={receiver:'r',host:'192.168.1.50',transport:'airplay-v1',delivery:'accepted',timingRequired:false};
+ state.state='connecting';state.evidence='unverified';
+ await send({op:'start',tabId:1});assert.equal(calls.some(c=>c.op==='start'),false);
+ assert.equal(native.view().session.delivery,'accepted');
+});
 test('webRequest is attached only after optional host permission and detached on revoke',async()=>{
  const {createWorker}=await import('../../extension/worker.mjs');
  const before={listeners:[],filters:[],addListener(f,filter){this.listeners.push(f);this.filters.push(filter);},removeListener(f){this.listeners=this.listeners.filter(x=>x!==f);this.filters=[];}};

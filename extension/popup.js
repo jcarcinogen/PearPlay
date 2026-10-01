@@ -45,7 +45,9 @@
     }
     el.value = selected ?? '';
   };
+  const accepted = native => native?.state === 'connecting' && native.evidence === 'unverified' && native.session?.delivery === 'accepted';
   const tvStatus = native => {
+    if (native.receiverIssue) return ({unsupported_access: 'This TV’s access settings are not supported by PearPlay. Check its AirPlay settings or choose another TV.', incomplete_advertisement: 'This TV did not provide enough consistent connection information. Press Find TVs and try again.', unsupported_protocol: 'PearPlay does not support this TV’s connection mode yet. Choose another TV.'})[native.receiverIssue];
     if (native.error === 'busy') return 'PearPlay is busy in another browser or pairing window. End that helper session there before trying again.';
     if (native.error === 'transport_failed' || native.state === 'error' && native.diagnostic) {
       const d = native.diagnostic;
@@ -56,6 +58,7 @@
     if (native.error === 'receiver_unavailable') return 'This TV was found, but pairing or playback could not start. Press Find TVs and try again.';
     if (native.error === 'pairing_failed') return 'Pairing did not finish. Check the TV, then press Send to TV again.';
     if (native.error === 'pairing_required') return 'Pairing is required. Look at the TV and type the 4 digits it shows.';
+    if (accepted(native)) return 'Sent to TV — check the picture and sound. End the helper session before sending again.';
     if (!native.receivers?.length) return 'No AirPlay TVs yet. Click Find TVs.';
     return ({ idle: 'Helper connected. Choose your TV.', connecting: 'Connecting to your TV…', playing: 'Helper reports playing (look at the TV to confirm).', stopped: 'Helper session ended. Check the TV.', stopping: 'Ending the helper session…', error: 'Helper needs attention. Reconnect and try again.' })[native.state] ?? 'Check the TV and refresh its status.';
   };
@@ -75,12 +78,13 @@
   const renderFirewall = s => {
     const r = s.native.receivers?.find(r => r.identifier === s.receiver);
     const f = s.firewall?.receiver === s.receiver && s.firewall?.host === r?.address ? s.firewall : null;
+    const noTiming = r?.timingRequired === false || !!(s.native.session?.receiver === r?.identifier && s.native.session?.host === r?.address && s.native.session?.timingRequired === false);
     const key = `${s.receiver ?? ''}/${r?.address ?? ''}`;
     if ($('firewallBox').dataset.target !== key) $('firewallConsent').checked = false;
     $('firewallBox').dataset.target = key;
     $('firewallScope').textContent = r?.address ? `Only ${r.address} → this computer, UDP 49170 (AirPlay timing). No other ports or TVs.` : 'Choose a TV first.';
     const privateIPv4 = rfc1918(r?.address);
-    let text = !s.native.firewallSupport ? 'Automatic firewall checks need a newer helper. Firewall settings may matter if a TV only buffers.'
+    let text = noTiming ? 'This TV does not need the extra timing-port permission. Check saved rules only if you want to remove an old PearPlay permission.' : !s.native.firewallSupport ? 'Automatic firewall checks need a newer helper. Firewall settings may matter if a TV only buffers.'
       : !r ? 'Choose a TV to check its firewall permission.'
       : !f ? 'Firewall permission could not be checked. Use Check again; no settings were changed.'
       : !f.supported ? 'Automatic firewall checks support UFW only. No settings were changed.'
@@ -92,14 +96,14 @@
       : 'UFW settings could not be fully checked. No permission is assumed.';
     if (f?.change) text = (f.change.ok ? 'Last requested firewall change was verified in saved rules. ' : f.change.error === 'auth_cancelled' ? 'Administrator approval was cancelled. ' : f.change.error === 'ambiguous_rule' ? 'Removal was refused because both a PearPlay rule and another identical rule are present. PearPlay will not remove a rule it did not create. ' : 'Firewall change was not verified. No broader permission was attempted. ') + text;
     $('firewallStatus').textContent = s.firewallBusy ? 'Waiting for administrator approval on the desktop…' : text;
-    const attention = s.firewallBusy || f?.change || f?.supported && f.enabled === true && f.allowance === 'missing' || s.native.error === 'transport_failed';
+    const attention = s.firewallBusy || f?.change || !noTiming && !s.native.receiverIssue && (f?.supported && f.enabled === true && f.allowance === 'missing' || s.native.error === 'transport_failed');
     $('firewallReview').hidden = !attention;
     $('firewallReview').textContent = s.firewallBusy ? 'Waiting for administrator approval…' : f?.change ? 'Firewall change result — view details' : 'Review TV firewall permission';
     const notification = `${key}/${!!s.firewallBusy}/${f?.change?.ok ?? ''}/${f?.change?.error ?? ''}`;
     if ($('firewallBox').dataset.notification !== notification && (s.firewallBusy || f?.change?.ok === false)) openFirewall();
     $('firewallBox').dataset.notification = notification;
     $('firewallCheck').disabled = !r || !s.native.firewallSupport || s.firewallBusy;
-    $('firewallAllow').hidden = !(f?.supported && f.enabled === true && f.allowance === 'missing');
+    $('firewallAllow').hidden = noTiming || !(f?.supported && f.enabled === true && f.allowance === 'missing');
     $('firewallRemove').hidden = !f?.owned;
     $('firewallRemoveIfPresent').hidden = !(f?.supported && f.allowance === 'unknown' && privateIPv4);
     for (const id of ['firewallAllow','firewallRemove','firewallRemoveIfPresent','firewallConsent']) $(id).disabled = !!s.firewallBusy;
@@ -110,17 +114,19 @@
   const updatePhase = () => {
     const s = currentView;
     const state = actionError || s?.native.error ? 'error'
-      : pendingActions || ['connecting', 'stopping'].includes(s?.native.state) ? 'working'
+      : pendingActions ? 'working'
+      : accepted(s?.native) ? 'sent'
+      : ['connecting', 'stopping'].includes(s?.native.state) ? 'working'
       : s?.native.state === 'playing' ? 'playing'
       : s?.enabled && !s.candidates.length ? 'empty' : 'idle';
-    const labels = { idle: 'Ready', working: 'Working…', empty: 'No video found yet', error: 'Needs attention', playing: 'Helper reports playing — check the TV' };
+    const labels = { sent: 'Sent — check the TV', idle: 'Ready', working: 'Working…', empty: 'No video found yet', error: 'Needs attention', playing: 'Helper reports playing — check the TV' };
     $('phase').dataset.state = state;
     $('phase').textContent = labels[state];
   };
   async function refresh() {
     try {
       const s = await send('view');
-      const nativeChanged = currentView?.native.state !== s.native.state || currentView?.native.error !== s.native.error;
+      const nativeChanged = currentView?.native.state !== s.native.state || currentView?.native.error !== s.native.error || currentView?.native.session?.delivery !== s.native.session?.delivery || currentView?.native.receiverIssue !== s.native.receiverIssue;
       if (!s.selected && s.candidates.length === 1) {
         await send('select', { id: s.candidates[0].id });
         s.selected = s.candidates[0].id;
@@ -142,7 +148,7 @@
       $('videoHint').hidden = !!s.candidates.length;
       $('discover').disabled = disconnected;
       $('host').disabled = disconnected;
-      $('start').disabled = disconnected || !c || !s.receiver || pinReady;
+      $('start').disabled = disconnected || !c || !s.receiver || pinReady || accepted(s.native);
       const allowed = await allWebsitesAllowed();
       $('permissionBox').hidden = allowed;
       $('grantAll').disabled = allowed;
@@ -166,7 +172,7 @@
         });
       } else if (pinReady) $('pairBox').hidden = false;
       else $('pairBox').hidden = true;
-      if (!needsPin && !pinReady && (!tvMessage || nativeChanged)) showTVs(tvStatus(s.native));
+      if (!needsPin && !pinReady && (!tvMessage || nativeChanged || accepted(s.native))) showTVs(tvStatus(s.native));
       $('sessionControls').hidden = !(['connecting','playing','paused','stopping'].includes(s.native.state) || pinStarted || pinReady);
       for (const op of ['pause', 'resume', 'stop']) $(op).disabled = !s.native.capabilities.includes(op);
       const host = $('host').value.trim();
@@ -291,7 +297,7 @@
     updatePhase();
     try {
       await send('hello');
-      await findTVs();
+      if (!accepted(currentView?.native)) await findTVs();
       await refresh();
     } catch (error) {
       const text = explain(error);

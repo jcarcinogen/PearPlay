@@ -3,10 +3,10 @@ import {Native} from './native.mjs';
 const KNOWN_ERRORS=['NATIVE_DISCONNECTED','NATIVE_TIMEOUT','INVALID_RESPONSE','busy','pairing_required','pairing_failed','transport_failed','receiver_not_discovered','receiver_unavailable','discovery_failed'];
 export function createWorker(chrome,native=new Native(()=>chrome.runtime.connectNative('com.pearplay.helper'))) {
  const sessions=new Sessions();let receiver=null;let local=null;let firewall=null;let firewallBusy=false;
- async function checkFirewall(){
+ async function checkFirewall(explicit=false){
   const previous=firewall;firewall=null;
   const r=native.view().receivers.find(r=>r.identifier===receiver);
-  if(!r||!native.view().firewallSupport||firewallBusy)return;
+  if(!r||!native.view().firewallSupport||firewallBusy||r.timingRequired===false&&!explicit)return;
   try{const result=await native.request('firewall',{receiver:r.identifier,host:r.address,action:'check'});
    if(receiver===r.identifier)firewall={...result,...(previous?.receiver===r.identifier&&previous?.host===r.address&&previous.change?{change:previous.change}:{}),receiver:r.identifier,host:r.address};
   }catch{} // Discovery still works if firewall inspection is unavailable.
@@ -47,14 +47,15 @@ export function createWorker(chrome,native=new Native(()=>chrome.runtime.connect
     const r=native.view().receivers.find(r=>r.identifier===receiver);
     if(!r||m.receiver!==receiver||!native.view().firewallSupport)throw Error('NO_RECEIVER');
     if(firewallBusy)throw Error('busy');
-    if(m.action==='check'){await checkFirewall();return {ok:true};}
+    if(m.action==='check'){await checkFirewall(true);return {ok:true};}
+    if(m.action==='allow'&&r.timingRequired===false)throw Error('UNNEEDED_TIMING_PERMISSION');
     if(!['allow','remove'].includes(m.action)||m.confirmed!==true)throw Error('CONFIRM_FIREWALL_FIRST');
     firewallBusy=true;
     try{const result=await native.request('firewall',{receiver:r.identifier,host:r.address,action:m.action});
      if(receiver===r.identifier)firewall={...result,receiver:r.identifier,host:r.address};return {ok:true};
     }finally{firewallBusy=false;}
    }
-   case 'start':{const c=sessions.selected(tabId);const r=native.view().receivers.find(r=>r.identifier===receiver);if(!r)throw Error('NO_RECEIVER');return native.request('start',{receiver:r.identifier,host:r.address,url:c.url});}
+   case 'start':{if(native.view().session?.delivery==='accepted')return native.view();const c=sessions.selected(tabId);const r=native.view().receivers.find(r=>r.identifier===receiver);if(!r)throw Error('NO_RECEIVER');return native.request('start',{receiver:r.identifier,host:r.address,url:c.url});}
    case 'pairBegin':{const r=native.view().receivers.find(x=>x.identifier===receiver);if(!r)throw Error('NO_RECEIVER');return native.request('pair_begin',{receiver:r.identifier,host:r.address});}
    case 'pair':{const r=native.view().receivers.find(x=>x.identifier===receiver);if(!r)throw Error('NO_RECEIVER');if(typeof m.pin!=='string'||!/^\d{4}$/.test(m.pin))throw Error('INVALID_PIN');return native.request('pair',{receiver:r.identifier,host:r.address,pin:m.pin});}
    case 'localPause':{if(m.confirmed!==true)throw Error('CONFIRM_TV_FIRST');const c=sessions.selected(tabId);if(!c.videoId)throw Error('NO_EXACT_VIDEO');const result=await chrome.tabs.sendMessage(tabId,{op:'localPause',confirmed:true,videoId:c.videoId,url:c.url},{documentId:c.documentId});if(result?.ok)local={tabId,...c};return result;}

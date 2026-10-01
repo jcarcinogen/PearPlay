@@ -9,7 +9,7 @@ import plistlib
 import re
 import struct
 
-VERSION = '0.2.5'
+VERSION = '0.2.8'
 
 async def native_stdio(output, factory=None):
     import sys
@@ -20,7 +20,7 @@ async def native_stdio(output, factory=None):
     try: await serve(reader,output,factory=factory)
     finally: transport.close()
 
-def main(argv=None, *, trace=None, startup_timeout=None, event_labels=None, event_metadata=None, probe_playback_info=None):
+def main(argv=None, *, trace=None, startup_timeout=None, event_labels=None, event_metadata=None, probe_playback_info=None, diagnostic_v1=None):
     import sys
     import os
     import logging
@@ -59,7 +59,10 @@ def main(argv=None, *, trace=None, startup_timeout=None, event_labels=None, even
                 if args.mode=='native':
                     factory = None
                     if trace is not None or startup_timeout is not None or event_labels is not None or event_metadata is not None or probe_playback_info is not None:
-                        factory = lambda: Transport(trace=trace, startup_timeout=startup_timeout, event_labels=event_labels, event_metadata=event_metadata, probe_playback_info=probe_playback_info)
+                        def factory():
+                            transport = Transport(trace=trace, startup_timeout=startup_timeout, event_labels=event_labels, event_metadata=event_metadata, probe_playback_info=probe_playback_info)
+                            transport.diagnostic_v1 = diagnostic_v1
+                            return transport
                     asyncio.run(native_stdio(output, factory=factory))
                 elif args.mode=='pair':
                     text=io.TextIOWrapper(output,encoding='utf-8',write_through=True)
@@ -127,6 +130,13 @@ def parse_avahi_receivers(text):
     for service in parse_avahi_services(text):
         receiver = {key: service[key] for key in ('identifier', 'address', 'kind')}
         receiver['label'] = 'Apple TV' if receiver['kind'] == 'apple-tv' else 'AirPlay TV — compatibility unverified'
+        try:
+            from helper.airplay_v1 import route
+            from pyatv.const import Protocol
+            if route(avahi_config(service).get_service(Protocol.AirPlay)) == 'v1':
+                receiver['timingRequired'] = False
+        except (ImportError, ValueError, TypeError):
+            pass
         if receiver not in receivers: receivers.append(receiver)
     return receivers
 
@@ -529,9 +539,28 @@ class Transport:
             if not kind: continue
             receiver = dict(identifier=identifier, address=address,
                             label='Apple TV' if kind == 'apple-tv' else 'AirPlay TV — compatibility unverified', kind=kind)
-            if not any(r['identifier'].lower() == identifier.lower() and r['address'] == address for r in result): result.append(receiver)
+            try:
+                from helper.airplay_v1 import route
+                if route(service) == 'v1': receiver['timingRequired'] = False
+            except (ImportError, ValueError, TypeError):
+                pass
+            existing = next((r for r in result if r['identifier'].lower() == identifier.lower() and r['address'] == address), None)
+            if existing is None: result.append(receiver)
+            elif 'timingRequired' not in receiver: existing.pop('timingRequired', None)
             if len(result) == 64: break
         if not result and failed: raise HelperError('discovery_failed')
+        try:
+            saved = self.store.load()
+        except FileNotFoundError:
+            saved = None
+        except Exception:
+            # An unreadable/malformed pairing cannot justify no-auth advice.
+            for receiver in result: receiver.pop('timingRequired', None)
+            saved = None
+        if saved:
+            for receiver in result:
+                if receiver['identifier'].lower() == saved['identifier'].lower():
+                    receiver.pop('timingRequired', None)
         return sorted(result, key=lambda r: (r['kind'] != 'apple-tv', r['address']))
 
     async def resolve_receiver(self, identifier, host):
@@ -544,7 +573,12 @@ class Transport:
         matches = [d for d in devices if d.identifier.lower() == identifier.lower()
                    and ipaddress.ip_address(d.address) == address
                    and d.get_service(self.api.Protocol.AirPlay) is not None]
-        if len(matches) == 1:
+        if len(matches) == 1 and len(devices) == 1:
+            service = matches[0].get_service(self.api.Protocol.AirPlay)
+            service_id = getattr(service, 'identifier', identifier)
+            if (not isinstance(service_id, str) or service_id.lower() != identifier.lower()
+                    or type(service.port) is not int or not 0 < service.port <= 65535):
+                raise HelperError('receiver_unavailable')
             return matches[0]
         # Do not let Avahi override conflicting/ambiguous pyatv identities.
         if devices:
@@ -566,6 +600,10 @@ class Transport:
         try:
             self._trace('stage', stage=stage)
             device = await self.resolve_receiver(identifier, host)
+            from helper.airplay_v1 import route
+            selected = route(device.get_service(self.api.Protocol.AirPlay))
+            if selected != 'pin':
+                raise ReceiverError('unsupported_protocol' if selected == 'v1' else selected)
             stage = 'authenticate'
             self._trace('stage', stage=stage)
             pairing = await asyncio.wait_for(self.api.pair(device, self.api.Protocol.AirPlay, asyncio.get_running_loop()), self.timeout)
@@ -621,8 +659,9 @@ class Transport:
             media, fixture = diagnostics().classify_url(args.get('url'))
             self._trace('input', media=media, fixture=fixture)
         try:
-            await self._run(args, notify)
+            evidence = await self._run(args, notify)
             self._trace('outcome', outcome='stopped')
+            return evidence
         except HelperError as error:
             outcome = str(error) if str(error) in ('pairing_required', 'receiver_unavailable', 'busy') else 'failed'
             self._trace('outcome', outcome=outcome, stage=self.playback_stage[0])
@@ -642,12 +681,21 @@ class Transport:
 
     async def _run(self, args, notify):
         with Lease(self.store):
+            target = getattr(self, 'diagnostic_v1', None)
+            if target is not None and (args['receiver'], args['host']) == target:
+                from helper.diagnostic_v1 import run
+                return await run(self, args, notify)
             try: saved = self.store.load()
-            except FileNotFoundError: raise HelperError('pairing_required') from None
-            if saved['identifier'] != args['receiver']: raise HelperError('pairing_required')
+            except FileNotFoundError: saved = None
             self.playback_stage[0] = 'receiver-scan'
-            device = await self.resolve_receiver(saved['identifier'], args['host'])
+            device = await self.resolve_receiver(args['receiver'], args['host'])
             service = device.get_service(self.api.Protocol.AirPlay)
+            if saved is None or saved['identifier'].lower() != args['receiver'].lower():
+                from helper.airplay_v1 import route, run
+                selected = route(service)
+                if selected == 'pin': raise HelperError('pairing_required')
+                if selected != 'v1': raise ReceiverError(selected)
+                return await run(self, service, args, notify)
             self.playback_stage[0] = 'credentials'
             credentials = self.parse(saved['credentials'])
             self.playback_stage[0] = 'connect'
@@ -884,6 +932,11 @@ class PlaybackInfoProbe:
 class HelperError(Exception):
     pass
 
+class ReceiverError(HelperError):
+    def __init__(self, issue):
+        super().__init__('transport_failed')
+        self.receiver_issue = issue
+
 class PlaybackError(HelperError):
     def __init__(self, diagnostic):
         super().__init__('transport_failed')
@@ -899,29 +952,39 @@ class Host:
         self.task = None
         self.open_pair = None
         self.diagnostic = None
+        self.session = None
+        self.receiver_issue = None
 
     def response(self, identifier, error=None, **fields):
         result = dict(v=1, id=identifier, ok=error is None, state=self.state,
                       evidence=self.evidence, capabilities=list(self.capabilities), helperVersion=VERSION, firewallSupport=True, **fields)
         if self.state == 'error' and self.diagnostic is not None:
             result['diagnostic'] = dict(self.diagnostic)
+        if not error and self.state == 'connecting' and self.evidence == 'unverified' and self.session:
+            result['session'] = dict(self.session)
+        if self.receiver_issue is not None and (error == 'transport_failed' or error is None):
+            result['receiverIssue'] = self.receiver_issue
         if error: result['error'] = error
         if error == 'pairing_required':
             result['pairing'] = 'Look at the Apple TV and type the 4 digits it shows. They stay hidden.'
         return result
 
-    def changed(self, state, evidence):
+    def changed(self, state, evidence, *, session=None):
         self.state, self.evidence = state, evidence
+        self.session = session if state == 'connecting' and evidence == 'unverified' else None
+        self.receiver_issue = None
         self.emit(self.response('event'))
 
     async def playback(self, args):
         try:
-            await self.factory().run(args, self.changed)
-            self.changed('stopped', 'protocol')
+            evidence = await self.factory().run(args, self.changed)
+            self.changed('stopped', evidence or 'protocol')
         except asyncio.CancelledError:
             raise
         except Exception as error:
             self.state, self.evidence = 'error', 'unverified'
+            self.session = None
+            self.receiver_issue = error.receiver_issue if isinstance(error, ReceiverError) else None
             code = str(error) if isinstance(error, HelperError) and str(error) in ('pairing_required','busy','receiver_unavailable') else 'transport_failed'
             self.diagnostic = error.diagnostic if isinstance(error, PlaybackError) else None
             self.emit(self.response('event', code))
@@ -939,6 +1002,9 @@ class Host:
             self.task.cancel()
             await asyncio.gather(self.task, return_exceptions=True)
             self.task = None
+        self.session = None
+        self.receiver_issue = None
+        self.state, self.evidence = 'stopped', 'unverified'
 
     async def handle(self, value):
         identifier = value.get('id') if isinstance(value, dict) else None
@@ -977,10 +1043,13 @@ class Host:
                 await asyncio.wait_for(session.finish(args['pin']), 30)
                 return self.response(identifier)
             if op == 'start':
-                if self.task and not self.task.done(): return self.response(identifier, 'busy')
+                if self.task and not self.task.done():
+                    return self.response(identifier) if self.session else self.response(identifier, 'busy')
                 if not any(r['identifier'] == args['receiver'] and ipaddress.ip_address(r['address']) == ipaddress.ip_address(args['host']) for r in self.receivers):
                     return self.response(identifier, 'receiver_not_discovered')
                 self.diagnostic = None
+                self.session = None
+                self.receiver_issue = None
                 self.state, self.evidence = 'connecting', 'none'
                 self.task = asyncio.create_task(self.playback(dict(args)))
             elif op == 'stop':
@@ -989,6 +1058,9 @@ class Host:
                 self.changed('stopped', 'unverified')
             return self.response(identifier)
         except HelperError as error:
+            if isinstance(error, ReceiverError):
+                self.session = None
+                self.receiver_issue = error.receiver_issue
             code = str(error) if str(error) in ('busy','pairing_required','pairing_failed','receiver_unavailable','discovery_failed') else 'transport_failed'
             return self.response(identifier, code)
         except Exception:

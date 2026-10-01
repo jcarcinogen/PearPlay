@@ -17,6 +17,10 @@ function safeDiagnostic(value) {
  if(Number.isInteger(value.httpStatus)&&value.httpStatus>=100&&value.httpStatus<=599)result.httpStatus=value.httpStatus;
  return result;
 }
+function safeSession(s) {
+ if(!s||typeof s!=='object'||Object.keys(s).length!==5||typeof s.receiver!=='string'||!s.receiver.length||s.receiver.length>1024||!literalIP(s.host)||s.transport!=='airplay-v1'||s.delivery!=='accepted'||s.timingRequired!==false)return null;
+ return {receiver:s.receiver,host:s.host,transport:s.transport,delivery:s.delivery,timingRequired:false};
+}
 export class Native {
  constructor(connect,{timeout=15000,discoveryTimeout=25000,firewallTimeout=140000,pairingTimeout=35000}={}) {this.connect=connect;this.timeout=timeout;this.discoveryTimeout=discoveryTimeout;this.firewallTimeout=firewallTimeout;this.pairingTimeout=pairingTimeout;this.pending=new Map();this.serial=0;this.applied=0;this.port=null;this.state={state:'idle',evidence:'none',capabilities:[],receivers:[]};}
  view(){return structuredClone(this.state);}
@@ -37,11 +41,12 @@ export class Native {
  if(pending?.op==='firewall'){clearTimeout(pending.timer);this.pending.delete(m.id);if(m.ok&&m.firewall)pending.resolve(safeFirewall(m.firewall));else pending.reject(Error('HELPER_ERROR'));return;}
  if(pending&&pending.serial<this.applied){clearTimeout(pending.timer);this.pending.delete(m.id);if(m.ok)pending.resolve(this.view());else pending.reject(Error('HELPER_ERROR'));return;}
  this.applied=pending?.serial??this.serial;
- const receivers=Array.isArray(m.receivers)?m.receivers.slice(0,64).map((r,i)=>({identifier:r.identifier,address:r.address,label:r.kind==='apple-tv'?`Apple TV (${r.address})`:r.kind==='airplay-video'?`AirPlay TV (${r.address}) — compatibility unverified`:`Receiver ${i+1} (${r.address})` })):this.state.receivers;
+ const receivers=Array.isArray(m.receivers)?m.receivers.slice(0,64).map((r,i)=>({identifier:r.identifier,address:r.address,...(r.timingRequired===false?{timingRequired:false}:{}),label:r.kind==='apple-tv'?`Apple TV (${r.address})`:r.kind==='airplay-video'?`AirPlay TV (${r.address}) — compatibility unverified`:`Receiver ${i+1} (${r.address})` })):this.state.receivers;
  const codes=['pairing_required','pairing_failed','busy','transport_failed','receiver_not_discovered','receiver_unavailable','discovery_failed'];
  const code=m.ok?null:(codes.includes(m.error)?m.error:'HELPER_ERROR');
  const preserve=m.ok&&pending&&['hello','status','discover'].includes(pending.op)&&this.state.error&&codes.includes(this.state.error)?this.state.error:null;
- this.state={state:m.ok?m.state:'error',evidence:m.evidence,capabilities:[...m.capabilities],receivers,error:preserve??code,firewallSupport:m.firewallSupport===true,diagnostic:m.state==='error'?safeDiagnostic(m.diagnostic):null,helperVersion:typeof m.helperVersion==='string'&&/^\d{1,4}\.\d{1,4}\.\d{1,4}$/.test(m.helperVersion)?m.helperVersion:null};
+ const receiverIssue=preserve==='transport_failed'?this.state.receiverIssue??null:!m.ok&&m.error==='transport_failed'&&['unsupported_access','incomplete_advertisement','unsupported_protocol'].includes(m.receiverIssue)?m.receiverIssue:null;
+ this.state={session:m.ok&&!preserve&&m.state==='connecting'&&m.evidence==='unverified'?safeSession(m.session):null,receiverIssue,state:m.ok?m.state:'error',evidence:m.evidence,capabilities:[...m.capabilities],receivers,error:preserve??code,firewallSupport:m.firewallSupport===true,diagnostic:m.state==='error'?safeDiagnostic(m.diagnostic):null,helperVersion:typeof m.helperVersion==='string'&&/^\d{1,4}\.\d{1,4}\.\d{1,4}$/.test(m.helperVersion)?m.helperVersion:null};
  if(pending){clearTimeout(pending.timer);this.pending.delete(m.id);if(m.ok)pending.resolve(this.view());else pending.reject(Error(code));}
  }
 }

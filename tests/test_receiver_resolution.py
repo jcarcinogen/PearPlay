@@ -15,7 +15,10 @@ ROW = '=;wlan0;IPv6;TV;_airplay._tcp;local;tv.local;192.0.2.20;7000;"model=OLED-
 class ReceiverResolution(unittest.IsolatedAsyncioTestCase):
     async def test_pairing_and_playback_both_use_shared_resolution(self):
         m = load()
-        device = SimpleNamespace(identifier=IDENTIFIER, address=ipaddress.IPv4Address(HOST), get_service=lambda _: SimpleNamespace(port=7000))
+        try: from pyatv.const import PairingRequirement
+        except ImportError: self.skipTest('real pairing classification runs on Acer')
+        service = SimpleNamespace(port=7000, properties={'features':'0x1', 'flags':'0x200'}, requires_password=False, pairing=PairingRequirement.Mandatory)
+        device = SimpleNamespace(identifier=IDENTIFIER, address=ipaddress.IPv4Address(HOST), get_service=lambda _: service)
         calls = []
         async def resolved(identifier, host):
             calls.append((identifier, host))

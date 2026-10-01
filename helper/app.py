@@ -58,6 +58,26 @@ def probe_playback_info_option(config, environ=None, frozen=None):
     development = bool(config.get('development'))
     return resolve_probe_playback_info(environ, frozen=frozen, development=development)
 
+def diagnostic_v1_option(config, environ=None, frozen=None, *, trace_active=False):
+    """No production fallback: explicit frozen-development receiver pin only."""
+    import ipaddress
+    environ = os.environ if environ is None else environ
+    frozen = bool(getattr(sys, 'frozen', False)) if frozen is None else frozen
+    if not frozen or config.get('development') is not True or not trace_active:
+        return None
+    value = environ.get('PEARPLAY_DIAGNOSTIC_V1_RECEIVER', '')
+    match = re.fullmatch(r'([0-9a-fA-F:-]{12,64})@([0-9.]+)', value)
+    if not match:
+        return None
+    try:
+        address = ipaddress.IPv4Address(match[2])
+    except ValueError:
+        return None
+    if not any(address in ipaddress.IPv4Network(net) for net in ('10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16')):
+        return None
+    return (match[1], str(address))
+
+
 def dialog(text):
     if sys.platform == 'darwin':
         subprocess.run(['/usr/bin/osascript','-e','display dialog '+json.dumps(text)+' with title "PearPlay Setup" buttons {"OK"} default button "OK"'],capture_output=True)
@@ -109,7 +129,8 @@ def main(argv=None, config=None):
     if len(argv)==1 and '://' in argv[0]:
         trace, startup, labels, metadata = native_options(config)
         probe = probe_playback_info_option(config) if trace is not None else None
-        return native.main(['native','--extension-id',config['extension_id'],argv[0]], trace=trace, startup_timeout=startup, event_labels=labels, event_metadata=metadata, probe_playback_info=probe)
+        v1 = diagnostic_v1_option(config, trace_active=trace is not None)
+        return native.main(['native','--extension-id',config['extension_id'],argv[0]], trace=trace, startup_timeout=startup, event_labels=labels, event_metadata=metadata, probe_playback_info=probe, diagnostic_v1=v1)
     parser=argparse.ArgumentParser(description='PearPlay Helper setup (no TV actions)')
     parser.add_argument('action',nargs='?',choices=['connect','remove','self-test'])
     parser.add_argument('--browsers',nargs='+',choices=list(setup.LABELS))

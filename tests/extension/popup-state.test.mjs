@@ -24,6 +24,38 @@ test('visible phase distinguishes idle, empty and protocol playing without claim
   assert.match(p.elements.get('tvStatus').textContent,/Helper reports playing/,'receiver status must not keep the stale Send instruction');
   assert.equal(p.calls.some(c=>c.op==='localPause'),false);
 });
+test('accepted V1 shows Sent across popup reopen, prevents duplicate sends and never auto-pairs or pauses',async()=>{
+ const p=await popup();p.view.native.state='connecting';p.view.native.evidence='unverified';await p.refresh();
+ assert.equal(p.elements.get('phase').dataset.state,'working');
+ p.view.native.session={receiver:'tv',host:'192.168.1.50',transport:'airplay-v1',delivery:'accepted',timingRequired:false};await p.refresh();
+ assert.equal(p.elements.get('phase').dataset.state,'sent');
+ assert.match(p.elements.get('tvStatus').textContent,/Sent to TV.*picture and sound/);
+ assert.equal(p.elements.get('start').disabled,true);assert.equal(p.elements.get('stop').disabled,false);
+ assert.equal(p.calls.some(c=>['pairBegin','localPause'].includes(c.op)),false);
+ const reopened=await popup({native:structuredClone(p.view.native)});
+ assert.equal(reopened.elements.get('phase').dataset.state,'sent');
+ assert.match(reopened.elements.get('tvStatus').textContent,/Sent to TV/);
+ p.view.native.session=null;p.view.native.state='stopped';await p.refresh();
+ assert.equal(p.elements.get('phase').dataset.state,'idle');assert.equal(p.elements.get('start').disabled,false);
+ assert.match(p.elements.get('tvStatus').textContent,/session ended/i);
+});
+test('V1 receiver hides unnecessary permission prompt without hiding owned-rule removal',async()=>{
+ const p=await popup();p.view.native.firewallSupport=true;
+ Object.assign(p.view.native.receivers[0],{address:'192.168.1.50',timingRequired:false});
+ p.view.firewall={receiver:'tv',host:'192.168.1.50',supported:true,enabled:true,allowance:'missing',owned:false};
+ await p.refresh();assert.match(p.elements.get('firewallStatus').textContent,/does not need.*timing-port permission/);
+ assert.equal(p.elements.get('firewallReview').hidden,true);assert.equal(p.elements.get('firewallAllow').hidden,true);
+ p.view.firewall.allowance='present';p.view.firewall.owned=true;await p.refresh();
+ assert.equal(p.elements.get('firewallRemove').hidden,false);
+ delete p.view.native.receivers[0].timingRequired;p.view.firewall.allowance='missing';await p.refresh();
+ assert.equal(p.elements.get('firewallReview').hidden,false);assert.equal(p.elements.get('firewallAllow').hidden,false);
+});
+test('unsupported access settings do not show a false PIN or automatic firewall advice',async()=>{
+ const p=await popup();Object.assign(p.view.native,{state:'error',error:'transport_failed',receiverIssue:'unsupported_access'});await p.refresh();
+ assert.match(p.elements.get('tvStatus').textContent,/access settings/i);
+ assert.equal(p.calls.some(c=>c.op==='pairBegin'),false);assert.equal(p.elements.get('firewallReview').hidden,true);
+ assert.doesNotMatch(p.elements.get('tvStatus').textContent,/PIN|firewall/i);
+});
 test('working state spans an awaited operation; failed actions stay visibly in error',async()=>{
   const p=await popup();const phase=p.elements.get('phase');assert.ok(phase);
   p.hold();const action=p.elements.get('discover').onclick();

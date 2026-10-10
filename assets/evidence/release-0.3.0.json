@@ -1,0 +1,66 @@
+{
+  "published": true,
+  "releaseUrl": "https://github.com/jcarcinogen/PearPlay/releases/tag/v0.3.0",
+  "releaseId": 409029226,
+  "sourceCommit": "5c33c228e0298efd0751fdb337a3cee71b7c930b",
+  "tagMatchesSource": true,
+  "downloads": [
+    {
+      "file": "pearplay-0.3.0.zip",
+      "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.3.0/pearplay-0.3.0.zip",
+      "httpStatus": 200,
+      "bytes": 88628,
+      "sha256": "082b5e8bab4f4b5b6601126805f04b00d1bc6ac361ab37338787765a73007f4d",
+      "match": true,
+      "authenticated": false
+    },
+    {
+      "file": "pearplay-helper-0.3.0-darwin-arm64.pkg",
+      "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.3.0/pearplay-helper-0.3.0-darwin-arm64.pkg",
+      "httpStatus": 200,
+      "bytes": 23899258,
+      "sha256": "640f8fc40cb66e0658c44de8dd637b17dace9df93b4fab811349768ab08ec4f6",
+      "match": true,
+      "authenticated": false
+    },
+    {
+      "file": "pearplay-helper-0.3.0-linux-x86_64.deb",
+      "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.3.0/pearplay-helper-0.3.0-linux-x86_64.deb",
+      "httpStatus": 200,
+      "bytes": 23391304,
+      "sha256": "34fac8098a089ad9ea9f716f1f2d308a470efb009cdc914037f53dd080716b12",
+      "match": true,
+      "authenticated": false
+    },
+    {
+      "file": "pearplay-helper-0.3.0-windows-x86_64-unsigned.exe",
+      "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.3.0/pearplay-helper-0.3.0-windows-x86_64-unsigned.exe",
+      "httpStatus": 200,
+      "bytes": 45605852,
+      "sha256": "8b34bcaf0feecee1dcebda16a3a012b590e561b8f6f5ce971e11fcb9a7aab7a4",
+      "match": true,
+      "authenticated": false
+    },
+    {
+      "file": "SHA256SUMS",
+      "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.3.0/SHA256SUMS",
+      "httpStatus": 200,
+      "bytes": 411,
+      "sha256": "c75ac79aed3126141afb06ce3b72db229ec5fd4a92e02d030fe32ec61ea91a05",
+      "match": true,
+      "authenticated": false
+    }
+  ],
+  "tests": {
+    "nodePassed": 141,
+    "exactZipChromePassed": true,
+    "ownerObservedAppleTV": {
+      "pairing": true,
+      "video": true,
+      "sound": true,
+      "stoppedAfterSessionEnd": true
+    },
+    "windowsPlayback": "unverified",
+    "otherAirPlayTVs": "playback unverified"
+  }
+}

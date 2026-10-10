@@ -1,5 +1,11 @@
 # PearPlay status
 
+## 0.3.0 published — public downloads verified
+
+GitHub release: https://github.com/jcarcinogen/PearPlay/releases/tag/v0.3.0. Tag targets source `5c33c228e0298efd0751fdb337a3cee71b7c930b`. All five assets were read back with matching GitHub digests, then anonymously downloaded over HTTP 200 and fully SHA256-verified. Exact-head Pages deployment succeeded. Source checkpoint and release published; original candidate kit intact; paused UI/Safari untracked work preserved.
+
+Store submission/approval has not been performed. Ready upload kit and copy-button listing are in Stuff/PearPlay/Release Prep/0.3.0/Store Assets; screenshots show the actual Send to TV and End helper session, not unavailable TV media controls. Scott will test Windows and other receivers after release; no further pre-release owner testing is required. Evidence: assets/evidence/release-0.3.0.json and release-prep public-download-verification.json.
+
 ## 0.3.0 publication authorized — bounded Apple TV acceptance passed
 
 Scott explicitly authorized release after the official Apple TV check, without extending owner testing. Other AirPlay TVs are labeled **playback unverified**; LG and Windows playback testing follow release. This supersedes earlier no-publication authorization and expansive owner/distribution gates for this unsigned experimental release, not their historical evidence or normal OS protections.

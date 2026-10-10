@@ -1,8 +1,8 @@
 # PearPlay privacy policy
 
-**Linux only. Mac support is coming soon.**
+**Cross-platform development-preview policy draft: Linux, Mac and Windows Chrome. Safari extension development is paused.**
 
-Effective September 27, 2026. This policy describes PearPlay extensions 0.2.5–0.2.7 and their separate Linux helper 0.2.5. PearPlay is a development preview; the Linux helper 0.2.5 is published at https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5. The Chrome Web Store currently offers extension 0.2.6; the 0.2.7 update is being prepared.
+This local revision describes the 0.3.0 candidate and separate per-platform helper intent; it has not been published as a new policy. Published Linux helper 0.2.8 is at https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.8. Mac and Windows helpers are development previews without public installer links. Newest STATUS reports Scott's Store 0.2.8 submission/publication without independently confirming the live version; the source version is not evidence of Store approval. See [preview evidence and gates](cross-platform-preview.md).
 
 ## What PearPlay does with data
 
@@ -10,17 +10,17 @@ PearPlay finds compatible media on pages for which you grant access. It processe
 
 When you select a receiver and send a video, PearPlay passes the selected media address to its native helper and the selected AirPlay receiver. The receiver fetches the media from its original provider. That provider can observe the receiver's requests and network address under its own policy. PearPlay supports HTTP as well as HTTPS media and does not promise that every media transfer is encrypted.
 
-Receiver discovery processes local-network addresses, identifiers and advertised capabilities. If a receiver requests pairing, you type its displayed PIN into a masked PearPlay field. The helper stores the resulting pairing credentials locally in the user's PearPlay state directory, with restricted filesystem permissions. The PIN is not intended to be retained or logged. Pairing information is not automatically erased when you remove the extension or disconnect the helper.
+Receiver discovery processes local-network addresses, identifiers and advertised capabilities. If a receiver requests pairing, you type its displayed PIN into a masked PearPlay field. The helper stores the resulting pairing credentials in OS-user-local PearPlay state: restricted filesystem permissions on Linux/Mac; current-user DPAPI protection and user-local access controls in the Windows preview. Windows state is not portable to another user/computer/OS, and pairings should not be copied across operating systems. The PIN is not intended to be retained or logged. Pairing information is not automatically erased when you remove the extension or disconnect the helper.
 
 ## Developer services and third parties
 
-The current extension/helper contains no PearPlay account, advertising service, analytics uploader or cloud relay. It does not send discovery sessions or pairing credentials to the developer. Downloads and updates involve the hosting/package providers you choose. The current Linux helper is separately installed; source-based Linux setup may contact Python/dependency distribution services. Mac support is coming soon; Mac installation is paused.
+The audited first-party extension/helper control path contains no PearPlay account, advertising service, analytics uploader or cloud relay. It does not upload discovery sessions or pairing credentials to the developer. This is not a promise of no network activity: local discovery/control, browser/download/update services, dependencies, the media provider and receiver still use networks. Helpers are separately installed; source-based Linux setup may contact Python/dependency distribution services. Mac/Windows candidate checks, signing/notarization or hosting services are separate from telemetry and remain subject to their own policies.
 
 Optional support links open external services only when clicked. Their policies apply after you open them. Support images are bundled locally, not fetched as tracking pixels by the extension.
 
 ## Your controls
 
-You choose whether to install the separate helper, grant website access, discover receivers, pair a TV and send a video. Revoke site permissions through Chrome. Disconnect/remove the native helper using its installation guide; removing the extension alone does not remove native software or saved pairing. Removal commands preserve unrelated or modified files. Do not submit PINs, pairing files, private addresses or signed media URLs in public bug reports.
+You choose whether to install the separate helper, grant website access, discover receivers, pair a TV and send a video. Opening Helper setup checks the local native connection; it does not automatically discover, pair or send. Find my TV explicitly starts network discovery. Revoke site permissions through your browser. Disconnect/remove the native helper using its platform installation guide; removing the extension alone does not remove native software or saved pairing. Mac Chrome/Brave share native-host registration, so disconnecting it affects both. Windows registration is per-user HKCU, not a machine-wide service. Removal preserves unrelated or modified files and saved pairing. Do not submit PINs, pairing files, private addresses or signed media URLs in public bug reports.
 
 ## Contact
 

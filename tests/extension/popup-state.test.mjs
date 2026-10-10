@@ -150,6 +150,8 @@ test('pairing_required surfaces a PIN instruction in the status line instead of 
 test('a failed pairBegin is not auto-repeated on later polling refreshes',async()=>{
   const p=await popup({rejectOps:{pairBegin:'receiver_unavailable'}});
   p.view.native.state='error';p.view.native.error='pairing_required';await p.refresh();
+  assert.equal(p.calls.filter(c=>c.op==='pairBegin').length,0);
+  await p.elements.get('pairRestart').onclick();
   assert.equal(p.calls.filter(c=>c.op==='pairBegin').length,1);
   await new Promise(resolve=>setImmediate(resolve));
   assert.match(p.elements.get('tvStatus').textContent,/Find TVs/i, 'failed pairing must immediately preserve the specific native error');

@@ -1,6 +1,32 @@
-# Mac runtime identity and signing gate — archived / paused
+# Mac runtime identity and signing gate — development preview reopened
 
-> **Current scope: Linux only. Mac support is coming soon.** Mac work is paused, with no release date. The historical Mac procedures/results below are not current install instructions or Linux release blockers. Resume only if Scott explicitly reopens Mac work; current Mac install/build entry points refuse new work. Existing installed runtimes and pairing remain untouched.
+> Scott explicitly reopened the Mac/Windows/Linux Chrome product in October 2026; Safari is paused. Mac packaged development builds are enabled again. Unsigned Mac previews are local test artifacts, not a production consumer release. Existing installed runtimes, browser profiles and pairing remain untouched.
+
+## Current 0.3.0 Mac preview
+
+Built on arm64 macOS 27.0.1 using the approved private Python 3.11.15 environment, pyatv 0.18.0 and PyInstaller 6.21.0. The production extension identity is `eoadahoncjfpnennmkjifohclbafjkol`; no fixture key or fixture catalog is substituted. `development:true` remains explicit, and no diagnostic opt-in is enabled during verification.
+
+Durable kit: `/Volumes/IronWolf/Stuff/PearPlay/Cross-platform Preview/Mac/`.
+
+- Package: `pearplay-helper-0.3.0-darwin-arm64-development.pkg`, SHA256 `498a06bf521168324996dddd09b86f314e37473d7034e9037e97f1a1b73e9e6c`.
+- Named self-contained app: `/Applications/PearPlay Setup.app` in the package, identifier `com.pearplay.helper`, executable `Contents/MacOS/PearPlayHelper`. The package was **not installed**. Native messaging was tested against its expanded payload in cache.
+- Expanded dependency self-test passes and reports version 0.3.0, dependencies loaded, network not used. Strict deep codesign verification passes. The app is ad-hoc signed with no TeamIdentifier; the `.pkg` has no signature. Gatekeeper rejects both (exit 3), as expected. No security override, quarantine change or privacy reset was used.
+- All **969 packaged payload entries** match staged bytes, modes and symlink targets. No installer scripts. Project and Python licenses plus **69 notice files** are included; inventory covers **41 build-environment distributions**, including build/test tools, not a claim that all 41 are imported by the app.
+- Official headless Google Chrome 155.0.8059.40 with an owned disposable profile and normal sandbox settings passes real setup/native missing → ready → full restart-ready → removed/missing. Repeated connect/repair, exact allowlist/runtime path, hello 0.3.0, idle status, explicit shared removal and cleanup pass. No discovery, pairing or playback. This is Chrome/native evidence, not native GUI or receiver acceptance.
+- Focused verification: **39 passed, 15 skipped, 2 subtests**. Linux package staging regressions pass; Debian-native execution tests skip on Mac. Full pytest was genuinely executed: after fixing the obsolete version assertion, **467 passed, 15 skipped, 40 subtests, 1 failure**, repeated in a serial full run. The existing standalone transport cancellation-cleanup test also fails in isolation. See `MAC-BLOCKER.md`; no test was weakened and the parent-owned transport was not edited.
+- Runtime/build/package/browser reports, source hashes, license inventory, full test logs and `MAC-HANDOFF.md` are in the kit. `MAC-GUI-PATCH.md` lists remaining app.py integration for its owner. Rebuild and repeat artifact verification if app.py/native.py or other frozen inputs change; the builder now detects source drift during the build.
+
+### Shared Mac registration
+
+Chrome and Brave use the same `Google/Chrome/NativeMessagingHosts` directory on Mac. `install.host_dir` expresses this, while `install.browser_dir` stays browser-specific for detection. Setup offers one **Google Chrome and Brave (shared connection)** item, explicitly warning that connecting/disconnecting affects both browsers. Direct removal requires both browsers selected or an explicit `shared_disconnect` acknowledgment; foreign/modified/symlinked registrations remain preserved. Chromium is separate. Synthetic filesystem lifecycle tests cover shared repair, conflicts, guarded removal and preservation. No new Brave browser runtime test is claimed for 0.3.0.
+
+### Release and installation limits
+
+Developer ID application signing, installer signing and notarization are still required for production builds. No signing credentials were accessed and nothing was published. The unsigned preview is ready as a packaged engineering artifact, **not a Gatekeeper-approved or all-tests-green consumer candidate**. Do not provide security-bypass steps. A clean-machine download/install, native setup GUI, Local Network consent/retry and persistence across updates, Brave runtime, and watched video/audio remain separate gates.
+
+The historical Terminal/source-runtime installer remains closed to new installs, with wording directing users to the packaged preview. Its receipt-/exact-byte-guarded removal path remains available and explains the shared Chrome/Brave effect. Generic Python identity is not reopened as the recommended consumer route.
+
+## Historical 0.2.x research (retained, superseded where noted)
 
 
 ## Verdict
@@ -29,7 +55,7 @@ Brave on macOS deliberately uses the standard Chrome native-host directory, inde
 
 The corrected test used a random `com.pearplay.test_…` host manifest in the standard host directory, authorized only for the public fixture extension, with the copied test extension referencing that unique name. It pointed directly to the new app executable. It was created exclusively, read back, removed only after exact-content verification, and verified absent. Existing `com.pearplay.helper` manifest/launcher hashes were unchanged. No daily browser tabs or settings were touched.
 
-**Consumer Brave installer registration remains an explicit follow-up:** `helper/install.py` currently treats Brave's configuration folder as its native-host location. Do not claim the current Brave checkbox installs correctly on macOS. Correct the shared Chrome/Brave host-location and disconnect semantics, with separate browser-detection paths and lifecycle tests, before shipping. This does not invalidate the corrected runtime test.
+**Historical registration gap, repaired in the 0.3.0 source above:** the earlier installer treated Brave's profile folder as its native-host location and offered misleading independent controls. Shared host mapping, separate detection and guarded disconnect lifecycle tests are now implemented. The earlier corrected Brave runtime result remains historical evidence, not a 0.3.0 installer or browser acceptance claim.
 
 Reference: [Brave native-host directory override](https://github.com/brave/brave-core/blob/master/app/brave_main_delegate.cc).
 
@@ -59,4 +85,4 @@ The current development-only app/package and raw verification logs are machine-l
 
 These are scratch artifacts, not public downloads; scratch may be pruned. Rebuild using `scripts/build_helper.py` in a machine-local environment with `pyinstaller==6.21.0` and `pyatv==0.18.0`. The rehearsal build used fixture ID `iojhjdcndgfoalcialdlgklfdnlpmobf`, **not a production allowlist**. The frozen executable's build UUID is derived by PyInstaller from the frozen payload; do not borrow a generic Python executable or manually randomize an installed binary.
 
-Next gates: obtain Apple credentials only if Scott chooses this cost; correct Mac Brave shared-host registration; rebuild with the verified store identity/license; prove notarized download/install, clean-machine permissions, update persistence and human-observed video/audio in both browsers. Preserve current installation and saved pairing until that replacement is explicitly ready.
+The historical artifacts above are not the current preview. Current gates are listed in the 0.3.0 section: parent-owned transport cleanup failure and app GUI integration first, then signed/notarized clean-machine installation and permission/update/receiver acceptance if Scott authorizes those stages. Preserve current installation and saved pairing until a replacement is explicitly ready.

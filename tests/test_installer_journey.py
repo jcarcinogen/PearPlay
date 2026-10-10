@@ -25,7 +25,13 @@ class InstallerJourneyTests(unittest.TestCase):
             menu.assert_not_called()
             path = root/'config'/app.setup.install.browser_dir('chrome')/'NativeMessagingHosts/com.pearplay.helper.json'
             self.assertEqual(json.loads(path.read_text())['path'], str(binary))
-            self.assertIn('Development build', dialog.call_args.args[0])
+            if app.sys.platform == 'darwin':
+                self.assertIn('Unsigned preview', dialog.call_args.args[0])
+                self.assertIn('not an Apple-signed/notarized consumer release', dialog.call_args.args[0])
+                self.assertIn('Chrome and Brave share', dialog.call_args.args[0])
+            else:
+                self.assertIn('Development build', dialog.call_args.args[0])
+            self.assertNotIn('matching test extension', dialog.call_args.args[0])
             self.assertIn('Check connection', dialog.call_args.args[0])
             # Opening again offers maintenance, rather than silently changing registration.
             with patch.object(app.subprocess, 'run', return_value=SimpleNamespace(returncode=1, stdout='')) as menu, \

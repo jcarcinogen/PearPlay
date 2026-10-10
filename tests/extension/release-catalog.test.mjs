@@ -14,15 +14,15 @@ test('Store listing qualifies playback without naming trial sites or machines',(
 
 test('published Linux catalog offers the verified production packages without developer setup',async()=>{
   const catalog=JSON.parse(readFileSync(new URL('../../extension/releases.json',import.meta.url),'utf8'));
-  // Extension-only updates keep the separately tested helper release.
-  const helperVersion='0.2.5';
+  // Catalog activation follows verified public helper-package publication.
+  const helperVersions={deb:'0.3.0',rpm:'0.2.8','pkg.tar.zst':'0.2.8'};
   const id='eoadahoncjfpnennmkjifohclbafjkol';
   assert.equal(catalog.extensionId,id);
   assert.equal(catalog.localInstallerTest,undefined);
   const downloads=downloadsFor(catalog,{os:'linux',arch:'x86-64'},id);
   assert.deepEqual(downloads.map(item=>item.format),['deb','rpm','pkg.tar.zst']);
   for(const item of downloads){
-    assert.equal(item.url,`https://github.com/jcarcinogen/PearPlay/releases/download/v${helperVersion}/pearplay-helper-${helperVersion}-linux-x86_64.${item.format}`);
+    assert.equal(item.url,`https://github.com/jcarcinogen/PearPlay/releases/download/v${helperVersions[item.format]}/pearplay-helper-${helperVersions[item.format]}-linux-x86_64.${item.format}`);
     assert.match(item.sha256,/^[a-f0-9]{64}$/);
   }
   assert.equal(downloadsFor(catalog,{os:'linux',arch:'arm64'},id).length,0);
@@ -41,7 +41,7 @@ test('published Linux catalog offers the verified production packages without de
   assert.match(html,/sudo pacman -U/);
   assert.match(html,/Arch \/ Omarchy: step-by-step installation/);
   assert.ok(html.includes('Nothing appears while you type your password'));
-  assert.ok(html.includes('$HOME/Downloads/pearplay-helper-0.2.5-linux-x86_64.pkg.tar.zst'));
+  assert.ok(html.includes('$HOME/Downloads/pearplay-helper-0.2.8-linux-x86_64.pkg.tar.zst'));
   assert.match(html,/Fedora 44/);
   assert.match(html,/glibc 2\.43/);
   assert.match(html,/sudo dnf install/);

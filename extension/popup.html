@@ -5,94 +5,116 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PearPlay</title>
 <style>
-:root { color-scheme:light dark; --bg:#f6f7f2; --surface:#fff; --ink:#19271d; --muted:#52604f; --accent:#355b29; --accent-ink:#fff; --line:#76816c; }
-@media(prefers-color-scheme:dark) { :root { --bg:#111914; --surface:#1a251d; --ink:#f4f7ed; --muted:#bac7b2; --accent:#c1e67a; --accent-ink:#172310; --line:#819277; } }
-* { box-sizing:border-box; }
-body { width:400px; margin:0; padding:14px; font:13px/1.4 system-ui,sans-serif; -webkit-font-smoothing:antialiased; background:var(--bg); color:var(--ink); }
-header { display:flex; align-items:center; gap:9px; }
-header img { width:32px; height:32px; }
-h1 { margin:0; font-size:20px; font-weight:650; letter-spacing:-.6px; }
-#helperSetup { margin-left:auto; }
-h2 { margin:0; font-size:13px; font-weight:650; }
-p { margin:6px 0; text-wrap:pretty; }
-#phase { display:block; margin:4px 0 10px; color:var(--accent); font-size:12px; font-weight:600; }
-#phase[data-state="working"]::before { content:'◌ '; }
-#phase[data-state="error"] { color:var(--ink); text-decoration:underline; text-underline-offset:3px; }
-section { margin-top:10px; }
-.field-heading { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:5px; }
-.field-heading label { font-weight:650; }
-.row { display:flex; align-items:center; flex-wrap:wrap; gap:6px; margin-top:6px; }
-button,select,input { font:inherit; border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:6px; min-height:40px; padding:7px 10px; }
-button { cursor:pointer; }
-button:hover:not(:disabled) { border-color:var(--accent); background:var(--bg); }
-button:disabled { cursor:default; color:var(--muted); background:var(--bg); border-style:dashed; }
-button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visible,a:focus-visible { outline:3px solid var(--accent); outline-offset:2px; }
-#grantAll:not(:disabled),#start:not(:disabled) { background:var(--accent); color:var(--accent-ink); border-color:var(--accent); font-weight:650; }
-select,input { width:100%; min-width:0; }
-select { padding-right:24px; text-overflow:ellipsis; }
-#start { width:100%; min-height:44px; }
-#tvStatus { margin:8px 0 0; font-size:12px; overflow-wrap:anywhere; }
-#tvStatus:empty { display:none; }
-#permissionBox,#pairBox { padding:10px; margin:10px 0; background:var(--surface); border:1px solid var(--line); border-radius:10px; }
-#pairBox label { display:block; font-weight:650; }
-#pairBox .row { flex-wrap:nowrap; }
-#pin { flex:1; width:0; }
-#pair { flex:none; }
-#sessionControls { margin-top:8px; }
-.muted,.safety,#state { color:var(--muted); font-size:12px; }
-#videoHint { margin-top:5px; }
-#firewallReview { width:100%; margin-top:8px; text-align:left; font-size:12px; }
-#firewallConsent { width:auto; min-height:0; padding:0; }
-#firewallBox label { display:block; margin:10px 0; }
-#firewallBox button { margin:3px 0; }
-#firewallScope { font-weight:600; }
-details { margin-top:6px; }
-summary { cursor:pointer; min-height:40px; padding:10px 0; color:var(--muted); font-size:12px; }
-#helpDetails { margin-top:10px; border-top:1px solid var(--line); }
-#helpDetails > summary { font-weight:600; }
-#helpDetails details { border-top:1px solid var(--line); }
-#host { margin-top:6px; }
-footer { display:flex; gap:8px; padding:4px 0 8px; }
-footer a { display:flex; flex:1; align-items:center; justify-content:center; min-width:0; min-height:40px; border-radius:6px; background:#000; color:#fff; text-decoration:none; }
-footer a:hover { box-shadow:0 0 0 1px var(--line); }
-footer img { display:block; width:154px; height:auto; max-width:100%; }
-footer .coffee { gap:6px; padding:6px; font-size:11px; font-weight:650; white-space:nowrap; }
-footer svg { width:20px; height:20px; flex:none; }
-[hidden] { display:none!important; }
+:root{color-scheme:light dark;--bg:#f6f7f2;--surface:#fff;--ink:#19271d;--muted:#52604f;--accent:#355b29;--accent-ink:#fff;--line:#76816c;--soft:color-mix(in srgb,var(--line) 24%,transparent);--error:#9c322d}
+@media(prefers-color-scheme:dark){:root{--bg:#111914;--surface:#1a251d;--ink:#f4f7ed;--muted:#bac7b2;--accent:#c1e67a;--accent-ink:#172310;--line:#819277;--error:#ffb4a9}}
+*{box-sizing:border-box}
+body{width:400px;margin:0;padding:14px;font:14px/1.45 system-ui;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+header{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+header img{width:32px;height:32px;flex-shrink:0}
+h1{font-size:20px;font-weight:650;letter-spacing:-.5px;margin:0}
+h2{font-size:13px;margin:0;font-weight:650}
+p{margin:0;overflow-wrap:anywhere}
+button,select,input{font:inherit;border:1px solid var(--soft);border-radius:9px;background:var(--surface);color:var(--ink);padding:8px 12px;min-height:40px;min-width:0}
+button{cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:background-color 120ms,color 120ms}
+button:hover:not(:disabled){background:color-mix(in srgb,var(--accent) 10%,var(--surface))}
+button:active:not(:disabled){background:color-mix(in srgb,var(--accent) 18%,var(--surface))}
+button:disabled,input:disabled,select:disabled{opacity:.45;cursor:default}
+button:focus-visible,select:focus-visible,summary:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+select,input{width:100%}
+select{text-overflow:ellipsis;padding-right:24px}
+.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:650}
+.primary:hover:not(:disabled){background:color-mix(in srgb,var(--accent) 88%,var(--ink))}
+#helperSetup{margin-left:auto;font-size:12px;background:transparent;border-color:transparent;padding:8px}
+.navigation{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.eyebrow{text-transform:uppercase;letter-spacing:1px;font-size:10px;font-weight:650;color:var(--muted)}
+#candidate{margin-bottom:8px}
+#videoInfo{margin-top:0;border:0}
+#videoInfo summary{padding:0;color:var(--ink);gap:8px;justify-content:flex-start}
+#videoInfo summary::after{content:'⌄';font-size:14px;color:var(--muted);flex:none}
+#identity{display:block;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:17px;font-weight:600;line-height:1.35;letter-spacing:-.25px}
+#identityFull{margin:4px 0 8px;font-size:12px;color:var(--muted)}
+.muted,.safety,#state{color:var(--muted);font-size:12px}
+#videoHint{margin-top:4px}
+#receiverSection{margin-top:12px}
+.field-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+#start{width:100%;min-height:46px;margin-top:8px}
+#phase{display:block;margin-top:8px;font-size:12px;font-weight:600;color:var(--accent)}
+#phase[data-state="working"]::before{content:'◌ '}
+#phase[data-state="error"]{color:var(--error)}
+#tvStatus{margin-top:4px;font-size:12px;line-height:1.5}
+#tvStatus:empty{display:none}
+#tvStatus.error{border-left:3px solid var(--error);padding:8px 10px;border-radius:0 8px 8px 0;color:var(--error);background:var(--surface)}
+#permissionBox,#pairBox{padding:10px;margin:8px 0;background:var(--surface);border:1px solid var(--soft);border-radius:10px}
+#permissionBox p{margin:4px 0 8px}
+#grantAll{width:100%}
+#pairBox label{font-weight:650}
+.row{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:6px}
+#pairBox .row{flex-wrap:nowrap}
+#pin{flex:1;width:0}
+#pair{flex:none}
+#sessionControls{margin-top:8px}
+#sessionControls button{width:100%}
+#sessionControls p{margin-top:4px}
+#firewallReview{width:100%;margin-top:8px;font-size:12px}
+#firewallConsent{width:auto;min-height:0;padding:0}
+#firewallBox label{display:block;margin:10px 0}
+#firewallBox button{margin:3px 0}
+#firewallScope{font-weight:600}
+details{margin-top:6px}
+summary{min-height:40px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;list-style:none;color:var(--muted);font-size:12px}
+summary::-webkit-details-marker{display:none}
+#helpDetails{margin-top:10px;border-top:1px solid var(--soft)}
+#helpDetails>summary{font-weight:600}
+#helpDetails>summary::after{content:'⌄'}
+#helpDetails[open]>summary::after{content:'⌃'}
+#helpDetails details{border-top:1px solid var(--soft)}
+#helpDetails p{margin:8px 0}
+#host{margin-top:6px}
+footer{display:flex;gap:8px;padding:4px 0 8px}
+footer a{display:flex;flex:1;align-items:center;justify-content:center;min-width:0;min-height:40px;border-radius:6px;background:#000;color:#fff;text-decoration:none}
+footer a:hover{box-shadow:0 0 0 1px var(--line)}
+footer img{display:block;width:154px;height:auto;max-width:100%}
+footer .coffee{gap:6px;padding:6px;font-size:11px;font-weight:650;white-space:nowrap}
+footer svg{width:20px;height:20px;flex:none}
+[hidden]{display:none!important}
+@media(prefers-reduced-motion:reduce){button{transition:none}}
 </style>
 </head>
 <body>
 <header><img src="icons/icon48.png" alt=""><h1>PearPlay</h1><button id="helperSetup">Setup</button></header>
-<p id="platformNotice" class="muted">Linux only. Mac support is coming soon.</p>
-<span id="phase" role="status" aria-live="polite" data-state="idle">Ready</span>
+<p id="platformNotice" class="muted" hidden>PearPlay is unavailable on this computer.</p>
 <div id="casting">
-<div id="permissionBox">
+<div id="permissionBox" hidden>
   <h2>Website access</h2>
   <p id="accessState" class="muted">Allow website access before finding videos.</p>
-  <button id="grantAll">Allow all websites</button>
+  <button id="grantAll" class="primary">Allow all websites</button>
 </div>
-<section>
-  <div class="field-heading"><label for="candidate">Video</label><button id="enable">Find videos</button></div>
+<section aria-label="Video selection">
+  <nav id="videoNavigation" class="navigation" aria-label="Find videos"><label for="candidate" class="eyebrow">Video on this page</label><button id="enable">Find videos</button></nav>
   <select id="candidate" aria-label="Choose a video"></select>
+  <div id="selectedVideo" hidden><p class="eyebrow">Selected video</p>
+  <details id="videoInfo"><summary aria-label="Selected video details"><span id="identity">Choose a video</span></summary><p id="identityFull">No video selected.</p></details>
+  </div>
   <p id="videoHint" class="muted">Play the video on this page, then find it here.</p>
 </section>
-<section>
-  <div class="field-heading"><label for="receiver">AirPlay TV</label><button id="discover">Find TVs</button></div>
+<section id="receiverSection">
+  <div class="field-heading"><label for="receiver" class="eyebrow">AirPlay TV</label><button id="discover">Find TVs</button></div>
   <select id="receiver" aria-label="Choose an AirPlay TV"></select>
 </section>
+<button id="pairRestart" class="primary" hidden>Show a new PIN</button>
 <div id="pairBox" hidden>
   <label for="pin">TV PIN</label>
-  <div class="row"><input id="pin" type="password" inputmode="numeric" maxlength="4" autocomplete="off" spellcheck="false"><button id="pair" type="button">Pair TV</button></div>
+  <div class="row"><input id="pin" type="password" inputmode="numeric" maxlength="4" autocomplete="off" spellcheck="false"><button id="pair" type="button" class="primary">Pair TV</button></div>
 </div>
-<section>
-  <button id="start">Send to TV</button>
-  <p id="tvStatus" role="status" aria-live="polite" aria-atomic="true"></p>
-  <div id="sessionControls" hidden><button id="stop">End helper session</button><p class="safety">If the TV keeps playing, use its remote.</p></div>
-  <button id="firewallReview" type="button" hidden>Review TV firewall permission</button>
-</section>
+<button id="start" class="primary">Send to TV</button>
+<span id="phase" role="status" aria-live="polite" data-state="idle">Opening…</span>
+<p id="tvStatus" role="status" aria-live="polite" aria-atomic="true"></p>
+<div id="sessionControls" hidden><button id="stop">End helper session</button><p class="safety">If the TV keeps playing, use its remote.</p></div>
+<button id="firewallReview" type="button" hidden>Review TV firewall permission</button>
 <details id="helpDetails"><summary>Help &amp; options</summary>
   <details id="videoDetails"><summary>Video not showing up?</summary>
     <p class="muted">Reload this page, press play and look again. Only videos the TV can fetch directly can be sent.</p>
+    <p class="muted">Your video choice stays with this tab for up to 10 minutes after a search. Closing this popup does not switch it. Switching tabs shows that tab’s own choices. A browser restart clears choices. If the video or page changes, choose again; PearPlay never sends a replacement automatically.</p>
     <div class="row"><button id="rescan">Look again</button><button id="reload">Reload this page</button><button id="disable">Stop looking</button></div>
   </details>
   <details id="hostDetails"><summary>Connection and address</summary>
@@ -102,12 +124,12 @@ footer svg { width:20px; height:20px; flex:none; }
     <p class="muted">Paste an address, then press Find TVs or Enter.</p>
     <p id="state" class="muted"></p>
     <p class="muted">Other AirPlay TVs may appear, but playback compatibility is unverified. Audio-only speakers are not listed.</p>
-    <p class="safety">Ending the helper session closes its connection; it does not confirm that the TV stopped. Use the physical remote if playback continues. TV pause/resume are unavailable.</p>
+    <p class="safety">Ending the helper session closes its connection; it does not confirm that the TV stopped. Use the physical remote if playback continues. TV pause/resume are unavailable. Use the TV remote for playback controls; this helper does not provide a timeline or Picture in Picture.</p>
   </details>
   <details id="firewallBox"><summary>TV firewall permission</summary>
     <p id="firewallStatus" role="status" aria-live="polite"></p>
     <p id="firewallScope" class="muted"></p>
-    <p class="muted">This checks saved UFW settings, not live packet delivery. Other firewall tools need manual review. A permission cannot fix unsupported video or TV compatibility.</p>
+    <p class="muted">Automatic checks and changes are Linux UFW only. Mac and Windows firewall settings need manual review. This checks saved UFW settings, not live packet delivery. A permission cannot fix unsupported video or TV compatibility.</p>
     <button id="firewallCheck" type="button">Check again</button>
     <label><input id="firewallConsent" type="checkbox"> I approve this change for the selected TV only.</label>
     <button id="firewallAllow" type="button" hidden>Allow this TV (administrator approval)</button>
@@ -116,7 +138,7 @@ footer svg { width:20px; height:20px; flex:none; }
     <p class="muted">The system asks for administrator approval; you can cancel. If this popup closes, approve on the desktop, then reopen PearPlay to see the result. PearPlay never turns the firewall off.</p>
   </details>
   <details><summary>About website access</summary>
-    <p class="muted">Access is granted only when you click. This version needs all-sites access to enable Find videos. A per-site grant alone does not enable discovery yet.</p>
+    <p class="muted">Access is granted only when you click. This version needs all-sites access to enable Find videos. A per-site grant alone does not enable discovery yet. If you decline, use Allow all websites to try again.</p>
     <button id="grantSite">Allow this website</button>
   </details>
   <details id="supportDetails"><summary>Support PearPlay</summary>

@@ -1,4 +1,6 @@
-# PearPlay Linux-only scope update — extension 0.2.4
+# PearPlay Linux-only scope update — extension 0.2.4 — historical
+
+> Superseded scope record. Current development targets Linux, Mac and Windows Chrome; Mac helper work is resumed and Safari extension development is paused. See [cross-platform preview](cross-platform-preview.md). The original procedures/results below describe 0.2.4 only; do not apply the old Mac-disabled controls to the new candidate.
 
 **Linux only. Mac support is coming soon.** No release date is promised.
 

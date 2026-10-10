@@ -33,7 +33,7 @@ export class Sessions {
     if(frameId===0){s.frames.clear();s.parents.clear();s.candidates=[];}
     else {const removed=new Set([frameId]);let changed=true;while(changed){changed=false;for(const [id,parent] of s.parents)if(removed.has(parent)&&!removed.has(id)){removed.add(id);changed=true;}}
       for(const id of removed){s.frames.delete(id);s.parents.delete(id);}s.candidates=s.candidates.filter(c=>!removed.has(c.frameId));}
-    s.selected=null;if(s.frames.size<128){s.frames.set(frameId,documentId);s.parents.set(frameId,parentFrameId);}
+    if(s.selected&&!s.candidates.some(c=>c.id===s.selected)){s.selected=null;s.selectionLost=true;}if(s.frames.size<128){s.frames.set(frameId,documentId);s.parents.set(frameId,parentFrameId);}
   }
   begin(e) {
     this.sweep();const s=this.tabs.get(e.tabId);if(!s||!e.documentId||s.frames.get(e.frameId)!==e.documentId)return;
@@ -49,6 +49,7 @@ export class Sessions {
     const safe=items.slice(0,100).filter(v=>typeof v.videoId==='string'&&/^v\d{1,10}$/.test(v.videoId)&&httpURL(v.url));
     s.candidates=s.candidates.filter(c=>c.frameId!==e.frameId||!c.videoId||safe.some(v=>v.videoId===c.videoId&&v.url===c.url));
     for(const v of safe)this.observe({...e,videoId:v.videoId,url:v.url,title:v.title,type:'media'});
+    if(s.selected&&!s.candidates.some(c=>c.id===s.selected)){s.selected=null;s.selectionLost=true;}
   }
   observe(e) {
     this.sweep(); const s=this.tabs.get(e.tabId);
@@ -59,6 +60,7 @@ export class Sessions {
     if (!e.videoId && format==='HLS' && s.candidates.some(c=>!c.videoId && c.format==='HLS' && new URL(c.url).hostname===new URL(e.url).hostname)) return;
     s.candidates.push({format,url:e.url,frameId:e.frameId,documentId:e.documentId,videoId:e.videoId??null,title:safeTitle(e.title),id:`c${++this.next}`});
     if(s.candidates.length>this.maxCandidates) s.candidates.shift();
+    if(s.selected&&!s.candidates.some(c=>c.id===s.selected)){s.selected=null;s.selectionLost=true;}
   }
   view(tabId) {
     this.sweep();
@@ -66,6 +68,7 @@ export class Sessions {
     return {
       enabled:!!s,
       selected:s?.selected??null,
+      selectionLost:!!s?.selectionLost,
       candidates:(s?.candidates??[]).map((c,i,all)=>{
         const name=c.title||s.pageTitle||'';
         const used=all.map(x=>x.title||s.pageTitle||'');
@@ -76,6 +79,7 @@ export class Sessions {
       })
     };
   }
-  select(tabId,id) { this.sweep(); const s=this.tabs.get(tabId); if (!s?.candidates.some(c=>c.id===id)) throw Error('NO_CANDIDATE'); s.selected=id; }
+  select(tabId,id) { this.sweep(); const s=this.tabs.get(tabId); if (!s?.candidates.some(c=>c.id===id)) throw Error('NO_CANDIDATE'); s.selected=id;s.selectionLost=false; }
+  current(tabId,c) { this.sweep();const s=this.tabs.get(tabId);return !!s&&s.frames.get(c.frameId)===c.documentId&&s.candidates.some(item=>item.id===c.id&&item.videoId===c.videoId&&item.url===c.url&&item.documentId===c.documentId); }
   selected(tabId) { this.sweep(); const s=this.tabs.get(tabId); const c=s?.candidates.find(c=>c.id===s.selected); if(!c) throw Error('NO_CANDIDATE'); return c; }
 }

@@ -2,38 +2,40 @@
 
 ## Audience and alternative
 
-A desktop Chrome user with an Apple TV on the same network who wants a compatible website video on the TV without mirroring the desktop. Linux is the only current target. Mac support is coming soon. Mac work is paused, without a promised date. Alternatives include screen mirroring, Safari AirPlay on macOS, and paid desktop senders. No comparative speed, quality, or compatibility claim is established here.
+A desktop Chrome user with an AirPlay TV who wants a compatible website video on the TV without mirroring the desktop. Linux has published helper 0.2.8 downloads and prior owner-confirmed playback; Mac and Windows Chrome helpers are active development previews, not public consumer releases. Safari extension development is paused. Alternatives include desktop mirroring, Safari's native AirPlay on macOS and other desktop senders. No comparative speed/quality/compatibility claim is established here.
 
 ## One-line promise
 
-**Your browser’s video. Your Apple TV.**
+**Your browser's video. Your Apple TV.**
 
-Always pair this promise with: “Compatible streams, sent directly. Linux only. Mac support is coming soon.” Never imply every website works.
+Pair it with: “Compatible streams, sent directly. Cross-platform development preview; separate local helper required.” Put published Linux availability and Mac/Windows preview qualifications near the first call to action. Never imply every website or platform works.
 
 ## Three genuine differences
 
-1. **The TV fetches the stream.** Native Messaging carries control, not media. PearPlay does not relay or re-encode the stream or transfer browser cookies. This preserves the source stream rather than guaranteeing any resolution. Evidence: `contract/v1.md:3`, `STATUS.md:28`.
-2. **A Linux route to Apple TV.** Chrome → Linux helper → Apple TV has human-confirmed video and audio on a tested stream, including an observed pre-roll-to-program transition. Scott also reports successful Brave and Chromium playback. This is a bounded result, not universal site support. Evidence: `STATUS.md:3–14`.
-3. **A deliberate handoff, local to your devices.** You initiate access and sending, choose a video/receiver, and control browser playback with the website’s own player. Pairing credentials stay in a local 0700 directory / 0600 file. Evidence: `contract/v1.md:26–41`, `STATUS.md:38–49`, `extension/popup.js:150–165`.
+1. **The TV fetches the stream.** Native Messaging carries control, not media. No cloud relay, desktop mirroring, re-encoding or cookie transfer. This does not guarantee any resolution or universally compatible codec/site.
+2. **One deliberate browser handoff.** You grant access, choose the video/receiver and send; source changes must not silently switch your choice. Setup checks a local connection on open; discovery is a separate click. Browser playback stays with website controls.
+3. **Local helper, local pairing.** One helper/session per OS user. Linux registrations are separate; Mac Chrome/Brave share one native-host registration and disconnect affects both. Windows Chrome uses per-user HKCU and current-user DPAPI state, not portable cross-OS pairing. No PearPlay account is required.
 
-## Three honest limitations
+Sources: `contract/v1.md`, current extension/helper sources and newest `STATUS.md`. Source architecture facts, unit/DOM fixtures, native-browser acceptance and human playback are different evidence classes.
 
-1. **The URL must work on the receiver.** HTTP(S) media only; a blob URL cannot be handed off. Cookies are not transferred. DRM, geography and other access controls are not bypassed. No ad blocking. Evidence: `contract/v1.md:3,24–28`, `STATUS.md:8,28,59`, URL validation in `extension/core.mjs`.
-2. **Compatibility is deliberately narrow.** Linux Chrome playback with video and audio is human-confirmed. Scott also reports playback in Brave and Chromium, without separately recorded audio or stream details for those browsers. Mac support is coming soon; Edge is not a supported installer target. Invalid/expired-stream and broader receiver-lifecycle behavior remain open. Evidence: `STATUS.md:3–24,52–64`, `helper/README.md:3–11`, `extension/manifest.json`.
-3. **It is still an experimental, manually installed product.** Requires an unpacked extension and local Python helper. End helper session is not a guarantee the TV stopped. The current popup gates Find videos on all-sites permission even though a per-site grant control exists. Preserve and disclose that limitation rather than promising effective per-site discovery. Evidence: `helper/README.md:13–34,124–138`, `extension/popup.js:60–66,151–165`.
+## Honest limitations
 
-## Claims boundaries
+- HTTP(S) receiver-fetchable media only. `blob:`, DRM, cookies, geography and access controls are not bypassed. PearPlay does not block ads.
+- Linux Chrome has prior picture-and-sound confirmation; Brave/Chromium have owner-reported playback without separately recorded audio/stream details. The new candidate still requires its own browser/OS matrix. Mac/Windows human picture/audio is not established. LG HLS remains parked/unresolved.
+- A local native helper is a separate installation. Mac app/pkg signing/notarization and Windows packaged/native-OS acceptance remain gates; source-only files or ad-hoc signing do not establish a consumer installer. Do not bypass security to make an unsigned preview run.
+- “Sent” or helper-reported “Playing” is not TV picture/sound evidence. End helper session is local teardown, not a universal TV-stop guarantee; use the physical remote if needed. TV pause/resume/timeline/Picture in Picture and Safari's native picker are not Chrome helper features.
+- Preserve accurate all-sites discovery-permission wording for the final UI; do not promise per-site-only discovery unless the implementation and tests establish it.
 
-`STATUS.md` is chronological: the newest result at the top supersedes contradictory historical checkpoints below. The confirmed stop/recast and pre-roll transition apply to one tested stream, not every stream. Public HLS audio/video was verified through the command adapter, not asserted as a new popup test. A protocol “playing” event is never human playback proof.
+## Release and claims boundaries
 
-Prefer “no account or cloud service required” over “no server”: there is a local native helper, and origin sites and Apple TV still communicate over the network. “No telemetry” must be backed by a source audit of the extension/helper, not assumed from the brief. Do not offer Mac installation or permission workarounds while compatibility work is paused. The owner selected MIT for original project code before source publication; third-party notices remain applicable.
+[STATUS](../STATUS.md) is chronological; newest evidence supersedes conflicting historical checkpoints. Published Linux 0.2.8, the reported Store transition, separately prepared 0.2.9 ZIP and local 0.3.0 candidate must not be conflated. The old “Linux only / Mac paused” documents are historical, not the present intent.
+
+Prefer “no PearPlay account or cloud relay” over “no server.” “No telemetry” describes the audited first-party control path, not zero browser/dependency/TV/provider network activity. HTTP media means not all transfers are encrypted. See [claims](claims.md), [privacy](privacy.md) and [preview gates](cross-platform-preview.md).
 
 ## Tone and visual direction
 
-- Plain, specific, calm. Sentence case headings; no superlatives, hype, exclamation marks, or implied universal compatibility.
-- Distinguish “helper reports playing” from “playing on your TV.” Keep the physical-remote warning visible; do not add automatic browser pausing.
-- The popup is an **Operate** surface: video and TV selection lead; setup and recovery remain clear and reachable.
-- The landing page is a **Decide / Learn** surface: one promise, a real product capture, a direct-fetch explanation, then evidence and installation.
-- Pear silhouette retained; broad leaf and play aperture, no Apple/AirPlay symbol. A two-tone mark rather than a glossy app tile.
-- Palette direction: forest ink, warm off-white, pear-lime accent. System typography chosen for native legibility and offline operation. Measured token pairs belong in `assets/brand/palette.md`.
-- All imagery comes from isolated headless Chrome. Example receivers and titles are synthetic; captures are UI evidence, not a live TV or macOS playback claim.
+- Calm, specific, plain language. No implied universal compatibility or superiority.
+- Popup: compact 400×600 candidate, video/TV selection first, clear setup/recovery and readable keyboard focus. Retain stale-source and async-action safety rather than copying Safari-only features.
+- Landing: one promise, real interface capture with example-data qualification, direct-fetch explanation, honest platform matrix, installation and checklist.
+- Pear/play identity, forest ink, warm off-white and pear-lime accent; no Apple/AirPlay mark or implied affiliation. Original code is MIT; third-party notices remain. Working name is not trademark-cleared.
+- Parent owns new artwork/store composites/landing regeneration. Isolated synthetic captures are UI evidence, never a human-TV or macOS/Windows playback claim. No private browser chrome, signed URLs, real receiver names, PINs or credentials in captures.

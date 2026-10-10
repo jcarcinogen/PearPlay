@@ -1,6 +1,6 @@
 # Mac Terminal installation — 0.2.3 development rehearsal — archived / paused
 
-> **Current scope: Linux only. Mac support is coming soon.** Mac work is paused, with no release date. The historical Mac procedures/results below are not current install instructions or Linux release blockers. Resume only if Scott explicitly reopens Mac work; current Mac install/build entry points refuse new work. Existing installed runtimes and pairing remain untouched.
+> Historical 0.2.3 Terminal rehearsal, not current installation advice. Mac helper development has resumed through a self-contained app/pkg candidate; Safari extension work is paused. Follow [cross-platform preview](cross-platform-preview.md) and the Mac worker's [runtime identity/signing evidence](mac-runtime-identity.md), not these retired Terminal/dependency/bootstrap commands. Developer ID/notarization and human Mac playback remain gates. Existing runtime/pairing are not removed by this documentation change.
 
 
 This replaces the unsigned Mac app/package route. No sudo, signing certificate or Gatekeeper change is used. It connects **Google Chrome**. A private Python runtime and `pyatv==0.18.0` are installed for your user; internet access is required for missing dependencies.

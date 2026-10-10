@@ -8,11 +8,15 @@ from pathlib import Path
 import plistlib
 import re
 import struct
+import sys
 
-VERSION = '0.2.8'
+VERSION = '0.3.0'
 
 async def native_stdio(output, factory=None):
     import sys
+    if sys.platform == 'win32':
+        from helper.windows_io import serve_stdio
+        return await serve_stdio(output, serve, factory)
     loop=asyncio.get_running_loop()
     reader=asyncio.StreamReader(limit=MAX_FRAME + 4)
     protocol=asyncio.StreamReaderProtocol(reader)
@@ -34,9 +38,11 @@ def main(argv=None, *, trace=None, startup_timeout=None, event_labels=None, even
     parser.add_argument('--extension-id')
     parser.add_argument('--identifier')
     parser.add_argument('--host')
+    parser.add_argument('--parent-window', type=lambda v: int(v) if re.fullmatch(r'[0-9]{1,20}', v) and int(v) < 2**64 else (_ for _ in ()).throw(ValueError('invalid_parent_window')))
     parser.add_argument('origin',nargs='?')
     try:
         args=parser.parse_intermixed_args(argv)
+        if args.parent_window is not None and (sys.platform != 'win32' or args.mode != 'native'): return 2
         if args.mode=='native':
             if not allowed_origin(args.extension_id,args.origin) or args.identifier or args.host: return 2
         elif args.origin or args.extension_id:
@@ -50,6 +56,9 @@ def main(argv=None, *, trace=None, startup_timeout=None, event_labels=None, even
     except BaseException:
         return 2
     # Retain only the protocol descriptor. Suppress Python and native dependency output.
+    if sys.platform == 'win32':
+        from helper.windows_io import binary_stdio
+        binary_stdio()
     output=os.fdopen(os.dup(sys.stdout.fileno()),'wb',buffering=0)
     with open(os.devnull,'w') as sink:
         os.dup2(sink.fileno(),1);os.dup2(sink.fileno(),2)
@@ -322,6 +331,19 @@ async def serve(reader, output, factory=None, frame_timeout=10):
         await host.close()
 
 async def pair_cli(identifier, host, *, api=None, output=None):
+    if sys.platform == 'win32':
+        import getpass
+        import warnings
+        session = await Transport(api=api).begin_pair(identifier, host)
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter('error', getpass.GetPassWarning)
+                pin = getpass.getpass('TV PIN (hidden): ')
+            if not re.fullmatch(r'[0-9]{4}', pin): raise ValueError('invalid_pin')
+            await session.finish(pin)
+            return 0
+        finally:
+            await session.close()
     baseline = spike().existing()
     args = baseline.arguments(['pair', '--identifier', identifier, '--host', host])
     if not re.fullmatch(IDENTIFIER, identifier): raise ValueError('invalid_request')
@@ -339,6 +361,11 @@ class Lease:
         self.store, self.fd = store, None
 
     def __enter__(self):
+        if sys.platform == 'win32':
+            from helper.windows_store import Lease as WindowsLease
+            self.windows = WindowsLease(self.store)
+            self.windows.__enter__()
+            return self
         import os
         import fcntl
         directory = self.store.directory()
@@ -357,6 +384,9 @@ class Lease:
             os.close(directory)
 
     def __exit__(self, *args):
+        if sys.platform == 'win32':
+            if getattr(self, 'windows', None) is not None: self.windows.__exit__(*args)
+            return
         import os
         if self.fd is not None: os.close(self.fd); self.fd = None
 
@@ -398,7 +428,10 @@ class Transport:
             from pyatv.auth.hap_pairing import parse_credentials
             parse = parse_credentials
         self.api, self.connect, self.parse = api, connect, parse
-        self.store = store or self.command.existing().Store()
+        if store is None and sys.platform == 'win32':
+            from helper.windows_store import Store
+            store = Store()
+        self.store = store if store is not None else self.command.existing().Store()
         self.backend = backend or self.command.Backend
         self.timeout = timeout
         self.trace = trace
@@ -471,6 +504,10 @@ class Transport:
     async def mdns_hosts(self):
         if self.mdns is not None:
             return await self.mdns()
+        if sys.platform == 'win32':
+            # pyatv's existing multicast scan is the Windows discovery path.
+            # Do not invoke Avahi/Bonjour command-line tools or add services.
+            return []
         try:
             text = await self._exec_text(['avahi-browse', '-prtk', '_airplay._tcp'], max(8, self.timeout), False)
         except FileNotFoundError:
@@ -621,6 +658,11 @@ class Transport:
             raise
 
     async def pair(self, identifier, host, pin):
+        if sys.platform == 'win32':
+            session = await self.begin_pair(identifier, host)
+            try: await session.finish(pin)
+            finally: await session.close()
+            return
         baseline = self.command.existing()
         parsed = baseline.arguments(['pair', '--identifier', identifier, '--host', host])
         parsed.pin = pin
@@ -957,7 +999,7 @@ class Host:
 
     def response(self, identifier, error=None, **fields):
         result = dict(v=1, id=identifier, ok=error is None, state=self.state,
-                      evidence=self.evidence, capabilities=list(self.capabilities), helperVersion=VERSION, firewallSupport=True, **fields)
+                      evidence=self.evidence, capabilities=list(self.capabilities), helperVersion=VERSION, firewallSupport=sys.platform != 'win32', **fields)
         if self.state == 'error' and self.diagnostic is not None:
             result['diagnostic'] = dict(self.diagnostic)
         if not error and self.state == 'connecting' and self.evidence == 'unverified' and self.session:
@@ -1017,6 +1059,7 @@ class Host:
         if op not in self.capabilities and op != 'firewall': return self.response(identifier, 'unsupported')
         try:
             if op == 'firewall':
+                if sys.platform == 'win32': return self.response(identifier, 'unsupported')
                 from helper import firewall
                 if not any(r['identifier'] == args['receiver'] and r['address'] == args['host'] for r in self.receivers):
                     return self.response(identifier, 'receiver_not_discovered')

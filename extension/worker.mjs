@@ -1,8 +1,8 @@
 import {Sessions} from './core.mjs';
 import {Native} from './native.mjs';
-const KNOWN_ERRORS=['NATIVE_DISCONNECTED','NATIVE_TIMEOUT','INVALID_RESPONSE','busy','pairing_required','pairing_failed','transport_failed','receiver_not_discovered','receiver_unavailable','discovery_failed'];
+const KNOWN_ERRORS=['NATIVE_DISCONNECTED','NATIVE_TIMEOUT','INVALID_RESPONSE','busy','pairing_required','pairing_failed','transport_failed','receiver_not_discovered','receiver_unavailable','discovery_failed','VIDEO_CHANGED_OR_UNCONFIRMED'];
 export function createWorker(chrome,native=new Native(()=>chrome.runtime.connectNative('com.pearplay.helper'))) {
- const sessions=new Sessions();let receiver=null;let local=null;let firewall=null;let firewallBusy=false;
+ const sessions=new Sessions();let receiver=null;let local=null;let firewall=null;let firewallBusy=false;let pairing=null;let pairingBusy=false;
  async function checkFirewall(explicit=false){
   const previous=firewall;firewall=null;
   const r=native.view().receivers.find(r=>r.identifier===receiver);
@@ -27,22 +27,24 @@ export function createWorker(chrome,native=new Native(()=>chrome.runtime.connect
   }
   if(sender.tab||sender.url!==chrome.runtime.getURL('popup.html'))throw Error('UNAUTHORIZED');
   const tabId=m.tabId;
-  if(firewallBusy&&!['view','openSetup'].includes(m.op))throw Error('busy');
+  if((firewallBusy||pairingBusy)&&!['view','openSetup'].includes(m.op))throw Error('busy');
   switch(m.op){
    case 'openSetup':await chrome.tabs.create({url:chrome.runtime.getURL('setup.html')});return {ok:true};
    case 'view':{
     try{const tab=await chrome.tabs.get(tabId);sessions.pageTitle(tabId,tab?.title);}catch{}
-    return {...sessions.view(tabId),native:native.view(),receiver,firewall:native.view().firewallSupport?firewall:null,firewallBusy,localAvailable:!!local};
+    return {...sessions.view(tabId),native:native.view(),receiver,pairingReceiver:pairing?.receiver??null,pairingBusy,firewall:native.view().firewallSupport?firewall:null,firewallBusy,localAvailable:!!local};
    }
    case 'enable':{
-    sessions.enable(tabId);
+    // Find again preserves the deliberately selected video in this tab.
+    if(!sessions.view(tabId).enabled)sessions.enable(tabId);
+    else sessions.tabs.get(tabId).at=sessions.now();
     try{const tab=await chrome.tabs.get(tabId);sessions.pageTitle(tabId,tab?.title);}catch{}
     return scan(tabId,true);
    }
-   case 'rescan':if(!sessions.view(tabId).enabled)throw Error('SESSION_EXPIRED');return scan(tabId);
+   case 'rescan':if(!sessions.view(tabId).enabled)throw Error('SESSION_EXPIRED');sessions.tabs.get(tabId).at=sessions.now();return scan(tabId);
    case 'disable':sessions.disable(tabId);return {ok:true};
    case 'select':sessions.select(tabId,m.id);return {ok:true};
-   case 'receiver':if(!native.view().receivers.some(r=>r.identifier===m.id))throw Error('NO_RECEIVER');receiver=m.id;await checkFirewall();return {ok:true};
+   case 'receiver':if(!native.view().receivers.some(r=>r.identifier===m.id))throw Error('NO_RECEIVER');if(receiver!==m.id)pairing=null;receiver=m.id;await checkFirewall();return {ok:true};
    case 'firewall':{
     const r=native.view().receivers.find(r=>r.identifier===receiver);
     if(!r||m.receiver!==receiver||!native.view().firewallSupport)throw Error('NO_RECEIVER');
@@ -55,18 +57,40 @@ export function createWorker(chrome,native=new Native(()=>chrome.runtime.connect
      if(receiver===r.identifier)firewall={...result,receiver:r.identifier,host:r.address};return {ok:true};
     }finally{firewallBusy=false;}
    }
-   case 'start':{if(native.view().session?.delivery==='accepted')return native.view();const c=sessions.selected(tabId);const r=native.view().receivers.find(r=>r.identifier===receiver);if(!r)throw Error('NO_RECEIVER');return native.request('start',{receiver:r.identifier,host:r.address,url:c.url});}
-   case 'pairBegin':{const r=native.view().receivers.find(x=>x.identifier===receiver);if(!r)throw Error('NO_RECEIVER');return native.request('pair_begin',{receiver:r.identifier,host:r.address});}
-   case 'pair':{const r=native.view().receivers.find(x=>x.identifier===receiver);if(!r)throw Error('NO_RECEIVER');if(typeof m.pin!=='string'||!/^\d{4}$/.test(m.pin))throw Error('INVALID_PIN');return native.request('pair',{receiver:r.identifier,host:r.address,pin:m.pin});}
-   case 'localPause':{if(m.confirmed!==true)throw Error('CONFIRM_TV_FIRST');const c=sessions.selected(tabId);if(!c.videoId)throw Error('NO_EXACT_VIDEO');const result=await chrome.tabs.sendMessage(tabId,{op:'localPause',confirmed:true,videoId:c.videoId,url:c.url},{documentId:c.documentId});if(result?.ok)local={tabId,...c};return result;}
-   case 'localResume':{if(!local)throw Error('NO_LOCAL_VIDEO');return chrome.tabs.sendMessage(local.tabId,{op:'localResume',videoId:local.videoId,url:local.url},{documentId:local.documentId});}
+   case 'start':{
+    if(native.view().session?.delivery==='accepted')return native.view();
+    const c=sessions.selected(tabId);
+    const r=native.view().receivers.find(r=>r.identifier===receiver);
+    if(!r)throw Error('NO_RECEIVER');
+    if(c.videoId){
+     const result=await chrome.tabs.sendMessage(tabId,{op:'validateVideo',videoId:c.videoId,url:c.url},{documentId:c.documentId});
+     if(result?.ok!==true)throw Error('VIDEO_CHANGED_OR_UNCONFIRMED');
+    }
+    if(!sessions.current(tabId,c)||sessions.selected(tabId)!==c||receiver!==r.identifier)throw Error('VIDEO_CHANGED_OR_UNCONFIRMED');
+    return native.request('start',{receiver:r.identifier,host:r.address,url:c.url});
+   }
+   case 'pairBegin':case 'pair':{
+    const r=native.view().receivers.find(x=>x.identifier===receiver);if(!r)throw Error('NO_RECEIVER');
+    if(m.op==='pair'&&(typeof m.pin!=='string'||!/^\d{4}$/.test(m.pin)))throw Error('INVALID_PIN');
+    // Worker-owned, non-secret intent survives popup closure. A reopened popup
+    // deliberately starts fresh instead of guessing whether a TV PIN is live.
+    const intent={receiver:r.identifier};pairing=intent;pairingBusy=true;
+    try{
+     const result=await native.request(m.op==='pair'?'pair':'pair_begin',{receiver:r.identifier,host:r.address,...(m.op==='pair'?{pin:m.pin}:{})});
+     if(m.op==='pair'&&pairing===intent)pairing=null;
+     return result;
+    }finally{pairingBusy=false;}
+   }
+   case 'localPause':{if(m.confirmed!==true)throw Error('CONFIRM_TV_FIRST');const c=sessions.selected(tabId);if(!c.videoId)throw Error('NO_EXACT_VIDEO');const result=await chrome.tabs.sendMessage(tabId,{op:'localPause',confirmed:true,videoId:c.videoId,url:c.url},{documentId:c.documentId});if(!sessions.current(tabId,c))return {ok:false,error:'VIDEO_CHANGED_OR_UNCONFIRMED'};if(result?.ok)local={tabId,...c};return result;}
+   case 'localResume':{const c=local;if(!c||!sessions.current(c.tabId,c))throw Error('NO_LOCAL_VIDEO');const result=await chrome.tabs.sendMessage(c.tabId,{op:'localResume',videoId:c.videoId,url:c.url},{documentId:c.documentId});return local===c&&sessions.current(c.tabId,c)?result:{ok:false,error:'VIDEO_CHANGED_OR_UNCONFIRMED'};}
    case 'discover':{
     const result=await native.request('discover',m.host?{host:m.host}:{});
     const list=native.view().receivers;
     if(list.length===1) receiver=list[0].identifier;
     else if(receiver&&!list.some(r=>r.identifier===receiver)) receiver=null;
     await checkFirewall();return result;}
-   case 'hello':case 'status':case 'pause':case 'resume':case 'stop':return native.request(m.op,{});
+   case 'stop':{const result=await native.request('stop',{});pairing=null;return result;}
+   case 'hello':case 'status':case 'pause':case 'resume':return native.request(m.op,{});
    default:throw Error('UNKNOWN_OPERATION');
   }
  }

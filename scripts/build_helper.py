@@ -1,4 +1,4 @@
-"""Build Linux helpers on Linux. Mac support is coming soon; Mac internals are archived."""
+"""Build native helpers. Unsigned Mac previews are development only; releases require Apple signing and notarization."""
 import argparse
 import base64
 import hashlib
@@ -27,6 +27,7 @@ def stage_payload(payload, stage, config):
         resources=app/'Contents/Resources'
         shutil.copytree(payload/'THIRD_PARTY_LICENSES',resources/'THIRD_PARTY_LICENSES')
         shutil.copy2(payload/'dependency-versions.json',resources/'dependency-versions.json')
+        shutil.copy2(ROOT/'LICENSE',resources/'LICENSE')
     else:
         shutil.copytree(payload,stage/'opt/pearplay/PearPlayHelper',symlinks=True)
         shutil.copy2(ROOT/'LICENSE',stage/'opt/pearplay/PearPlayHelper/LICENSE')
@@ -63,7 +64,7 @@ def macos_bundle_spec():
               NSLocalNetworkUsageDescription='PearPlay finds and connects to AirPlay TVs on your local network.',
               NSBonjourServices=['_airplay._tcp'], LSMinimumSystemVersion='12.0')
     # Keep the console bootloader: native messaging requires inherited stdin/stdout.
-    return f"\napp = BUNDLE(coll, name='PearPlay Setup.app', bundle_identifier='com.pearplay.helper', version={VERSION!r}, info_plist={info!r})\n"
+    return f"\napp = BUNDLE(coll, name='PearPlay Setup.app', icon={str(ROOT/'assets/brand/pearplay.icns')!r}, bundle_identifier='com.pearplay.helper', version={VERSION!r}, info_plist={info!r})\n"
 
 
 def configuration(extension_id, development, target, machine):
@@ -162,15 +163,59 @@ def linux_dependencies(format, libc):
             'rpm': f'zenity, avahi-tools, glibc >= {libc}'}[format]
 
 
+def license_inventory(payload, distributions=None, python_license=None):
+    """Ship environment notices without flattening colliding/vendor filenames.
+
+    This is a build-environment inventory, not a claim that every build/test
+    distribution is imported by the frozen app. Include Python's runtime notice
+    on Mac; installed wheels supply their own vendored-library notices.
+    """
+    licenses = Path(payload)/'THIRD_PARTY_LICENSES'
+    licenses.mkdir()
+    versions = {}
+    for dist in importlib.metadata.distributions() if distributions is None else distributions:
+        name = dist.metadata['Name']; versions[name] = dist.version
+        for file in dist.files or []:
+            relative = Path(str(file))
+            notice = relative.name.lower().startswith(('license', 'copying', 'notice', 'authors'))
+            if not notice or relative.is_absolute() or '..' in relative.parts:
+                continue
+            source = Path(str(dist.locate_file(file)))
+            if source.is_file():
+                destination = licenses/re.sub(r'[^A-Za-z0-9_.-]', '_', name)/relative
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(source, destination)
+    if python_license is not None:
+        shutil.copy2(python_license, licenses/'Python-LICENSE.txt')
+    shutil.copy2(ROOT/'spikes/002-command/LICENSE.md', licenses/'airplay-adapter.md')
+    (Path(payload)/'dependency-versions.json').write_text(json.dumps(versions, indent=2)+'\n')
+    inventory = dict(scope='Build environment (includes build/test tools); not a frozen import inventory',
+                     python=sys.version.split()[0], distributions=versions,
+                     notices=[dict(file=p.relative_to(licenses).as_posix(), sha256=hashlib.sha256(p.read_bytes()).hexdigest())
+                              for p in sorted(licenses.rglob('*')) if p.is_file()])
+    (licenses/'inventory.json').write_text(json.dumps(inventory, indent=2)+'\n')
+    return inventory
+
+
+def build_source_snapshot():
+    paths = [*sorted((ROOT/'helper').glob('*.py')), ROOT/'scripts/build_helper.py',
+             ROOT/'spikes/001-airplay/pearplay.py', ROOT/'spikes/002-command/command.py',
+             ROOT/'spikes/002-command/LICENSE.md', ROOT/'LICENSE',
+             ROOT/'assets/store/icon-1024.png', ROOT/'assets/brand/pearplay.icns']
+    return {p.relative_to(ROOT).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
+
+
 def build(args):
-    if sys.platform != 'linux':
-        raise ValueError('PearPlay is Linux only. Mac support is coming soon.')
+    if sys.platform not in ('linux', 'darwin'):
+        raise ValueError('unsupported_build_host')
     config=configuration(args.extension_id,args.development,sys.platform,platform.machine())
     output=args.output.expanduser().absolute()
     if output.is_relative_to(ROOT) or '%' in str(output) or '\n' in str(output): raise ValueError('use_machine_local_build_output')
     if not args.development and sys.platform=='darwin' and not all((args.sign_app,args.sign_installer,args.notary_profile)):
         raise ValueError('mac_release_requires_signing_and_notarization')
     output.mkdir(parents=True,exist_ok=False)
+    source_hashes=build_source_snapshot()
+    (output/'source-hashes.json').write_text(json.dumps(source_hashes,indent=2)+'\n')
     (output/'build.json').write_text(json.dumps(config))
     subprocess.run(freeze_command(output,args.sign_app),check=True,cwd=output)
     if sys.platform=='darwin':
@@ -181,18 +226,12 @@ def build(args):
                         '--distpath',str(output/'frozen'),'--workpath',str(output/'work'),
                         str(spec)],check=True,cwd=output)
     payload=output/'frozen/PearPlayHelper'
-    licenses=payload/'THIRD_PARTY_LICENSES';licenses.mkdir()
-    versions={}
-    for dist in importlib.metadata.distributions():
-        name=dist.metadata['Name'];versions[name]=dist.version
-        for file in dist.files or []:
-            if any(part.lower().startswith(('license','copying')) for part in file.parts):
-                source=Path(dist.locate_file(file))
-                if source.is_file():
-                    destination=licenses/re.sub(r'[^A-Za-z0-9_.-]','_',name)/Path(file).name
-                    destination.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(source,destination)
-    shutil.copy2(ROOT/'spikes/002-command/LICENSE.md',licenses/'airplay-adapter.md')
-    (payload/'dependency-versions.json').write_text(json.dumps(versions,indent=2)+'\n')
+    python_license=None
+    if sys.platform=='darwin':
+        import sysconfig
+        python_license=Path(sysconfig.get_path('stdlib'))/'LICENSE.txt'
+        if not python_license.is_file(): raise ValueError('missing_python_runtime_license')
+    license_inventory(payload, python_license=python_license)
     smoke=subprocess.run([str(payload/'PearPlayHelper'),'self-test'],check=True,capture_output=True,text=True)
     (output/'smoke.json').write_text(smoke.stdout)
     stage=stage_payload(payload,output/'stage',config)
@@ -246,6 +285,8 @@ def build(args):
             for package in (top/'RPMS').rglob('*.rpm'):
                 target=output/(label+'.rpm');shutil.copy2(package,target);artifacts.append(target)
         else: unavailable.append('rpm: rpmbuild unavailable; build on supported Fedora baseline')
+    if source_hashes != build_source_snapshot():
+        raise ValueError('source_changed_during_build_rebuild_before_acceptance')
     report=dict(config,artifacts=[dict(file=p.name,sha256=hashlib.sha256(p.read_bytes()).hexdigest()) for p in artifacts],unavailable=unavailable,notarized=bool(args.notary_profile),network_tested=False)
     (output/'build-report.json').write_text(json.dumps(report,indent=2)+'\n')
     print(json.dumps(report,indent=2))

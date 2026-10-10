@@ -18,10 +18,11 @@ def main(argv=None):
     parser.add_argument('--config-parent',required=True,type=Path)
     parser.add_argument('--python',required=True,type=Path)
     parser.add_argument('--pythonpath',type=Path)
+    parser.add_argument('--shared-disconnect',action='store_true',help='Mac: disconnect the shared Google Chrome and Brave registration')
     try:
         args=parser.parse_args(argv)
         kwargs=dict(extension_id=args.extension_id,browser=args.browser,config_parent=args.config_parent,python=args.python,source=Path(__file__).resolve().parents[1],pythonpath=args.pythonpath)
-        result=install(**kwargs) if args.action=='install' else uninstall(**kwargs)
+        result=install(**kwargs) if args.action=='install' else uninstall(**kwargs,shared_disconnect=args.shared_disconnect)
         print(json.dumps({'ok':True,'action':args.action,'preserved':result if isinstance(result,list) else []}))
         return 0
     except Exception:
@@ -32,6 +33,7 @@ NAME = 'com.pearplay.helper'
 BROWSERS = {'chrome': 'google-chrome', 'brave': 'BraveSoftware/Brave-Browser', 'chromium': 'chromium'}
 
 def browser_dir(browser, platform=None):
+    """Profile location for detection; distinct from native-host registration."""
     import sys
     platform = sys.platform if platform is None else platform
     if browser == 'chrome':
@@ -41,6 +43,14 @@ def browser_dir(browser, platform=None):
     if browser == 'chromium' and platform == 'darwin': return 'Chromium'
     if platform not in ('darwin', 'linux'): raise ValueError('invalid_install_arguments')
     return BROWSERS[browser]
+
+def host_dir(browser, platform=None):
+    import sys
+    platform = sys.platform if platform is None else platform
+    # Brave's macOS native-host override uses Chrome's standard directory.
+    if platform == 'darwin' and browser in ('chrome', 'brave'):
+        return 'Google/Chrome'
+    return browser_dir(browser, platform)
 
 def plan(*, extension_id, browser, config_parent, python=None, source=None, require_runtime=True, platform=None, pythonpath=None, executable=None):
     if not isinstance(extension_id, str) or not re.fullmatch(r'[a-p]{32}', extension_id) or browser not in BROWSERS:
@@ -52,7 +62,7 @@ def plan(*, extension_id, browser, config_parent, python=None, source=None, requ
             raise ValueError('absolute_paths_required')
         if require_runtime and (not executable.is_file() or not os.access(executable, os.X_OK)):
             raise ValueError('missing_runtime')
-        folder = parent/browser_dir(browser, platform)/'NativeMessagingHosts'
+        folder = parent/host_dir(browser, platform)/'NativeMessagingHosts'
         paths = {'manifest': folder/(NAME+'.json')}
         manifest = json.dumps(dict(name=NAME, description='PearPlay Helper', path=str(executable), type='stdio',
                                    allowed_origins=['chrome-extension://'+extension_id+'/']), indent=2)+'\n'
@@ -62,7 +72,7 @@ def plan(*, extension_id, browser, config_parent, python=None, source=None, requ
         raise ValueError('absolute_paths_required')
     if require_runtime and (not python.is_file() or not os.access(python, os.X_OK) or not (source/'helper/native.py').is_file() or not (source/'spikes/002-command/command.py').is_file()):
         raise ValueError('missing_runtime')
-    folder = parent/browser_dir(browser, platform)/'NativeMessagingHosts'
+    folder = parent/host_dir(browser, platform)/'NativeMessagingHosts'
     paths = {'manifest':folder/(NAME+'.json'), 'launcher':folder/(NAME+'.launcher')}
     prefix = ''
     if pythonpath:
@@ -75,13 +85,19 @@ def plan(*, extension_id, browser, config_parent, python=None, source=None, requ
     return paths, {'manifest':(manifest.encode(),0o600), 'launcher':(launcher.encode(),0o700)}
 
 def directory(path, create):
-    fd=os.open('/',os.O_RDONLY|os.O_DIRECTORY)
+    # macOS 27 protects browser profile data but explicitly exempts the
+    # NativeMessagingHosts destination. Ancestors need search permission,
+    # not read access; retain fd-relative traversal and no-symlink checks.
+    search = getattr(os, 'O_SEARCH', os.O_RDONLY)
+    fd=os.open('/',search|os.O_DIRECTORY)
     try:
-        for part in path.parts[1:]:
+        parts = path.parts[1:]
+        for index, part in enumerate(parts):
             if create:
                 try: os.mkdir(part,0o700,dir_fd=fd)
                 except FileExistsError: pass
-            next_fd=os.open(part,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW,dir_fd=fd)
+            access = os.O_RDONLY if index == len(parts)-1 else search
+            next_fd=os.open(part,access|os.O_DIRECTORY|os.O_NOFOLLOW,dir_fd=fd)
             os.close(fd);fd=next_fd
         info=os.fstat(fd)
         if info.st_uid != os.getuid() or info.st_mode & 0o022: raise ValueError('unsafe_install_directory')
@@ -120,7 +136,11 @@ def install(**kwargs):
         raise
     finally: os.close(fd)
 
-def uninstall(**kwargs):
+def uninstall(*, shared_disconnect=False, **kwargs):
+    import sys
+    platform = kwargs.get('platform') or sys.platform
+    if platform == 'darwin' and kwargs.get('browser') in ('chrome', 'brave') and not shared_disconnect:
+        raise ValueError('mac_chrome_brave_disconnect_requires_shared_confirmation')
     paths,payloads=plan(**kwargs, require_runtime=False)
     try: fd=directory(paths['manifest'].parent,False)
     except FileNotFoundError: return []

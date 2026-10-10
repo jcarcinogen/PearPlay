@@ -1,19 +1,18 @@
-# PearPlay native helper (experimental)
+# PearPlay native helper — development preview
 
-**Linux only. Mac support is coming soon.** Mac compatibility work is paused.
-Linux Chrome is the verified playback baseline; other browser playback needs separate verification.
-No Mac relay, WebKit, AVPlayer, or screen mirroring.
+The Chrome extension/helper candidate targets Linux, Mac and Windows. Safari extension development is paused; no WebKit/AVPlayer/Mac relay or screen mirroring is part of this helper. See [cross-platform status](../docs/cross-platform-preview.md) for artifact versus source-only states and remaining gates.
 
-Requires Python **3.11+**, the existing unmodified `pyatv==0.18.0` environment,
-and this checkout in place. No dependency installation is performed. `hello`
-and protocol tests do not import pyatv; discovery/playback fail safely if the
-runtime dependency is absent or has the wrong version. On the Mini, run helper
-tests with `python3.11`, never Apple CLT `python3` (3.9).
+Published Linux helper is [0.2.8](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.8); local extension candidate is 0.3.0. Mac app/pkg development has resumed with ad-hoc signing, not Developer ID/notarized distribution. Windows per-user Chrome/HKCU/DPAPI and bundled installer work is active. Neither Mac nor Windows has a public catalog URL or a human-observed playback claim in this docs handoff.
 
-## Install / uninstall (explicit opt-in)
+## Runtime and installation
 
-Do not run these against a daily browser profile during testing. Choose the
-actual 32-character `[a-p]` extension ID from your unpacked extension.
+Source runtime requires Python 3.11+ and `pyatv==0.18.0` from requirements.txt. Packaged helpers bundle the runtime; users should not choose an arbitrary Python. Native hello/protocol validation is distinct from discovery/playback dependencies. Keep venvs/runtime/state machine-local, not shared across operating systems. Do not use Apple CLT Python 3.9 for the documented test path.
+
+[Consumer installation](../docs/install.md) preserves Linux native package/checksum/security instructions. Mac/Windows setup requires a tested supplied candidate artifact and its exact guide, not guessed commands from a source-only checkout. Do not disable Gatekeeper, remove quarantine, or bypass SmartScreen/Defender. Historical Mac Terminal install is retired, not a fallback permission workaround.
+
+## Source registration — isolated Linux developer opt-in
+
+Do not run against a daily browser profile during tests. Use the actual 32-character `[a-p]` extension ID; production is `eoadahoncjfpnennmkjifohclbafjkol`. An isolated browser must use the corresponding configuration tree.
 
 ```sh
 PY="$HOME/.local/share/pearplay/venv/bin/python"
@@ -23,109 +22,35 @@ EXTENSION_ID="replace_with_actual_extension_id"
   --browser chrome --config-parent "$CONFIG_PARENT" --python "$PY"
 ```
 
-`--config-parent` is the browser **configuration parent**, not `Default` or an
-individual profile directory. The installer chooses the folder from the OS.
-Linux Chrome uses `google-chrome/NativeMessagingHosts`; Brave uses
-`BraveSoftware/Brave-Browser/NativeMessagingHosts`; Chromium uses
-`chromium/NativeMessagingHosts`. The normal configuration parent is `$HOME/.config`.
-An isolated browser must actually use the matching configuration tree.
-**Fully quit and reopen Chrome after initial registration.** Reloading the extension is not enough.
+The configuration parent is not `Default` or an individual profile directory. Linux paths below it are `google-chrome/NativeMessagingHosts`, `BraveSoftware/Brave-Browser/NativeMessagingHosts` and `chromium/NativeMessagingHosts`. Normal Linux parent is `$HOME/.config`. Fully quit and reopen the browser after registration; reloading the extension is not enough.
 
-Mac install directions are retired. Prior runtime/signing findings are preserved
-in [paused Mac research](../docs/mac-runtime-identity.md), not offered as a workaround.
-Never borrow another app’s permitted interpreter or disable security to obtain access.
+Repeat the exact original arguments with `uninstall` instead of `install` to compare/remove owned source registration. Existing unequal/unknown files must not be overwritten or removed. Preserve ownership/mode/regular-file/single-link checks, original ID/runtime/source/config paths and any original Python-path override. Registration removal preserves source/runtime and pairing; it is not package removal or credential deletion.
 
-Repeat the exact command with `uninstall` instead of `install`. Installation
-creates only a manifest and a shell launcher. Existing unequal files are
-never overwritten. Uninstall removes only exact expected content with matching
-ownership, mode, regular-file type and single link. Modified/unknown files,
-directories, source, the interpreter/venv, and credentials are preserved.
-Repeat the original ID, Python path, config parent and source location for
-ownership comparison. No receipt, service, socket, packages or firewall rules
-are installed. Missing source/runtime files do not prevent comparison/removal.
+## Platform registration and pairing boundaries
 
-## Discover / pair manually
+- Linux: separate browser registrations to a shared per-user helper/state.
+- Mac: Chrome and Brave share the Chrome native-host location. Connect/disconnect affects both; do not represent them as independent registrations. Chromium is separate. `docs/mac-runtime-identity.md` is the Mac worker's current signing/identity evidence, not permission to bypass Apple protections.
+- Windows: normal-user Chrome native-host keys in HKCU (not HKLM) and user-local installed files; DPAPI plus user-local access controls for pairing. POSIX permission semantics are not Windows security evidence. Exact installer/lifecycle/browser/DPAPI tests must run on Windows.
 
-```sh
-"$PY" helper/native.py discover --host 192.0.2.10
-"$PY" helper/native.py pair --identifier AA:BB:CC:DD:EE:FF --host 192.0.2.10
-```
+Pair independently on each OS. DPAPI-protected Windows pairing is not portable between users/machines/OSes; do not copy state into or out of Windows. Ordinary disconnect/removal preserves saved pairing and unrelated/changed files. Tests must not read/copy/delete real credentials. The popup's masked PIN is the user input route; never put PINs, credentials or signed URLs in logs/public reports.
 
-These are documentation-only example addresses. Discovery without `--host`
-tries pyatv multicast first. If that is empty, Linux uses `avahi-browse` when
-that command exists. If `avahi-browse` is absent, the helper falls back to
-`dns-sd` and keeps Apple TV IPv4 addresses only, then unicast-scans those
-addresses. A pasted literal IP skips browse. Do not hardcode a receiver
-address in source. Pairing
-uses the existing spike's AirPlay pairing implementation and hidden `getpass`
-PIN entry; echoed fallback is forbidden. It writes only the existing secure
-single-receiver `~/.local/state/pearplay/credentials.json` Store (0700 directory,
-0600 atomic file, no symlinks). Pairing another receiver replaces that one
-record; do so only intentionally. `pairing_required` includes static CLI
-instructions. Browser requests cannot pair, supply credentials or select
-configuration paths.
+## Native contract and transport
 
-## Native contract v1
+Host `com.pearplay.helper`; use persistent `connectNative`. Origin allowlist is exact `chrome-extension://EXTENSION_ID/`; malformed/different/missing origins fail closed. Requests use bounded framed UTF-8 JSON with version/id/op/args; strict schema, sizes, deadlines and URL/receiver identity checks live in [contract/v1.md](../contract/v1.md), `helper/native.py` and protocol tests. The helper must revalidate receiver identity before send, never silently downgrade an authenticated saved-pair route.
 
-Host name `com.pearplay.helper`. Use a persistent `connectNative` port, not
-one-shot messaging. The launcher and helper enforce exactly
-`chrome-extension://EXTENSION_ID/`; missing, different, extra or malformed
-origins fail closed. Each native connection owns its Host and transport.
+Current backend has authenticated command-adapter transport and an affirmatively eligible no-PIN AirPlay V1 route. Do not interpret V1 request acceptance as protocol playing. Optional accepted-session/timing/receiver-issue metadata preserves older-client compatibility; no-PIN paths must not demand irrelevant timing rules. Linux receiver-scoped timing/firewall assistance is separate from installing a helper, never a blanket firewall-disable instruction. See the newest [STATUS](../STATUS.md) and [install troubleshooting](../docs/install.md#linux-timing-and-network-troubleshooting).
 
-Request: `{v:1,id:"request_1",op:"hello",args:{}}`. IDs are nonempty ASCII
-`[A-Za-z0-9_-]`, at most 64 characters. Only the four envelope keys are accepted.
+`playing` with `evidence:"protocol"` is receiver-reported state, not moving video/audible sound. `Sent` means accepted handoff, not watched success. End helper session tears down local transport with unverified evidence; use the physical remote if playback continues. TV pause/resume/timeline/Picture in Picture and Safari's native AirPlay picker are not helper capabilities.
 
-- `hello`, `status`, `stop`, `pause`, `resume`: empty args only.
-- `discover`: empty args, or `{host:"literal-IP"}`.
-- `start`: exactly `{receiver:"discovered-identifier",host:"literal-IP",url:"https://…"}`.
-  Both identifier and address must match discovery on this native connection;
-  transport rescans and verifies the stored receiver identity before connecting.
+One helper playback/pairing session can be active per OS user. End it in the browser that owns it before switching browsers. Locks/leases coordinate helper instances, not arbitrary other AirPlay apps. Do not delete a lock inode or force another user's/session's state during maintenance.
 
-UTF-8 JSON is framed with a four-byte little-endian unsigned size. Maximum
-frame is 65536 bytes. Duplicates, non-finite numbers, unknown fields, invalid
-UTF-8, truncated/oversized frames and malformed URLs fail closed. Partial
-headers and bodies have 10-second deadlines; an idle port has no hold limit.
-URLs are bounded to 16384 characters, not normalized, and kept in memory only.
-Raw dependency logs, prints, exceptions and receiver names are not forwarded;
-receiver labels are the static `Apple TV`, and scan responses are bounded.
+## Verification
 
-Responses/events contain `v,id,ok,state,evidence,capabilities`, with static
-`error` when needed. Asynchronous events use `id:"event"`. Capabilities are
-exactly `hello,discover,start,status,stop`. `pause`/`resume` are recognized but
-return `unsupported`: no unverified rate-control capability is advertised.
-
-## What state means (important)
-
-Playback uses **the existing `spikes/002-command/command.py` Backend and
-Session**, encrypted upstream HAP/event channels, type-130 setup and the command
-queue. It does not invoke stock `play_url` or modify spikes. UDP timing remains
-49170, with no firewall changes. Setup/event waits are bounded; feedback and
-transport stay alive until receiver completion, failure, stop or port EOF.
-
-`playing` with `evidence:"protocol"` means a receiver playing event, **not moving
-video or audible sound**. Visual/audio verification requires a human TV trial.
-
-**Stop currently cancels and closes only this helper's transport.** It returns
-`stopped` with `evidence:"unverified"`; it does not prove that the TV stopped.
-Use the physical remote if needed. Restart accepts a fresh start after cleanup,
-not a promise of receiver-side seamless switching. Pause/resume are unsupported.
-
-An exclusive 0600 `helper.lock` under the secure Store directory prevents
-concurrent helper playback/pairing. The inode is intentionally retained and
-reused, never unlinked while another process could hold it. Locks are released
-on cleanup/process exit. This coordinates helpers, not independently executed
-old spikes or other AirPlay apps; do not run those concurrently.
-
-## Offline verification
+An existing Python 3.11+ environment can run the source helper tests:
 
 ```sh
 python3.11 -m unittest discover -s tests -p 'test_helper*.py' -q
-# In an isolated copy on Linux using the existing project venv:
-~/Projects/PearPlay/.venv/bin/python -m pytest tests -q
+node --test tests/extension/*.test.mjs tests/brand.test.mjs
 ```
 
-Tests exercise real framed subprocess launchers, exact-origin rejection,
-reversible installation in temporary config directories, real command Session
-with an injected network boundary, local-only stop/restart/EOF cleanup, locking,
-secure Store fixtures, validation and sanitization. They do not contact a TV,
-pair a real receiver, write real credentials or alter a browser configuration.
+These are developer verification commands, not a statement this entire checkout currently passes or an instruction to install tools. Offline/injected protocol, filesystem, registry and transport tests differ from real frozen/runtime/native-browser and human-TV results. Source-only Windows mocks on Mac/Linux cannot establish native Windows DPAPI or installer success. New platform workers must supply exact artifact hashes and native reports; [release gates](../docs/helper-onboarding.md#release-gates) and the [self-service checklist](../docs/cross-platform-preview.md#self-service-tv-check--instructions-not-a-completed-result) remain explicit.

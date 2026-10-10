@@ -5,14 +5,14 @@ import {tmpdir} from 'node:os';
 import {setTimeout as delay} from 'node:timers/promises';
 
 // Dedicated disposable profile; never attach to an existing browser or native host.
-export async function chromeSession({profileDirectory='',prepare=()=>{},isolateHome=false}={}) {
+export async function chromeSession({profileDirectory='',prepare=()=>{},isolateHome=false,headless=true}={}) {
   const binary = process.env.CHROME || ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome','/opt/google/chrome/chrome','/usr/bin/google-chrome'].find(existsSync);
   if (!binary) throw Error('Installed Google Chrome required; set CHROME. No download is performed.');
   const root=realpathSync(mkdtempSync(join(tmpdir(),'pearplay-brand-')));
   if(profileDirectory.split('/').includes('..')||profileDirectory.startsWith('/'))throw Error('Profile must remain inside owned root');
   const profile=join(root,profileDirectory);
   try {await prepare(root);}catch(error){rmSync(root,{recursive:true,force:true});throw error;}
-  const child=spawn(binary,['--headless=new','--disable-gpu',`--user-data-dir=${profile}`,'--remote-debugging-address=127.0.0.1','--remote-debugging-port=0','--enable-unsafe-extension-debugging','--no-first-run','--no-default-browser-check','--disable-background-networking','--disable-component-update','--disable-sync','--hide-scrollbars','about:blank'],{stdio:['ignore','ignore','pipe'],env:isolateHome?{...process.env,HOME:join(root,'home'),XDG_CONFIG_HOME:join(root,'home/.config')}:process.env});
+  const child=spawn(binary,[...(headless?['--headless=new']:[]),'--disable-gpu',`--user-data-dir=${profile}`,'--remote-debugging-address=127.0.0.1','--remote-debugging-port=0','--enable-unsafe-extension-debugging','--no-first-run','--no-default-browser-check','--disable-background-networking','--disable-component-update','--disable-sync','--hide-scrollbars','about:blank'],{stdio:['ignore','ignore','pipe'],env:isolateHome?{...process.env,HOME:join(root,'home'),XDG_CONFIG_HOME:join(root,'home/.config')}:process.env});
   let startupLog='';child.stderr.on('data',chunk=>{startupLog=(startupLog+chunk.toString()).slice(-2000);});
   let ws; let exited=false; child.on('exit',()=>{exited=true;});
   const pending=new Map(); let serial=0;

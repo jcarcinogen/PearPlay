@@ -13,7 +13,7 @@ test('editable identity has a transparent canvas and no external assets', () => 
 });
 test('required raster assets have exact dimensions', () => {
   const files = Object.fromEntries([16,32,48,128].map(n => [`extension/icons/icon${n}.png`,[n,n]]));
-  Object.assign(files, {'extension/icons/icon.png':[1024,1024], 'assets/store/icon-1024.png':[1024,1024], 'assets/landing/social-preview.png':[1280,640], 'assets/store/listing-light.png':[1280,800], 'assets/store/listing-dark.png':[1280,800]});
+  Object.assign(files, {'extension/icons/icon.png':[1024,1024], 'assets/store/icon-1024.png':[1024,1024], 'assets/landing/social-preview.png':[1280,640], 'assets/store/listing-light.png':[1280,800], 'assets/store/listing-dark.png':[1280,800], 'assets/store/listing-platforms.png':[1280,800], 'assets/store/promo-small-440x280.png':[440,280], 'assets/store/promo-marquee-1400x560.png':[1400,560]});
   for (const [file,[w,h]] of Object.entries(files)) {
     const png=read(file);
     assert.equal(png.subarray(1,4).toString(),'PNG',file);
@@ -39,28 +39,30 @@ test('public screenshots and Pages reflect reported browser playback without unw
     assert.doesNotMatch(content,/Brave\/Chromium unverified|Brave playback remains unverified|Brave registration is implemented; end-to-end integration remains unverified|TV pause\/resume unavailable|not a live TV claim|not a live-playback claim|LG HLS/i,path);
   }
   for(const path of ['assets/store/listing-light.html','assets/store/listing-dark.html','assets/landing/page.html']) {
-    assert.match(read(path).toString(),/Chrome, Brave (?:and |&amp; )?Chromium/i,path);
+    assert.match(read(path).toString(),/Chrome, Brave (?:and |&amp; |& )?Chromium/i,path);
   }
 });
 
-test('current product pages consistently present Linux-only scope', () => {
+test('current product pages distinguish cross-platform preview from published support', () => {
   for (const path of ['README.md','helper/README.md','docs/install.md','docs/helper-onboarding.md','docs/web-store-readiness.md','docs/privacy.md','docs/positioning.md','docs/claims.md','docs/index.html','docs/store-listing.md','assets/landing/page.html','assets/landing/hero.html','assets/landing/social-preview.html','assets/store/listing-light.html','assets/store/listing-dark.html']) {
     const content=read(path).toString();
-    assert.match(content,/Mac support is coming soon\./,path);
-    assert.doesNotMatch(content,/Linux and macOS|Linux\/macOS|macOS or Linux|macOS playback unverified|id="mac"|data-copy="mac"/,path);
+    assert.match(content,/Mac|macOS/,path);
+    assert.match(content,/Windows/,path);
+    assert.match(content,/preview|development|unpublished/i,path);
+    assert.doesNotMatch(content,/Mac support is coming soon\.|Windows is not supported/,path);
   }
 });
 
 test('onboarding keeps the established manifest permissions and identity', () => {
   const m=JSON.parse(read('extension/manifest.json'));
-  assert.equal(m.version,'0.2.8');
+  assert.equal(m.version,'0.3.0');
   assert.deepEqual(m.permissions,['activeTab','scripting','webRequest','webNavigation','nativeMessaging','alarms','storage']);
   assert.deepEqual(m.optional_host_permissions,['http://*/*','https://*/*']);
 });
 
 test('landing template stays synchronized with the edited site (preserved install edits)', () => {
   const page=read('assets/landing/page.html').toString();
-  for (const phrase of ['Flatpak-installed','Chrome Web Store','currently 0.2.6','Fedora helper','Store installs do not need that folder','Closing only a tab or reloading the extension is not enough']) {
+  for (const phrase of ['Flatpak-installed','Chrome Web Store','0.3.0','Fedora helper','Store installs do not need that folder','Closing only a tab or reloading the extension is not enough']) {
     assert.match(page,new RegExp(phrase.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')),phrase);
   }
   assert.doesNotMatch(page,/not yet submitted or public/);
@@ -71,7 +73,8 @@ test('compact popup and marketing frames use 400px width, not the old 360px view
   assert.match(read('extension/popup.html').toString(),/width:400px/);
   for (const path of ['assets/store/listing-light.html','assets/store/listing-dark.html']) {
     const c=read(path).toString();
-    assert.match(c,/width:400px/,path);
+    assert.match(c,/campaign\.css/,path);
+    assert.match(read('assets/store/campaign.css').toString(),/width:400px/);
     assert.doesNotMatch(c,/width:360px/,path);
   }
   const page=read('assets/landing/page.html').toString();

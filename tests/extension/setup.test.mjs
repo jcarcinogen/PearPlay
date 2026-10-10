@@ -6,7 +6,7 @@ import {readFileSync} from 'node:fs';
 test('helper setup emphasizes a full browser restart after connecting', () => {
   const html=readFileSync(new URL('../../extension/setup.html',import.meta.url),'utf8');
   for (const section of [html.match(/<ol id="linux"[\s\S]*?<\/ol>/)?.[0],
-      html.match(/<details open>[\s\S]*?<\/details>/)?.[0],
+      html.match(/<details\b[^>]*\bid="archSteps"[^>]*>[\s\S]*?<\/details>/)?.[0],
       html.match(/<p id="packagedRepair">[\s\S]*?<\/p>/)?.[0]]) {
     assert.match(section,/<strong>Fully quit and reopen (?:the browser|it)\.<\/strong>/);
   }

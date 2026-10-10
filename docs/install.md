@@ -1,29 +1,29 @@
 # Install PearPlay
 
-**Linux only. Mac support is coming soon.** No Mac installation is offered while compatibility work is paused.
+**Cross-platform development preview.** Linux has published packages; Mac and Windows helpers are active candidate work with no public installer links yet. Safari extension development is paused. See [candidate artifacts, safety and self-service TV checks](cross-platform-preview.md). Do not treat source-only files as an installer or disable Gatekeeper, remove quarantine, or disable SmartScreen/Defender. For a deliberately trusted unsigned Mac preview, see the [Mac installation guide with screenshots](mac-install.md), including Apple’s optional per-item Open Anyway route and clear stop conditions.
 
-## Guided setup — Linux helper 0.2.5 preview
+## Guided setup — published Linux helper 0.2.8
 
 The extension opens a setup tab on first installation. Use **Helper setup** in the popup to reopen it. A successful check is a local helper handshake, not TV playback. Choose **Find my TV** only when you want network discovery.
 
 The Linux package supplies Python and dependencies. Open **PearPlay Setup**, select your browser, **fully quit and reopen it**, then choose **Check connection**. Later launches offer repair and disconnection. Website permissions remain separate.
 
-Download from the **[0.2.5 helper release](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5)**:
+Download from the **[0.2.8 helper release](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.8)**:
 
-- [Ubuntu/Debian x86_64 `.deb`](https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.deb): Ubuntu 24.04 baseline, glibc 2.39+.
-- [Arch/Omarchy x86_64 package](https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.pkg.tar.zst): glibc 2.44+.
+- [Ubuntu/Debian x86_64 `.deb`](https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.8/pearplay-helper-0.2.8-linux-x86_64.deb): Ubuntu 24.04 baseline, glibc 2.39+.
+- [Arch/Omarchy x86_64 package](https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.8/pearplay-helper-0.2.8-linux-x86_64.pkg.tar.zst): glibc 2.44+.
 
-[Fedora 44 x86_64 RPM](https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.5/pearplay-helper-0.2.5-linux-x86_64.rpm) is also published, requiring glibc 2.43+. See [Fedora instructions and limits](fedora-install.md). No ARM package is offered. The existing Store extension is 0.2.6; the 0.2.7 update adds the compact popup and clearer errors. Packages are unsigned: use the trusted GitHub release, compare Debian/Arch with `SHA256SUMS.txt` and Fedora with `pearplay-helper-0.2.5-linux-x86_64.rpm.sha256`, and use normal package-manager authentication without disabling security. Checksums detect mismatched bytes; they are not a signing certificate.
+[Fedora 44 x86_64 RPM](https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.8/pearplay-helper-0.2.8-linux-x86_64.rpm) is also published, requiring glibc 2.43+. See [Fedora instructions and limits](fedora-install.md). No Linux ARM package is offered. Packages are unsigned: use the trusted GitHub release, compare all three packages with its `SHA256SUMS`, and use normal package-manager authentication without disabling security. Checksums detect mismatched bytes; they are not a signing certificate.
 
-Install the extension from the **[Chrome Web Store](https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol)** (currently 0.2.6). The pending 0.2.7 update adds a compact popup and clearer errors. To test that update before Store approval, load this repository’s `extension/` directory using Chrome’s **Load unpacked**. The pinned public key supplies the matching production identity. The packaged helper requires no Python setup or manual extension-ID command.
+The **[Chrome Web Store item](https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol)** is public. Newest STATUS reports Scott's 0.2.8 submission/publication without independent live-Store verification; 0.2.9 was prepared separately. To test this local 0.3.0 candidate, load this repository's `extension/` with **Load unpacked**; it is not a published Store update. Its pinned public key supplies the matching production identity. The packaged helper requires no Python setup or manual extension-ID command.
 
 End casting and quit browsers before updating the package. Chrome Web Store updates do not update the helper. Disconnect browsers before package removal; saved TV pairing is preserved. Modified or unknown registrations are never overwritten or deleted. Remove a legacy source registration using its original installer before switching helper types.
 
-Chrome is the Linux playback baseline. Brave and Chromium registration exist, but playback needs separate verification. Snap/Flatpak browsers, beta/dev channels and custom layouts are not supported installer targets.
+Chrome is the Linux picture-and-sound baseline. Brave and Chromium have prior owner-reported playback, with audio/stream details not separately recorded; these are not new candidate tests. Snap/Flatpak browsers, beta/dev channels and custom layouts are not supported installer targets. Mac Chrome/Brave share one native-host registration (disconnect affects both); Chromium is separate. Windows candidate targets per-user Chrome/HKCU and DPAPI, not portable cross-OS pairing.
 
 ## Graphical `.deb` installation — verified Xubuntu route
 
-For the published `.deb`, the tested Xubuntu route is:
+Historical helper 0.2.5 graphical evidence (not a new 0.2.8/0.3.0 GUI pass): the tested Xubuntu route was:
 
 1. In the file manager, right-click the downloaded PearPlay `.deb` and choose **Open With → App Center**.
 2. Choose **Install**. Read the third-party-package warning and proceed only with a package you obtained from the trusted PearPlay release. Approve the normal administrator prompt if your system requires one; no security setting needs to be disabled.
@@ -37,7 +37,7 @@ Ubuntu/Debian, after downloading the matching package:
 
 ```sh
 cd ~/Downloads
-sudo apt install ./pearplay-helper-0.2.5-linux-x86_64.deb
+sudo apt install ./pearplay-helper-0.2.8-linux-x86_64.deb
 ```
 
 ### Arch / Omarchy — step-by-step installation
@@ -48,7 +48,7 @@ Without a graphical package installer, use the **Terminal** app. Do not extract 
 2. Open **Terminal**, paste this whole command, and press Enter:
 
    ```sh
-   sudo pacman -U "$HOME/Downloads/pearplay-helper-0.2.5-linux-x86_64.pkg.tar.zst"
+   sudo pacman -U "$HOME/Downloads/pearplay-helper-0.2.8-linux-x86_64.pkg.tar.zst"
    ```
 
 3. If asked, type your computer password and press Enter. **Nothing appears while you type the password—that is normal.** Review the installation prompt, then type **Y** and press Enter to continue. Wait until installation finishes.
@@ -61,7 +61,7 @@ For the Arch command above, move the package into Downloads first if your browse
 
 ## Source installation — Linux developer fallback
 
-These instructions apply to Linux only. Mac source/runtime research is retained as paused history, not current setup advice.
+These source-install commands apply to Linux only. The [Mac/Windows preview](cross-platform-preview.md#start-with-the-right-helper) uses supplied tested platform artifacts, not this Linux shell/venv path. The old Mac Terminal installer is historical, not the resumed app/pkg route.
 
 ## Before you start
 
@@ -135,9 +135,9 @@ TV pause/resume are unavailable. **End helper session** closes local transport a
 
 ## Linux timing and network troubleshooting
 
-The tested Linux host required inbound UDP timing on port 49170 from the selected Apple TV. A local administrator should scope any needed firewall exception to that receiver, not the entire internet or LAN. Do not disable the firewall or blindly paste an example IP into a rule. This guide intentionally supplies no broad allow command. The published 0.2.5 helper does not modify firewall or DNS settings.
+The tested Linux host required inbound UDP timing on port 49170 from the selected Apple TV on the authenticated command route. No-PIN V1 receivers may not require this timing path. A local administrator should scope any needed firewall exception to that receiver, not the entire internet or LAN. Do not disable the firewall or blindly paste an example IP into a rule. This guide intentionally supplies no broad allow command; installation does not create firewall rules.
 
-**Unreleased source work:** a newer helper/extension pair adds **TV firewall permission** below the selected TV. It checks saved UFW settings without administrator access. You can explicitly approve a permission for that TV's address and UDP 49170 only; the system then asks for administrator approval, which you can cancel. The installer still adds no rules. PearPlay-created permissions can be removed from the same panel; existing administrator rules are left alone. Other firewalls require manual review. Source/extracted diagnostic helpers cannot perform privileged changes. This feature is not yet available in the published packages and still needs a packaged Linux authentication/rollback test.
+**Linux scoped assistance:** compatible helper/extension versions can expose **TV firewall permission** for timing-required receivers. Saved UFW settings can be checked without administrator access; an explicit permission change requests normal administrator approval for that selected receiver and UDP 49170 only. You may cancel it. Existing administrator rules remain; other firewalls need manual review. Source/extracted diagnostic helpers cannot perform privileged changes. The newest STATUS/package evidence supersedes older blanket "unreleased" helper claims; a new cross-platform candidate still needs its own acceptance. Mac and Windows do not inherit Linux UFW management.
 
 A saved UFW rule is not proof that packets arrive, and a missing exact rule does not mean traffic is blocked: a broader existing rule may already allow it. No firewall permission fixes an unsupported video or incompatible TV.
 
@@ -156,4 +156,4 @@ If the original install included `--pythonpath`, include the identical argument.
 
 ## Evidence and scope
 
-Installer arguments and path handling: [helper/install.py](../helper/install.py). Native contract, identity checks, state meaning and privacy: [contract/v1.md](../contract/v1.md). Human playback results: [STATUS.md](../STATUS.md), newest first. These are manual instructions reviewed against source; this Linux-only scope update did not perform a new daily-profile installation or playback trial.
+Installer arguments and path handling: [helper/install.py](../helper/install.py). Native contract, identity checks, state meaning and privacy: [contract/v1.md](../contract/v1.md). Human playback results: [STATUS.md](../STATUS.md), newest first. These docs/setup changes performed no daily-profile installation, credential access or TV trial. Native platform artifact evidence remains separate from the cross-platform intent.

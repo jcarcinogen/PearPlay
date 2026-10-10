@@ -164,9 +164,23 @@ class PlaybackTraceIntegration(unittest.IsolatedAsyncioTestCase):
 
     async def test_startup_override_extends_only_the_playing_wait(self):
         m=load(); command=m.spike()
+        # Schedule the fixture event relative to the wait under test, not the
+        # first of four command messages (slow VM setup may already exceed it).
+        class WaitWire(self.PlayingWire):
+            async def request(self, stage, body=None, headers=None):
+                return {} if stage == 'command' else await super().request(stage, body, headers)
+        original_play = command.Session.play
+        async def delayed_play(session, timeout):
+            def fire():
+                session.on_event({'type':'playbackState','name':'playing'})
+                session.on_event({'type':'playbackState','name':'stopped'})
+            timer = asyncio.get_running_loop().call_later(0.05, fire)
+            try: return await original_play(session, timeout)
+            finally: timer.cancel()
+        command.Session.play = delayed_play
         async def run_with(startup):
             with tempfile.TemporaryDirectory() as directory:
-                t, device = self.make_transport(m, command, directory, timeout=0.01, startup_timeout=startup, backend=self.PlayingWire)
+                t, device = self.make_transport(m, command, directory, timeout=0.01, startup_timeout=startup, backend=WaitWire)
                 notices=[]
                 try:
                     await t.run(dict(receiver=device.identifier,host='127.0.0.1',url='https://example.test/a.mp4'), lambda *x:notices.append(x))

@@ -41,7 +41,7 @@ export class Native {
  if(pending?.op==='firewall'){clearTimeout(pending.timer);this.pending.delete(m.id);if(m.ok&&m.firewall)pending.resolve(safeFirewall(m.firewall));else pending.reject(Error('HELPER_ERROR'));return;}
  if(pending&&pending.serial<this.applied){clearTimeout(pending.timer);this.pending.delete(m.id);if(m.ok)pending.resolve(this.view());else pending.reject(Error('HELPER_ERROR'));return;}
  this.applied=pending?.serial??this.serial;
- const receivers=Array.isArray(m.receivers)?m.receivers.slice(0,64).map((r,i)=>({identifier:r.identifier,address:r.address,...(r.timingRequired===false?{timingRequired:false}:{}),label:r.kind==='apple-tv'?`Apple TV (${r.address})`:r.kind==='airplay-video'?`AirPlay TV (${r.address}) — compatibility unverified`:`Receiver ${i+1} (${r.address})` })):this.state.receivers;
+ const receivers=Array.isArray(m.receivers)?m.receivers.slice(0,64).map((r,i)=>({identifier:r.identifier,address:r.address,...(r.timingRequired===false?{timingRequired:false}:{}),label:r.kind==='apple-tv'?`Apple TV (${r.address})`:r.kind==='airplay-video'?`AirPlay TV (${r.address}) — playback unverified`:`Receiver ${i+1} (${r.address})` })):this.state.receivers;
  const codes=['pairing_required','pairing_failed','busy','transport_failed','receiver_not_discovered','receiver_unavailable','discovery_failed'];
  const code=m.ok?null:(codes.includes(m.error)?m.error:'HELPER_ERROR');
  const preserve=m.ok&&pending&&['hello','status','discover'].includes(pending.op)&&this.state.error&&codes.includes(this.state.error)?this.state.error:null;

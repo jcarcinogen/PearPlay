@@ -35,7 +35,7 @@ try {
    if(!result.busy)break;await delay(100);
   }
   assert.equal(result.busy,false);assert.match(result.text,/Found \d+ AirPlay TVs?/);
-  assert.match(result.text,/Apple TV \(/);assert.match(result.text,/compatibility unverified/);
+  assert.match(result.text,/Apple TV \(/);assert.match(result.text,/playback unverified/);
   assert.doesNotMatch(result.text,/undefined|Sonos/);
   rounds.push({seconds:Math.round((Date.now()-start)/10)/100,appleTV:true,otherVideoReceiver:true,unverifiedLabel:true});
  }

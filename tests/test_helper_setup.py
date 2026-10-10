@@ -15,7 +15,7 @@ class SetupTests(unittest.TestCase):
             binary = root/'PearPlayHelper'
             binary.write_text('#!/bin/sh\nexit 0\n')
             binary.chmod(0o700)
-            common = dict(extension_id='a'*32, config_parent=root/'config', executable=binary)
+            common = dict(extension_id='a'*32, config_parent=root/'config', executable=binary, platform='linux')
             registrations = []
             for browser in ('chrome', 'brave', 'chromium'):
                 paths = installer.install(browser=browser, **common)

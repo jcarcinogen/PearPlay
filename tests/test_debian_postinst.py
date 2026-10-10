@@ -22,10 +22,19 @@ def run_hook(fixture,script,action='configure',binds=()):
         pytest.skip('requires Linux bubblewrap user namespaces; exercised on Acer')
     hook=fixture/'postinst';hook.write_text(script);hook.chmod(0o755)
     libraries=[arg for path in ('/lib','/lib64') if Path(path).exists() for arg in ('--ro-bind',path,path)]
-    return subprocess.run(['bwrap','--unshare-all','--uid','0','--gid','0','--die-with-parent','--bind',str(fixture),'/',
-                           '--ro-bind','/usr','/usr','--symlink','usr/bin','/bin',*libraries,
-                           '--dev','/dev','--proc','/proc',*binds,'--','/bin/sh','/postinst',action],
-                          capture_output=True,text=True,timeout=15)
+    sandbox=['bwrap','--unshare-all','--uid','0','--gid','0','--die-with-parent','--bind',str(fixture),'/',
+             '--ro-bind','/usr','/usr','--symlink','usr/bin','/bin',*libraries,
+             '--dev','/dev','--proc','/proc',*binds,'--']
+    # A denied sandbox is not a successful negative/security assertion. Probe
+    # the identical namespace/mount boundary before testing any hook behavior.
+    probe=subprocess.run([*sandbox,'/bin/true'],capture_output=True,text=True,timeout=15)
+    if probe.returncode:
+        if probe.stderr.startswith('bwrap:') and any(message in probe.stderr for message in ('Operation not permitted','Permission denied')):
+            pytest.skip('BLOCKED: host policy denied bubblewrap fixture; no hook coverage: '+probe.stderr.strip())
+        pytest.fail('bubblewrap fixture could not start: '+probe.stderr.strip())
+    result=subprocess.run([*sandbox,'/bin/sh','/postinst',action],capture_output=True,text=True,timeout=15)
+    assert not result.stderr.startswith('bwrap:'), 'sandbox failed before hook: '+result.stderr
+    return result
 
 def test_configure_repairs_only_packaged_runtime_directories(tmp_path):
     stage=tmp_path/'stage';(stage/'opt/pearplay/PearPlayHelper/_internal').mkdir(parents=True)

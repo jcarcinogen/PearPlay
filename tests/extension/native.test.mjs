@@ -19,7 +19,7 @@ test('video receiver kinds render static compatibility labels instead of trustin
  {identifier:'b',address:'192.0.2.20',kind:'airplay-video',label:'https://secret.test'}]});
  const result=await pending;
  assert.match(result.receivers[0].label,/Apple TV/);
- assert.match(result.receivers[1].label,/compatibility unverified/);
+ assert.match(result.receivers[1].label,/playback unverified/);
  assert.doesNotMatch(JSON.stringify(result),/SECRET|secret.test/);
 });
 test('discovery gets a separate deadline longer than ordinary requests',async()=>{

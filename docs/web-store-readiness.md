@@ -1,6 +1,27 @@
-# Chrome Web Store 0.2.7 update preparation — update not submitted
+# Chrome Web Store readiness — cross-platform development preview
 
-**Linux only. Mac support is coming soon.** Mac compatibility work is paused and is not a Linux release blocker.
+Current candidate: extension 0.3.0, permanent identity `eoadahoncjfpnennmkjifohclbafjkol`, published Linux helper 0.2.8 catalog only. Mac/Windows helper candidates are active, without public URLs or human-observed playback claims. Safari extension development is paused. This work authorizes no commit, push, submission or publication.
+
+Newest [STATUS](../STATUS.md) supersedes the 0.2.7-era material below: Linux 0.2.8 was published with matching anonymous downloads and recorded exact-package/native/watched evidence; Scott reports submitting/publishing Store 0.2.8 without independent public-version confirmation; 0.2.9 follow-up ZIP was prepared separately. Existing frozen release kits are historical and must not be overwritten.
+
+## Current candidate gates
+
+- [ ] Exact final source/ZIP version, permanent key/ID, permissions and native origin allowlist reconciled.
+- [ ] Platform-native helper artifacts/checksums, clean install/restart/repair/update/disconnect/removal and fresh missing negative controls for each advertised OS/browser/architecture. Mac Chrome/Brave registration is shared; Windows targets per-user Chrome HKCU and user-local DPAPI, not portable pairing.
+- [ ] Mac Developer ID Application/Installer signing, notarization, Gatekeeper-approved clean download/install and Local Network consent/deny/retry/update persistence. Ad-hoc signing is not a consumer pass. No quarantine removal/security bypass.
+- [ ] Windows bundled installer/native Chrome/HKCU/ACL/DPAPI evidence and normal unsigned-block/distribution-signing handling, without SmartScreen/Defender bypass.
+- [ ] Human TV picture/audio/spinner/stop/recast/restart-pairing checks per new platform. Prior Linux Chrome/Brave/Chromium owner confirmation is retained, not a new candidate test; LG HLS remains unresolved.
+- [ ] Real Mac/Windows URLs added only after independently verified publication and anonymous downloaded hashes. Final production catalog/ZIP excludes fixture keys and `localInstallerTest`. Unpublished platforms show unavailable links.
+- [ ] Parent-owned premium art/landing generated from final actual UI, privacy/description/reviewer instructions aligned and final self-service checklist exercised. Synthetic captures remain labeled UI evidence.
+- [ ] New explicit owner authorization before any source/release/Store publication, then exact target/dashboard/public read-back.
+
+Single purpose: send a user-selected compatible browser video URL to a user-selected AirPlay TV through an explicitly installed local helper. The permission explanations below remain a starting inventory, not final declarations. Opening onboarding sends a local connection check; TV discovery is a deliberate click. Disclose all-sites access accurately, HTTP support, local URL/title/receiver/pairing processing and direct receiver fetch. No telemetry is not no network. Current draft: [listing](store-listing.md), [privacy](privacy.md), [preview gates](cross-platform-preview.md).
+
+## Historical 0.2.7 preparation record — superseded, not current instructions
+
+The remainder preserves the earlier evidence/acceptance ledger as history. Its then-current versions, paused-Mac wording, incomplete gates and upload instructions do not apply to the resumed cross-platform candidate. Do not rerun historical upload or installer steps from it.
+
+**Historical 0.2.7 scope was Linux-only, with Mac work deferred and excluded from Linux release gates.** This is not the current candidate scope.
 
 ## Deliverables and identity
 
@@ -27,7 +48,7 @@ The final upload artifact is `pearplay-0.2.7.zip` in `Stuff/PearPlay/Web Store/0
 | `storage` | Session-only popup receiver/selection continuity. Recheck actual storage use before final submission. |
 | optional `http://*/*`, `https://*/*` | Find compatible video resources across user-authorized sites and their media frames/CDNs. Host access is requested by the UI rather than granted at install. Current Find videos flow's broad-grant requirement must be accurately explained. |
 
-No remotely hosted JavaScript is loaded by the extension. A separately downloaded native helper is not silently installed or executed by the Web Store extension. Store disclosure must say a separate Linux helper package is required. Mac support is coming soon; no Mac installer or installation workaround is offered.
+No remotely hosted JavaScript is loaded by the extension. A separately downloaded native helper is not silently installed or executed by the Web Store extension. Historical 0.2.7 Store disclosure required a separate Linux helper package and offered no Mac installer or workaround. The current draft above adds explicitly qualified Mac/Windows candidate intent without fabricated public links.
 
 ## Privacy and reviewer instructions
 

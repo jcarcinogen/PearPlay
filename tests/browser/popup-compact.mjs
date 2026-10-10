@@ -17,6 +17,11 @@ const c = await chromeSession({prepare: temp => {
   const manifest = JSON.parse(readFileSync(join(extension, 'manifest.json')));
   manifest.key = JSON.parse(readFileSync(join(root, 'tests/browser/fixture-key.json'))).key;
   writeFileSync(join(extension, 'manifest.json'), JSON.stringify(manifest));
+  // Setup can open automatically on fixture install. Never let that page's
+  // handshake reach Scott's production native host, even outside our UI seam.
+  const worker=readFileSync(join(extension,'worker.mjs'),'utf8');
+  assert.ok(worker.includes('com.pearplay.helper'));
+  writeFileSync(join(extension,'worker.mjs'),worker.replace('com.pearplay.helper','com.pearplay.ui_test_absent'));
 }});
 const results = [];
 try {
@@ -28,6 +33,7 @@ try {
   await c.send('Emulation.setDeviceMetricsOverride', {width:400,height:600,deviceScaleFactor:1,mobile:false}, sessionId);
   await c.send('Page.addScriptToEvaluateOnNewDocument', {source:readFileSync(join(root, 'tests/browser/brand-fixture.js'), 'utf8')}, sessionId);
   await c.send('Page.navigate', {url:`chrome-extension://${id}/popup.html`}, sessionId);
+  await c.send('Page.bringToFront', {}, sessionId);
   for (let i=0; i<100; i++) {
     if (await c.evaluate(sessionId, `document.readyState==='complete' && window.__fixture?.calls.some(x=>x.op==='discover')`)) break;
     await delay(50);
@@ -59,12 +65,14 @@ try {
   for (const [state, setup, control, hidden] of scenarios) {
     // New document per case: PIN/action lexical state must not leak between fixtures.
     await c.send('Page.navigate',{url:`chrome-extension://${id}/popup.html?case=${state}`},sessionId);
+    await c.send('Page.bringToFront', {}, sessionId);
     for(let i=0;i<100;i++) {
       if(await c.evaluate(sessionId,`location.search==='?case=${state}' && document.readyState==='complete' && !!__fixture?.calls.some(x=>x.op==='discover')`)) break;
       await delay(50);
     }
     await c.evaluate(sessionId, setup);
     await delay(2200); // Production refresh interval, no synthetic click bypass.
+    if(state==='pin') {await c.evaluate(sessionId,`document.getElementById('pairRestart').click()`);await delay(100);}
     const m = await c.evaluate(sessionId, `(()=>{const e=document.getElementById(${JSON.stringify(control)});return {height:document.body.scrollHeight,width:document.body.scrollWidth,hidden:e.hidden,sendBottom:document.getElementById('start').getBoundingClientRect().bottom,helpOpen:document.getElementById('helpDetails').open,firewallOpen:document.getElementById('firewallBox').open}})()`);
     if (state==='sent' || state.startsWith('unsupported_') || state==='incomplete_advertisement' || state==='reset') {
       const status = await c.evaluate(sessionId, `({badge:document.getElementById('phase').textContent,text:document.getElementById('tvStatus').textContent,disabled:document.getElementById('start').disabled,pinCalls:__fixture.calls.filter(x=>x.op==='pairBegin').length})`);

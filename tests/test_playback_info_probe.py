@@ -255,6 +255,7 @@ class TransportProbeIntegrationTests(unittest.IsolatedAsyncioTestCase):
     class Connection:
         def __init__(self):
             self.gets = []
+            self.two_queries = asyncio.Event()
             self.responses = []
             self.closed = False
             # Model the pyatv HttpConnection seam the streaming probe guard depends on.
@@ -270,7 +271,7 @@ class TransportProbeIntegrationTests(unittest.IsolatedAsyncioTestCase):
         def close(self):
             self.closed = True
 
-    def make_backend(self, playing_delay=0.05):
+    def make_backend(self, playing_delay=0.05, after_probes=False):
         class Wire:
             def __init__(self, connection, credentials, timeout, report, stage):
                 self.connection = connection
@@ -279,6 +280,7 @@ class TransportProbeIntegrationTests(unittest.IsolatedAsyncioTestCase):
                 self.closed = False
                 self.timing_port = None
                 self.callback = None
+                self.event_task = None
             async def timing(self, port):
                 self.timing_port = port
             async def request(self, stage, body=None, headers=None):
@@ -292,17 +294,28 @@ class TransportProbeIntegrationTests(unittest.IsolatedAsyncioTestCase):
                         def fire():
                             self.callback({'type': 'playbackState', 'name': 'playing'})
                             self.callback({'type': 'playbackState', 'name': 'stopped'})
-                        loop.call_later(playing_delay, fire)
+                        if after_probes:
+                            # Probe scheduling has its own deadline tests. This
+                            # integration fixture ends only after both queries,
+                            # rather than racing a 50ms wall clock on slow VMs.
+                            if self.event_task is None:
+                                async def finish():
+                                    await self.connection.two_queries.wait()
+                                    fire()
+                                self.event_task = loop.create_task(finish())
+                        else:
+                            loop.call_later(playing_delay, fire)
                 return {}
             async def events(self, port, callback):
                 self.callback = callback
             def close(self):
                 self.closed = True
+                if self.event_task is not None: self.event_task.cancel()
         return Wire
 
     def make_transport(self, m, command, directory, *, probe_playback_info=None,
                        probe_timeout=0.1, probe_delays=(0.01, 0.03), timeout=1.0,
-                       startup_timeout=None, playing_delay=0.05):
+                       startup_timeout=None, playing_delay=0.05, after_probes=False):
         device = SimpleNamespace(identifier='AA:BB:CC:DD:EE:FF', address='127.0.0.1',
                                  get_service=lambda _: SimpleNamespace(port=7000))
 
@@ -319,10 +332,16 @@ class TransportProbeIntegrationTests(unittest.IsolatedAsyncioTestCase):
         store.save(dict(identifier=device.identifier, credentials='private-credential'))
         t = m.Transport(api=SimpleNamespace(scan=scan, Protocol=SimpleNamespace(AirPlay=1)),
                         command=command, store=store, connect=connect, parse=lambda x: x,
-                        backend=self.make_backend(playing_delay), timeout=timeout,
+                        backend=self.make_backend(playing_delay, after_probes), timeout=timeout,
                         startup_timeout=startup_timeout,
                         probe_playback_info=probe_playback_info, probe_timeout=probe_timeout,
                         probe_delays=probe_delays)
+        if after_probes:
+            original_probe = t._probe_playback_info
+            async def completed_probes(delays):
+                await original_probe(delays)
+                connection.two_queries.set()
+            t._probe_playback_info = completed_probes
         return t, device, connection
 
     def url(self):
@@ -335,7 +354,7 @@ class TransportProbeIntegrationTests(unittest.IsolatedAsyncioTestCase):
             records.append((kind, dict(fields)))
         with tempfile.TemporaryDirectory() as directory:
             t, device, connection = self.make_transport(m, command, directory,
-                                                        probe_playback_info='origin-mp4')
+                                                        probe_playback_info='origin-mp4', after_probes=True)
             t.trace = trace
             await t.run(dict(receiver=device.identifier, host='127.0.0.1', url=self.url()),
                         lambda *x: None)
@@ -391,7 +410,7 @@ class TransportProbeIntegrationTests(unittest.IsolatedAsyncioTestCase):
         notices = []
         with tempfile.TemporaryDirectory() as directory:
             t, device, connection = self.make_transport(m, command, directory,
-                                                        probe_playback_info='origin-mp4')
+                                                        probe_playback_info='origin-mp4', after_probes=True)
             await t.run(dict(receiver=device.identifier, host='127.0.0.1', url=self.url()),
                         lambda *x: notices.append(x))
         self.assertIn(('playing', 'protocol'), notices)

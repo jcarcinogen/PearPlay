@@ -187,12 +187,192 @@ class StartupFeedbackTests(unittest.IsolatedAsyncioTestCase):
         session = command.Session(wire, timeout=1.0, feedback_interval=0.02)
         task = asyncio.create_task(session.run(49170, 'https://example.org/a.mp4', 10.0))
         await asyncio.sleep(0.06)
+        feedback = session._feedback_task
+        self.assertIsNotNone(feedback)
         task.cancel()
         with self.assertRaises(asyncio.CancelledError):
             await task
+        self.assertTrue(task.cancelled())
+        self.assertTrue(feedback.cancelled())
         self.assertTrue(wire.closed)
         self.assertIsNone(session._feedback_task)
         self.assertFalse([t for t in asyncio.all_tasks() if t is not asyncio.current_task()])
+
+    async def assert_cancelled_promptly(self, task):
+        # asyncio.wait does not cancel the task when this test guard expires.
+        # Rescue only after recording failure, so a swallowed cancel stays red.
+        done, _ = await asyncio.wait({task}, timeout=0.1)
+        try:
+            self.assertIn(task, done, 'cancellation was swallowed at completion')
+            with self.assertRaises(asyncio.CancelledError):
+                await task
+            self.assertTrue(task.cancelled())
+        finally:
+            if not task.done():
+                task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
+
+    async def test_feedback_cancel_at_request_completion_is_not_swallowed(self):
+        for boundary in ('command-resend', 'feedback'):
+            with self.subTest(boundary=boundary):
+                command = load().spike()
+                task = None
+
+                class CompletionWire(StandaloneWire):
+                    async def request(self, stage, body=None, headers=None):
+                        result = await super().request(stage, body, headers)
+                        if stage == boundary:
+                            # Complete the child in the same turn as cancelling
+                            # its owner: the Python 3.11 wait_for race.
+                            assert task is not None
+                            task.cancel()
+                        return result
+
+                wire = CompletionWire([], playing_delay=None)
+                session = command.Session(wire, timeout=1.0, feedback_interval=0.02)
+                task = asyncio.create_task(session._feedback_loop())
+                await self.assert_cancelled_promptly(task)
+                self.assertFalse([t for t in asyncio.all_tasks()
+                                  if t is not asyncio.current_task()])
+
+    async def test_run_cancel_at_startup_completion_is_not_swallowed(self):
+        for boundary in ('authenticate', 'events', 'playing'):
+            with self.subTest(boundary=boundary):
+                command = load().spike()
+                task = None
+
+                class CompletionWire(StandaloneWire):
+                    async def request(self, stage, body=None, headers=None):
+                        result = await super().request(stage, body, headers)
+                        if stage == boundary:
+                            assert task is not None
+                            task.cancel()
+                        return result
+
+                    async def events(self, port, callback):
+                        if boundary == 'events':
+                            assert task is not None
+                            task.cancel()
+
+                class CompletionEvent(asyncio.Event):
+                    async def wait(self):
+                        result = await super().wait()
+                        assert task is not None
+                        task.cancel()
+                        return result
+
+                wire = CompletionWire([], playing_delay=None)
+                session = command.Session(wire, timeout=1.0, feedback_interval=0.02)
+                if boundary == 'playing':
+                    session.playing = CompletionEvent()
+                    session.playing.set()
+                task = asyncio.create_task(session.run(49170, 'https://example.org/a.mp4', 10.0))
+                await self.assert_cancelled_promptly(task)
+                self.assertTrue(wire.closed)
+                self.assertIsNone(session._feedback_task)
+                self.assertFalse([t for t in asyncio.all_tasks()
+                                  if t is not asyncio.current_task()])
+
+    async def test_repeated_cancel_waits_for_feedback_cleanup_before_closing(self):
+        for outcome in ('cancel', 'complete-then-cancel', 'deadline'):
+            with self.subTest(outcome=outcome):
+                command = load().spike()
+                entered = asyncio.Event()
+                cleaning = asyncio.Event()
+                release = asyncio.Event()
+                cleaned = asyncio.Event()
+
+                class CleanupWire(StandaloneWire):
+                    async def request(self, stage, body=None, headers=None):
+                        if stage == 'command-resend':
+                            entered.set()
+                            try:
+                                await asyncio.Event().wait()
+                            finally:
+                                cleaning.set()
+                                await release.wait()
+                                cleaned.set()
+                        return await super().request(stage, body, headers)
+
+                wire = CleanupWire([], playing_delay=None)
+                session = command.Session(wire, timeout=1.0, feedback_interval=0.02)
+                duration = 0.05 if outcome == 'deadline' else 10.0
+                task = asyncio.create_task(session.run(49170, 'https://example.org/a.mp4', duration))
+                try:
+                    await asyncio.wait_for(entered.wait(), 0.1)
+                    feedback = session._feedback_task
+                    if outcome != 'cancel':
+                        session.playing.set()
+                        session.finished.set()
+                    else:
+                        task.cancel()
+                    await asyncio.wait_for(cleaning.wait(), 0.1)
+                    if outcome == 'deadline':
+                        # Let run's original deadline interrupt normal cleanup.
+                        await asyncio.sleep(0.06)
+                        self.assertGreaterEqual(task.cancelling(), 1)
+                    else:
+                        for _ in range(2):
+                            task.cancel()
+                            await asyncio.sleep(0)
+                    self.assertFalse(task.done())
+                    self.assertFalse(feedback.done())
+                    self.assertFalse(wire.closed)
+                    release.set()
+                    if outcome == 'deadline':
+                        done, _ = await asyncio.wait({task}, timeout=0.1)
+                        self.assertIn(task, done)
+                        with self.assertRaises(TimeoutError):
+                            await task
+                    else:
+                        await self.assert_cancelled_promptly(task)
+                    self.assertTrue(cleaned.is_set())
+                    self.assertTrue(feedback.cancelled())
+                    self.assertTrue(wire.closed)
+                    self.assertIsNone(session._feedback_task)
+                finally:
+                    release.set()
+                    if not task.done():
+                        task.cancel()
+                    await asyncio.gather(task, return_exceptions=True)
+                self.assertFalse([t for t in asyncio.all_tasks()
+                                  if t is not asyncio.current_task()])
+
+    async def test_native_cancel_during_feedback_request_closes_without_pending_tasks(self):
+        m = load(); command = m.spike()
+        entered = asyncio.Event()
+        cleaned = asyncio.Event()
+        base = native_backend([], playing_delay=None)
+
+        class CleanupWire(base):
+            async def request(self, stage, body=None, headers=None):
+                if stage == 'command-resend':
+                    entered.set()
+                    try:
+                        await asyncio.Event().wait()
+                    finally:
+                        cleaned.set()
+                return await super().request(stage, body, headers)
+
+        with tempfile.TemporaryDirectory() as directory:
+            transport, device = self.make_transport(m, command, directory, timeout=1.0,
+                                                     feedback_interval=0.02, log=[])
+            transport.backend = CleanupWire
+            task = asyncio.create_task(transport.run(
+                dict(receiver=device.identifier, host='127.0.0.1', url='https://example.org/a.mp4'),
+                lambda *x: None))
+            try:
+                await asyncio.wait_for(entered.wait(), 0.1)
+                task.cancel()
+                await self.assert_cancelled_promptly(task)
+                self.assertTrue(cleaned.is_set())
+                self.assertTrue(transport.wire.closed)
+            finally:
+                if not task.done():
+                    task.cancel()
+                await asyncio.gather(task, return_exceptions=True)
+        self.assertFalse([t for t in asyncio.all_tasks()
+                          if t is not asyncio.current_task()])
 
     async def test_feedback_failure_does_not_leak_or_hide_completion(self):
         m = load(); command = m.spike()

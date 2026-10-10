@@ -80,14 +80,14 @@ def diagnostic_v1_option(config, environ=None, frozen=None, *, trace_active=Fals
 
 def dialog(text):
     if sys.platform == 'darwin':
-        subprocess.run(['/usr/bin/osascript','-e','display dialog '+json.dumps(text)+' with title "PearPlay Setup" buttons {"OK"} default button "OK"'],capture_output=True)
+        subprocess.run(['/usr/bin/osascript','-e','display dialog '+json.dumps(text, ensure_ascii=False)+' with title "PearPlay Setup" buttons {"OK"} default button "OK"'],capture_output=True)
     else:
         subprocess.run(['zenity','--info','--no-markup','--title=PearPlay Setup','--text='+text],capture_output=True)
 
 def gui(config, parent, executable):
     # First launch goes straight to browser selection. Any existing registration,
     # including a legacy/unknown one, keeps the explicit repair/removal menu.
-    registered = any((parent/setup.install.browser_dir(b)/'NativeMessagingHosts/com.pearplay.helper.json').exists()
+    registered = any((parent/setup.install.host_dir(b)/'NativeMessagingHosts/com.pearplay.helper.json').exists()
                      for b in setup.LABELS)
     choices=list(ACTIONS)
     if not registered:
@@ -111,8 +111,11 @@ def gui(config, parent, executable):
     if action=='connect': text+='\n\nFully quit and reopen these browsers, then click Check connection in the extension setup tab. Install the extension in each browser.'
     else: text+='\n\nSaved TV pairing is kept. To remove the helper itself, move PearPlay Setup from Applications to Trash on Mac, or remove pearplay-helper with your Linux software manager. Removing the extension alone does not remove the helper.'
     if 'conflict' in result.values() or 'preserved' in result.values(): text+='\n\nA previous developer installation may need its original uninstaller. See the developer guide; do not overwrite unknown files.'
+    if sys.platform == 'darwin' and {'chrome','brave'}.intersection(result):
+        text+='\n\nChrome and Brave share this connection. Connecting or disconnecting affects both browsers.'
     if config.get('development'):
-        text='Development build — for testing only, not a signed consumer release.\nUse the matching test extension supplied with this installer.\n\n'+text
+        preview = 'Unsigned preview — local testing only; not an Apple-signed/notarized consumer release.' if sys.platform == 'darwin' else 'Development build — for testing only, not a signed consumer release.'
+        text=preview+'\nInstall the PearPlay extension in each selected browser.\n\n'+text
     dialog(text)
     return 1 if any(v in ('conflict','preserved') for v in result.values()) else 0
 
@@ -122,6 +125,9 @@ def main(argv=None, config=None):
         try: config=json.loads((Path(getattr(sys,'_MEIPASS',Path(__file__).parent))/'build.json').read_text())
         except (OSError,ValueError): config={}
     if not valid_build(config): return 2
+    if sys.platform == 'win32':
+        from helper.windows_setup import helper_main
+        return helper_main(argv, config)
     if argv and argv[0] == 'firewall-privileged':
         if len(argv) != 3: return 2
         from helper.firewall import privileged_main
@@ -135,6 +141,7 @@ def main(argv=None, config=None):
     parser.add_argument('action',nargs='?',choices=['connect','remove','self-test'])
     parser.add_argument('--browsers',nargs='+',choices=list(setup.LABELS))
     parser.add_argument('--config-parent',type=Path)
+    parser.add_argument('--shared-disconnect',action='store_true',help='Acknowledge that Mac Chrome and Brave share a native connection')
     args=parser.parse_args(argv)
     if args.action=='self-test':
         native.Transport()  # Imports all transport dependencies, but performs no discovery or playback.
@@ -146,12 +153,20 @@ def main(argv=None, config=None):
     parent=args.config_parent or setup.config_parent()
     if args.action:
         if not args.browsers: return 2
-        result=setup.manage(args.action,args.browsers,extension_id=config['extension_id'],executable=executable,config_parent=parent)
+        try:
+            result=setup.manage(args.action,args.browsers,extension_id=config['extension_id'],executable=executable,config_parent=parent,shared_disconnect=args.shared_disconnect)
+        except ValueError as error:
+            if str(error)=='mac_chrome_brave_disconnect_requires_shared_confirmation':
+                print('This disconnect affects both Chrome and Brave. Select both browsers or explicitly acknowledge with --shared-disconnect. Nothing was removed.',file=sys.stderr)
+            else:
+                print('PearPlay Setup could not apply this request. Existing connections were left alone; check the setup instructions.',file=sys.stderr)
+            return 1
         print(json.dumps(result))
         return 1 if any(v in ('conflict','preserved') for v in result.values()) else 0
     try: return gui(config,parent,executable)
     except (OSError,ValueError):
-        print('PearPlay Setup could not open. Linux graphical setup requires Zenity. Use the developer guide.',file=sys.stderr)
+        detail='Check macOS permission to show the setup dialog.' if sys.platform=='darwin' else 'Linux graphical setup requires Zenity.'
+        print('PearPlay Setup could not open. '+detail+' Use the developer guide.',file=sys.stderr)
         return 1
 
 if __name__=='__main__': raise SystemExit(main())

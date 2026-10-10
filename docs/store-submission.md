@@ -1,4 +1,16 @@
-# PearPlay 0.2.7 — Web Store upload preparation
+# PearPlay Store submission — current candidate held
+
+Extension 0.3.0 is a local cross-platform development preview, not an approved upload. Published Linux helper 0.2.8 downloads remain the catalog; no Mac/Windows public links or human-observed playback are established. Safari extension development is paused. This work is uncommitted/unpublished and authorizes no external action.
+
+Use permanent item `eoadahoncjfpnennmkjifohclbafjkol`. Newest [STATUS](../STATUS.md) records Linux 0.2.8 publication/download verification, Scott's reported 0.2.8 Store transition without independent live confirmation, and separately prepared 0.2.9 ZIP. Do not upload old 0.2.7/0.2.8 kits as the new candidate or infer Store approval from a source version.
+
+Before a separately authorized submission: close the [current readiness gates](web-store-readiness.md#current-candidate-gates); attach exact Mac/Windows native artifact/lifecycle evidence; obtain the new platform human-TV results; reconcile [listing draft](store-listing.md), both privacy renderings, permissions and reviewer flow; regenerate parent-owned artwork and landing; build/test the exact final production-ID ZIP with no fixture key/rehearsal flag; verify published helper download hashes. Upload, submission, approval and public availability are distinct read-back steps. No current candidate artifact path is specified until packaging supplies one.
+
+Mac Chrome/Brave share registration and disconnect affects both. Windows pairing uses user-local DPAPI and HKCU registration, not portable cross-OS state. Do not supply Gatekeeper/quarantine/SmartScreen/Defender bypasses in reviewer instructions. Separate local helper installation and qualified platform availability must stay prominent.
+
+## Historical 0.2.7 upload preparation — superseded, do not execute
+
+The original workflow/evidence below is preserved as history, including its then-current Linux-only and paused-Mac scope. Its earlier authorizations do not authorize publication of 0.3.0; old release kits remain immutable.
 
 **Linux only. Mac support is coming soon.**
 

@@ -2,8 +2,11 @@ import {connectionState,downloadsFor} from './setup-model.mjs';
 export async function mountSetup(document,chrome,fetch) {
   const $=id=>document.getElementById(id);
   const platform=await chrome.runtime.getPlatformInfo();
-  const supported=platform.os==='linux';
-  $('platform').textContent=supported?'For your Linux computer':platform.os==='mac'?'Mac support is coming soon.':'PearPlay currently supports Linux only.';
+  const names={linux:'Linux',mac:'Mac',win:'Windows'};
+  const supported=Object.hasOwn(names,platform.os);
+  const supportedArch={linux:['x86-64'],mac:['arm64','x86-64'],win:['x86-64']}[platform.os]?.includes(platform.arch);
+  $('platform').textContent=supported?`For your ${names[platform.os]} computer`:'This preview supports Linux, Mac and Windows desktop browsers.';
+  $('linuxWarning').hidden=platform.os!=='linux';
   if(!supported){
     $('installSection').hidden=true;$('browserSection').hidden=true;
     $('check').disabled=true;$('find').disabled=true;
@@ -12,17 +15,23 @@ export async function mountSetup(document,chrome,fetch) {
   let catalog=null;
   try {catalog=await (await fetch(chrome.runtime.getURL('releases.json'))).json();}catch{}
   const downloads=downloadsFor(catalog,platform,chrome.runtime.id);
-  const localTest=supported&&catalog?.localInstallerTest===true&&catalog.extensionId===chrome.runtime.id;
-  $('availability').textContent=localTest?'Installer rehearsal — use the development installer supplied with this test. Public downloads are not available yet.':downloads.length?'Choose the installer for your computer.':supported?'Preview installers are not published for this browser and platform yet. See the developer installation guide below.':'PearPlay currently supports Linux only. Mac support is coming soon.';
+  const localTest=supportedArch&&catalog?.localInstallerTest===true&&/^[a-p]{32}$/.test(chrome.runtime.id)&&catalog.extensionId===chrome.runtime.id;
+  $('availability').textContent=!supportedArch?'No helper installer is offered for this computer’s architecture. Do not install a package for another architecture.':localTest?'Installer rehearsal — use the development installer supplied with this test. Public downloads are not available yet.':downloads.length?'Choose the installer for your computer.': 'Preview installers are not published for this browser and platform yet. A local candidate may be used only if its kit includes a tested artifact and instructions; source alone is not an installer.';
   for(const item of downloads){
     const link=document.createElement('a');link.href=item.url;link.rel='noopener noreferrer';link.className='button';
-    const name={deb:'Ubuntu / Debian',rpm:'Fedora','pkg.tar.zst':'Arch / Omarchy'}[item.format];
+    const name={deb:'Ubuntu / Debian',rpm:'Fedora','pkg.tar.zst':'Arch / Omarchy',pkg:'Mac',exe:'Windows',zip:'Windows preview'}[item.format];
     link.textContent=`Download for ${name}`; $('downloads').append(link);
   }
   const preview=!downloads.length&&!localTest;
   $('linux').hidden=preview||platform.os!=='linux';
-  $('packagedRepair').hidden=preview;
-  $('development').hidden=!preview||platform.os!=='linux';
+  $('archSteps').hidden=preview||platform.os!=='linux';
+  $('linuxBrowserNote').hidden=platform.os!=='linux';
+  $('mac').hidden=!supportedArch||platform.os!=='mac';
+  $('win').hidden=!supportedArch||platform.os!=='win';
+  $('packagedRepair').hidden=!supportedArch||(preview&&platform.os==='linux');
+  if(platform.os==='mac')$('packagedRepair').textContent='Already installed the Mac helper? Open PearPlay Setup and use its browser connection flow. Chrome and Brave share this connection, including disconnection. Fully quit and reopen the affected browsers, then return here.';
+  if(platform.os==='win')$('packagedRepair').textContent='Already installed the Windows helper? Follow its supplied Chrome connect or repair instructions for your Windows account. Fully quit and reopen Chrome, then return here. Do not use a Linux or Mac command.';
+  $('development').hidden=!supportedArch||!preview||platform.os!=='linux';
   const quote=value=>"'"+value.replaceAll("'", "'\"'\"'")+"'";
   const updateCommand=()=>{
     const source=($('sourcePath').value??'').trim();
@@ -48,7 +57,7 @@ export async function mountSetup(document,chrome,fetch) {
     try {
       const result=await chrome.runtime.sendMessage({op:'setupCheck'});
       const state=connectionState(result,result?.ok===false?result.error:null);
-      ready=state.kind==='ready';$('connection').dataset.state=state.kind;$('connection').textContent=preview&&!ready?'The helper is not connected. Follow the development installation instructions above, then fully quit and reopen Chrome and check again.':state.text;
+      ready=state.kind==='ready';$('connection').dataset.state=state.kind;$('connection').textContent=preview&&!ready?'The helper is not connected. Only use a tested candidate for this computer; follow its instructions, then fully quit and reopen the browser and check again.':state.text;
     } catch {ready=false;$('connection').dataset.state='broken';$('connection').textContent=connectionState(null,'ACTION_FAILED').text;}
     finally {$('check').disabled=false;$('find').disabled=!ready;}
   };

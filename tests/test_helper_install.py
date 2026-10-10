@@ -17,7 +17,7 @@ class InstallerTests(unittest.TestCase):
             kwargs=dict(extension_id='a'*32,browser='chrome',config_parent=root/'config',python=Path(sys.executable),source=source)
             paths=m.install(**kwargs)
             (source/'helper/native.py').unlink()
-            self.assertEqual(m.uninstall(**kwargs),[])
+            self.assertEqual(m.uninstall(**kwargs,shared_disconnect=True),[])
             self.assertFalse(paths['launcher'].exists())
 
     def test_cli_installs_executable_launcher_with_persistent_origin_checked_port(self):
@@ -27,7 +27,7 @@ class InstallerTests(unittest.TestCase):
         m=load(); installer=load('install')
         with tempfile.TemporaryDirectory() as temporary:
             parent=Path(temporary).resolve()/'isolated'
-            args=[sys.executable,str(ROOT/'helper/install.py'),'install','--extension-id','a'*32,'--browser','chrome','--config-parent',str(parent),'--python',sys.executable]
+            args=[sys.executable,str(ROOT/'helper/install.py'),'install','--extension-id','a'*32,'--browser','chrome','--config-parent',str(parent),'--python',sys.executable,'--shared-disconnect']
             result=subprocess.run(args,capture_output=True,timeout=10)
             self.assertEqual(result.returncode,0,result.stderr)
             launcher=parent/('Google/Chrome' if sys.platform=='darwin' else 'google-chrome')/'NativeMessagingHosts/com.pearplay.helper.launcher'
@@ -61,7 +61,7 @@ class InstallerTests(unittest.TestCase):
             self.assertEqual(m.install(**kwargs),paths)
             unknown=paths['manifest'].parent/'unknown';unknown.write_text('keep')
             paths['launcher'].write_text('user-modified')
-            preserved=m.uninstall(**kwargs)
+            preserved=m.uninstall(**kwargs,shared_disconnect=True)
             self.assertIn('launcher',preserved)
             self.assertFalse(paths['manifest'].exists())
             self.assertEqual(paths['launcher'].read_text(),'user-modified')
@@ -81,7 +81,7 @@ class InstallerTests(unittest.TestCase):
             paths=m.install(**kwargs)
             paths['manifest'].write_text('foreign')
             with self.assertRaises(ValueError): m.install(**kwargs)
-            m.uninstall(**kwargs)
+            m.uninstall(**kwargs,shared_disconnect=True)
             self.assertEqual(paths['manifest'].read_text(),'foreign')
 
     def test_darwin_chrome_installs_google_chrome_host_and_uninstalls_owned_files(self):
@@ -100,7 +100,7 @@ class InstallerTests(unittest.TestCase):
             self.assertEqual(stat.S_IMODE(paths['manifest'].stat().st_mode),0o600)
             self.assertEqual(stat.S_IMODE(paths['launcher'].stat().st_mode),0o700)
             self.assertEqual(stat.S_IMODE(folder.stat().st_mode),0o700)
-            self.assertEqual(m.uninstall(**kwargs),[])
+            self.assertEqual(m.uninstall(**kwargs,shared_disconnect=True),[])
             self.assertFalse(paths['manifest'].exists())
             self.assertFalse(paths['launcher'].exists())
             self.assertTrue((ROOT/'spikes/002-command/command.py').exists())
@@ -115,12 +115,13 @@ class InstallerTests(unittest.TestCase):
             self.assertEqual(paths['launcher'],parent/'google-chrome/NativeMessagingHosts/com.pearplay.helper.launcher')
             self.assertEqual(stat.S_IMODE(paths['manifest'].stat().st_mode),0o600)
             self.assertEqual(stat.S_IMODE(paths['launcher'].stat().st_mode),0o700)
-            self.assertEqual(m.uninstall(**kwargs),[])
+            self.assertEqual(m.uninstall(**kwargs,shared_disconnect=True),[])
             self.assertFalse(paths['manifest'].exists())
             self.assertFalse(paths['launcher'].exists())
 
-    def test_brave_folder_unchanged_on_darwin(self):
+    def test_brave_host_shared_but_profile_detection_separate_on_darwin(self):
         m=load('install')
         parent=Path('/private/tmp')
         paths,_=m.plan(extension_id='c'*32,browser='brave',config_parent=parent,python=Path(sys.executable),source=ROOT,require_runtime=False,platform='darwin')
-        self.assertEqual(paths['manifest'],parent/'BraveSoftware/Brave-Browser/NativeMessagingHosts/com.pearplay.helper.json')
+        self.assertEqual(paths['manifest'],parent/'Google/Chrome/NativeMessagingHosts/com.pearplay.helper.json')
+        self.assertEqual(m.browser_dir('brave','darwin'),'BraveSoftware/Brave-Browser')

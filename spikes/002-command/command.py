@@ -280,14 +280,18 @@ class Session:
             self.finished.set()
 
     async def call(self, stage, body=None):
-        return await asyncio.wait_for(self.wire.request(stage, body, dict(self.headers)), self.timeout)
+        # Keep cancellation in the owning task. Python 3.11 wait_for can
+        # swallow it when the child request completes in the same loop turn.
+        async with asyncio.timeout(self.timeout):
+            return await self.wire.request(stage, body, dict(self.headers))
 
     async def _feedback_loop(self):
         """Periodic feedback plus bounded setRate re-sends until playback starts."""
         tick = 0
         while not self.finished.is_set():
             try:
-                await asyncio.wait_for(self.finished.wait(), self.rate_resend_interval)
+                async with asyncio.timeout(self.rate_resend_interval):
+                    await self.finished.wait()
             except TimeoutError:
                 pass
             else:
@@ -306,12 +310,26 @@ class Session:
         """Shared lifecycle: periodic feedback from setup until playback ends."""
         self._feedback_task = asyncio.create_task(self._feedback_loop())
         try:
-            await asyncio.wait_for(self.playing.wait(), startup_timeout)
+            async with asyncio.timeout(startup_timeout):
+                await self.playing.wait()
             await self.finished.wait()
         finally:
-            self._feedback_task.cancel()
-            await asyncio.gather(self._feedback_task, return_exceptions=True)
-            self._feedback_task = None
+            feedback = self._feedback_task
+            feedback.cancel()
+            cleanup = asyncio.gather(feedback, return_exceptions=True)
+            cancelled = False
+            try:
+                # A repeated caller cancellation (including run's deadline)
+                # must not interrupt the child's cleanup or orphan its task.
+                while not cleanup.done():
+                    try:
+                        await asyncio.shield(cleanup)
+                    except asyncio.CancelledError:
+                        cancelled = True
+            finally:
+                self._feedback_task = None
+            if cancelled:
+                raise asyncio.CancelledError
 
     async def run(self, timing_port, url, duration):
         try:
@@ -332,7 +350,8 @@ class Session:
             'model': 'iPhone14,3', 'name': 'pyatv', 'osBuildVersion': '20F66',
             'osName': 'iPhone OS', 'osVersion': '16.5', 'senderSupportsRelay': False,
             'sourceVersion': '690.7.1', 'statsCollectionEnabled': False})
-        await asyncio.wait_for(self.wire.events(base['eventPort'], self.on_event), self.timeout)
+        async with asyncio.timeout(self.timeout):
+            await self.wire.events(base['eventPort'], self.on_event)
         try:
             await self.call('feedback')
         except Exception:

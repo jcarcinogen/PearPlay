@@ -1,4 +1,4 @@
-"""Paused Mac installer internals; receipt-guarded removal remains available."""
+"""Historical source-runtime installer; use packaged PearPlay Setup previews instead. Receipt-guarded removal remains available."""
 import hashlib
 import json
 import os
@@ -57,7 +57,8 @@ def configure(config, source, data_home, parent, uv, action, run=subprocess.run)
                 python=python, source=root/'source', platform='darwin')
     paths, payloads=install.plan(**kwargs, require_runtime=False)
     if action=='remove':
-        if install.uninstall(**kwargs):
+        # Legacy Chrome removal also affects Brave's shared Mac host lookup.
+        if install.uninstall(**kwargs, shared_disconnect=True):
             raise ValueError('modified_registration_preserved')
         return {'ok': True, 'action':'removed', 'pairing':'preserved', 'runtime':'preserved'}
     # Refuse old/foreign registrations before installing any runtime or dependencies.
@@ -100,7 +101,7 @@ def main(argv=None):
     parser.add_argument('--config-parent', type=Path, default=Path.home()/'Library/Application Support')
     args=parser.parse_args(argv)
     if args.action=='install':
-        print('PearPlay is Linux only. Mac support is coming soon.', file=sys.stderr)
+        print('Use the packaged PearPlay Setup.app Mac preview, not this historical source-runtime installer. Unsigned previews are for local testing only; consumer releases require Apple signing and notarization.', file=sys.stderr)
         return 2
     if sys.platform != 'darwin' or os.getuid()==0:
         print('Run this in your normal Mac account, without sudo.', file=sys.stderr)
@@ -121,7 +122,7 @@ def main(argv=None):
     if args.action=='install':
         print('Fully quit and reopen Chrome, then open PearPlay → Helper setup → Check connection. Allow Local Network access if macOS asks. No discovery or playback was performed.')
     else:
-        print('Chrome disconnected. Saved pairing and the downloaded runtime are kept.')
+        print('The shared Chrome/Brave registration was disconnected. Saved pairing and the downloaded runtime are kept.')
     return 0
 
 

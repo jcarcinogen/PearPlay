@@ -1,55 +1,49 @@
 # Helper onboarding and packaging
 
-**Linux only. Mac support is coming soon.** No Mac release date is promised. Mac work is paused and does not block Linux release.
+**Cross-platform development preview: Linux, Mac and Windows Chrome. Safari extension development is paused.** See [platform/artifact status and TV checks](cross-platform-preview.md). This is active candidate guidance, not a release declaration.
 
 ## Current delivery decision
 
-- **Linux:** a self-contained Python/pyatv helper in a native distro package. Open PearPlay Setup to connect browsers. First launch selects browsers; subsequent launches offer maintenance.
-- **Mac:** no current installer or download. Source/runtime/signing experiments remain archived for a future explicit decision to resume; do not replace security settings or reuse another application's permitted Python.
-- A Web Store extension cannot silently install its native helper; installation is an explicit separate step.
+- Linux: self-contained Python/pyatv helper in native distro packages; published [helper 0.2.8](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.8). Open PearPlay Setup to connect browsers. Preserve the native package-manager path and full browser restart.
+- Mac: resumed self-contained app/pkg candidate with ad-hoc signing. Developer ID Application/Installer, notarization, normal Gatekeeper download/install and Local Network identity/consent remain consumer-distribution gates. No public installer URL. Never borrow another app's permitted runtime or bypass security.
+- Windows: active per-user bundled installer and HKCU native-host/DPAPI implementation. Exact packaged/native-OS evidence must be attached to its candidate; source alone is not an installer. Chrome is the preview target, not a general Edge/Brave promise.
+- A Web Store extension cannot silently install its native helper; installation is a separate explicit step. The setup tab checks connection once when opened and only discovers receivers on a deliberate Find my TV action.
 
-The existing Web Store item's public key was verified to derive to `eoadahoncjfpnennmkjifohclbafjkol`. The current manifest, release catalog and production 0.2.5 helper pin that identity; `extension/releases.json` lists the matching x86_64 `.deb`, Fedora RPM and Arch downloads at the [0.2.5 preview release](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5). The Store already offers extension 0.2.6; extension 0.2.7 is the pending update, using the same helper 0.2.5 and identity. The earlier development ID `hljhooeofdjbikkhbklccnlnladdbkfb` is historical, not this store item's ID. The rehearsal fixture ID `iojhjdcndgfoalcialdlgklfdnlpmobf` and `tests/browser/fixture-key.json` must never become the production allowlist/key.
+The permanent Store ID/public key is `eoadahoncjfpnennmkjifohclbafjkol`. Current candidate manifest is 0.3.0; catalog lists only published Linux 0.2.8 downloads. Mac's actual arm64 engineering pkg and recorded expanded-runtime/isolated-Chrome evidence are linked in the preview guide; Gatekeeper rejects and native pkg installation/TV acceptance are not established. Any final integrated source changes require a fresh build/native verification. STATUS reports Scott's 0.2.8 Store submission/publication without independently verifying public approval/live version, and a prepared, unsubmitted 0.2.9 follow-up. Do not replace that with older 0.2.6/0.2.7-current claims. Historical unpacked ID `hljhooeofdjbikkhbklccnlnladdbkfb` and rehearsal ID `iojhjdcndgfoalcialdlgklfdnlpmobf` are not production identities.
 
-## Unreleased helper source
+## Registration and state boundaries
 
-Extension 0.2.7 continues to use published helper 0.2.5. Current helper source contains unreleased discovery repairs, bounded opt-in diagnostics and scoped UFW assistance. These are not part of the existing downloads. Packaged privileged allow/remove/rollback and cross-version upgrade checks must pass before a new helper release; diagnostic fixture builds are never consumer packages. LG HLS remains unresolved.
+Native Messaging carries control, not media. The TV fetches the selected URL. No login agent/cloud relay is required. Browser registration is per OS user, not privileged browser-profile modification. Canonical source can stay on IronWolf; installed executable/runtime/venv/pairing state must be local to the target machine and OS.
 
-## Boundaries
+Linux package manager owns the payload; Chrome, Brave and Chromium have separate native-host registrations. Mac Chrome and Brave intentionally share the Chrome native-host directory: connecting or disconnecting that host affects both, not independent browser toggles. Mac Chromium is separate. The Windows candidate uses per-user Chrome registry keys in HKCU, not HKLM.
 
-No login agent, persistent HTTP listener, cloud relay, firewall/DNS changes, privileged browser registration or wildcard extension origins. Canonical source remains on IronWolf; installed payloads, venvs, build outputs and credentials are machine-local.
+Unknown/changed files must be preserved by maintenance. End casting and quit browsers before repair/update/disconnection. One playback/pairing session per OS user means switching browsers is not another independent session. Saved pairing is preserved by ordinary disconnect/package removal; Windows DPAPI data is user-local and not portable across OSes/users/machines. Do not copy pairing between systems.
 
-The Linux package manager owns the shared payload. Browser registrations are per OS user and protected by exact-byte/mode ownership checks. Unknown or modified files are preserved. The payload path stays stable across package updates. End casting before maintenance; disconnect browsers before removing the package. Saved TV pairing is not automatically erased.
+## Build targets
 
-## Linux build
+Use existing platform builders; do not install tools silently or add a parallel installer. `scripts/build_helper.py` is the build entry point for Linux and resumed Mac. Exact Windows builder invocation/artifact names must come from the engineering handoff, not a guessed executable command. Candidate output is not public availability.
 
-Use the target distro's machine-local venv with PyInstaller and `pyatv==0.18.0`:
+Linux developer example (requires already available target-distro build environment):
 
 ```sh
-python scripts/build_helper.py --extension-id YOUR_EXACT_EXTENSION_ID --development --output /absolute/machine-local/new-build-directory
+python scripts/build_helper.py --extension-id eoadahoncjfpnennmkjifohclbafjkol --development --output /absolute/machine-local/new-build-directory
 ```
 
-This is a developer command, not consumer onboarding. Build reports include artifact SHA-256, dependency versions/notices and smoke results. Linux packages declare Zenity, distro Avahi utilities and the build host's glibc floor. Verify Avahi service availability and receiver-scoped network requirements on a clean desktop.
+This is a developer build, not consumer onboarding. Baseline-compatible Linux runtimes must be built separately: Ubuntu 24.04/glibc 2.39, Fedora 44/glibc 2.43, Arch/Omarchy/glibc 2.44. Do not relabel one Arch-built runtime as all distros. Build inventory must include licenses, exact artifact hashes and dependency versions/self-test. Mac architectures require matching app/pkg output and exact signing/identity checks; Windows needs a real bundled installer, registry/ACL/DPAPI and native-browser tests on Windows.
 
-Do not convert the earlier glibc 2.44 Arch artifact into a generic Ubuntu package. Build `.deb` on the chosen Debian/Ubuntu baseline. The existing RPM branch was exercised on Fedora 44 x86_64 / glibc 2.43; its tested artifact is now published in the 0.2.5 helper preview, with an unauthenticated re-download matching the SHA-256. [Fedora build/install/removal instructions](fedora-install.md) distinguish the successful initial GNOME Software installation from its authorization-failed graphical reinstall and successful DNF fallback. CIFS-synthesized execute bits on bundled data are normalized during staging, with regression and real-RPM checks. Other distributions and architectures still need separate evidence. The current builder rejects non-Linux hosts before creating build output; retained Mac internals are not a release route.
+## Recorded Linux evidence
 
-## Graphical installation evidence
+The newest STATUS sections record published Linux 0.2.8 assets and anonymously downloaded matching hashes; real Arch exact-package install/restore, Ubuntu repaired-DEB upgrade/rollback and Fedora-RPM lifecycle/native-browser checks; bounded human Apple TV MP4/HLS and AirScreen MP4/HLS results. These supersede earlier pending package gates, not every possible compatibility gap. Prior owner-confirmed Linux Chrome/Brave/Chromium playback remains evidence about those recorded trials, not a new 0.3.0 candidate pass.
 
-The Xubuntu 26.04.1 live desktop's existing App Center installed the production `.deb` from a verified package-absent state: file manager **Open With → App Center**, **Install**, confirm the normal third-party-package warning, then **Installed**. Package database/logs and payload integrity agreed, saved pairing and registration metadata were unchanged, and restarted Chrome connected to helper 0.2.5 and discovered the Apple TV. No additional installer, changed default association or security workaround was used. Dependencies already existed; normal installed-system password authentication and a pristine dependency-download run remain outside this result.
-
-The native XFCE default is GDebi. Its elevated window failed before installation with a GTK display-connection error in this live session, so do not advertise its route as passing. An earlier `engrampa.desktop` result came from an incomplete SSH environment, not the desktop's actual association. Evidence: `assets/evidence/xubuntu-gui-install-0.2.5.json`; consumer steps: [Install PearPlay](install.md#graphical-deb-installation--verified-xubuntu-route).
+Historical graphical evidence is retained: Xubuntu 26.04.1's pre-existing App Center installed helper 0.2.5 after its normal warning and opened the browser-selection flow. Native XFCE GDebi failed in that live session. Fedora GNOME Software installed the initial 0.2.5 RPM but graphical reinstall failed authorization; DNF fallback succeeded. Those are not pristine dependency-download, every-desktop or new-candidate GUI results. See [Install](install.md), [Fedora](fedora-install.md) and historical `assets/evidence/` records.
 
 ## Release gates
 
-1. Unit tests and real isolated Chrome missing → connected → repair → remove → fresh host-not-found checks.
-2. Linux package install/restart/repair/update/remove with human-confirmed discovery, pairing, moving video and audible sound. Acer 0.2.3 evidence is in STATUS; removal/reinstall is not a cross-version upgrade test. LG discovery is not LG playback support.
-3. Independent Linux Brave/Chromium verification before claiming playback in those browsers. Chrome remains the verified baseline.
-4. Non-Omarchy Linux: disposable Ubuntu VM/live distro, native Google Chrome, separately built `.deb` and LAN-reachable networking. Default VM NAT may hide multicast. Keep packaging-only results distinct from TV playback.
-5. Verified production store identity, real published Linux downloads/checksums, final catalog, privacy disclosures, current screenshots and Scott's explicit submission approval.
+1. Offline source/security/version/production-origin validation, followed by exact frozen self-test and inventory/hash evidence.
+2. Actual native install/restart/repair/update/disconnect/remove/fresh missing journey for each advertised OS/architecture/browser, preserving changed/unknown files and saved pairing.
+3. Mac Developer ID signing/notarization/Gatekeeper-approved clean download/install, Local Network consent/deny/retry and update persistence; Windows normal unsigned-block behavior and distribution-signing plan, HKCU and DPAPI/ACL native acceptance.
+4. Human-observed picture/audio, bounded startup/spinner, physical stop/recast and browser-restart pairing reuse on each intended OS/browser/receiver/media route. No Mac/Windows human playback is established here. LG HLS remains parked; Linux Brave/Chromium owner reports do not supply missing details or a fresh candidate test.
+5. Exact final extension ZIP and helper compatibility, safe setup links and unsupported-OS negative controls. Add public catalog URLs only after verified publication/download; never fabricate Mac/Windows links or add `localInstallerTest` to production.
+6. Parent-owned final TV checklist/artwork/landing regeneration, final privacy/permissions/reviewer reconciliation and separately authorized publication. No commit, push, Store action or release is performed by this workstream.
 
-`localInstallerTest:true` is limited to the generated fixture extension. It displays supplied package steps without inventing download URLs. Draft store ZIPs contain neither the fixture key nor that flag. Extension/helper 0.2.5 are the current production-ID candidates; 0.2.4 scope work and 0.2.3 Acer packages are historical checkpoints. The 0.2.3 → 0.2.5 Arch upgrade passed package integrity, installed unprivileged self-test, real Chrome connection/discovery and unchanged pairing checks. No new playback trial was performed during that upgrade. The `.deb` has separate Ubuntu VM and Xubuntu live graphical-install/playback evidence. See STATUS.md.
-
-## Paused Mac archive
-
-[Runtime identity/signing research](mac-runtime-identity.md) and [historical Terminal rehearsal](mac-terminal-install.md) preserve prior findings. They are not current install guides. New Mac install/build entry points stop with “Mac support is coming soon.” Receipt-guarded removal remains available for an existing installation, but this scope change uninstalls nothing.
-
-Only if Scott explicitly reopens Mac work: revisit identifiable runtime, shared Chrome/Brave native-host paths, Apple signing/notarization, clean-machine consent, updates and human-observed playback. No signing purchase or Mac test is required for the Linux release.
+Fixture `localInstallerTest:true` remains isolated rehearsal-only. Historical release kits stay byte-for-byte intact. [Mac runtime identity](mac-runtime-identity.md) belongs to the Mac worker; [old Terminal rehearsal](mac-terminal-install.md) remains historical, not the resumed app/pkg route.

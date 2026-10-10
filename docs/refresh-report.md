@@ -1,6 +1,6 @@
 # PearPlay premium refresh — delivery report — archived / paused
 
-> **Current scope: Linux only. Mac support is coming soon.** Mac work is paused, with no release date. The historical Mac procedures/results below are not current install instructions or Linux release blockers. Resume only if Scott explicitly reopens Mac work; current Mac install/build entry points refuse new work. Existing installed runtimes and pairing remain untouched.
+> Historical premium-refresh report. Current Chrome development targets Linux, Mac and Windows; Mac helper work has resumed and Safari extension development is paused. See [current preview](cross-platform-preview.md). The original results, old versions/platform scope and publishing commands below remain historical evidence, not instructions or authorization for the new candidate. Old artifacts are preserved; do not rerun these publication commands.
 
 
 Branch: `brand/premium-refresh`. Base: `6ce73e1` (`main` at the start). Work is local only; no push, repository setting write, Pages activation or store submission was performed. No dependency was installed. `STATUS.md` is unchanged and remains the playback authority.

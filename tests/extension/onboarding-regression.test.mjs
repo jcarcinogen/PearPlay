@@ -2,9 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {mountSetup} from '../../extension/setup.mjs';
-test('setup action precedes casting steps and remains adjacent to warning',()=>{
- const html=readFileSync(new URL('../../extension/popup.html',import.meta.url),'utf8');
- assert.ok(html.indexOf('id="helperSetup"') < html.indexOf('<section>'));
+test('setup retains platform security and separate connection/playback qualifications',()=>{
+ const html=readFileSync(new URL('../../extension/setup.html',import.meta.url),'utf8');
+ assert.match(html,/do not disable Gatekeeper or remove quarantine/i);
+ assert.match(html,/do not disable SmartScreen or Defender/);
+ assert.match(html,/do not disable package-signature checks/);
+ assert.match(html,/connection check does not establish Mac TV playback/);
+ assert.match(html,/connection check does not establish Windows TV playback/);
+ assert.match(html,/Chrome and Brave share the Mac native-host registration/);
+ assert.match(html,/DPAPI/);
 });
 test('unpublished Linux setup supplies actual runtime ID and no nonexistent app directions',async()=>{
  const nodes=new Map();

@@ -2,7 +2,7 @@
 
 No cross-compilation claim: inventory works on any OS; build requires Windows.
 Uses PyInstaller already present in an isolated environment, never installs it.
-Outputs a console native host, console maintenance tool and windowed setup.
+Outputs windowed native host, maintenance and setup executables; inherited pipes retain native messaging.
 """
 import argparse
 import hashlib
@@ -63,7 +63,7 @@ def build_source_snapshot():
     paths = [*(p for p in (ROOT/'helper').glob('*.py') if not p.name.startswith('._')),
              *(p for p in (ROOT/'tests').glob('test_windows*.py') if not p.name.startswith('._')),
              ROOT/'scripts/build_windows_helper.py', ROOT/'scripts/build_windows_helper.ps1',
-             ROOT/'scripts/build_helper.py', ROOT/'spikes/001-airplay/pearplay.py',
+             ROOT/'scripts/build_helper.py', ROOT/'scripts/windows_gui_smoke.py', ROOT/'spikes/001-airplay/pearplay.py',
              ROOT/'spikes/002-command/command.py', ROOT/'spikes/002-command/LICENSE.md',
              ROOT/'spikes/002-command/requirements.txt', ROOT/'requirements.txt', ROOT/'LICENSE',
              ROOT/'assets/store/icon-1024.png', ROOT/'assets/brand/pearplay.ico']
@@ -104,13 +104,17 @@ def inventory():
                 packages=versions, tools={name:shutil.which(name) for name in ('powershell','pwsh','iexpress','signtool')})
 
 
-def freeze_command(output, entry, name, *, onefile=False, windowed=False, data=()):
+def freeze_command(output, entry, name, *, onefile=False, windowed=True, data=()):
     argv = [sys.executable,'-m','PyInstaller','--noconfirm','--clean','--windowed' if windowed else '--console',
             '--onefile' if onefile else '--onedir','--noupx','--name',name,
             '--icon',str(ROOT/'assets/brand/pearplay.ico'),
             '--distpath',str(output/'frozen'),'--workpath',str(output/('work-'+name)),
             '--specpath',str(output),'--paths',str(ROOT),'--collect-all','pyatv',
             '--recursive-copy-metadata','pyatv']
+    if windowed:
+        argv.append('--disable-windowed-traceback')
+    data = [*data, (ROOT/'assets/brand/pearplay.ico', 'assets/brand'),
+            (ROOT/'assets/store/icon-1024.png', 'assets/store')]
     for source, destination in data:
         argv.extend(['--add-data', str(source) + os.pathsep + destination])
     return argv + [str(entry)]
@@ -240,6 +244,7 @@ def build(output):
     (payload/'build-info.json').write_bytes(encoded(config))
     executable = payload/'PearPlayHelper.exe'
     helper_icon = verify_executable_icon(executable)
+    verify_windowed(executable)
     smoke = subprocess.run([str(executable),'self-test'], capture_output=True, text=True, check=True, timeout=60)
     dependency_smoke = json.loads(smoke.stdout)
     if dependency_smoke.get('ok') is not True or dependency_smoke.get('version') != VERSION or smoke.stderr:
@@ -260,6 +265,7 @@ def build(output):
     installer = output/f'pearplay-helper-{VERSION}-windows-x86_64-maintenance.exe'
     shutil.copy2(output/'frozen/PearPlaySetup.exe',installer)
     installer_icon = verify_executable_icon(installer)
+    verify_windowed(installer)
     setup_smoke = subprocess.run([str(installer),'self-test'], capture_output=True, text=True, check=True, timeout=60)
     if json.loads(setup_smoke.stdout).get('ok') is not True or setup_smoke.stderr:
         raise ValueError('installer_smoke_failed')
@@ -267,12 +273,10 @@ def build(output):
     embedded = json.loads(verify.stdout)
     if embedded.get('sha256') != hashlib.sha256(archive_path.read_bytes()).hexdigest() or embedded.get('version') != VERSION or verify.stderr:
         raise ValueError('embedded_installer_payload_smoke_failed')
-    # Owner-facing download is a real windowed setup; console maintenance stays separate.
+    # Both download names use the same branded windowed routing; no console surfaces.
     with (output/'gui-freeze.log').open('w', encoding='utf-8') as log:
         subprocess.run(freeze_command(output, ROOT/'helper/windows_gui.py', 'PearPlaySetupGUI',
-                         onefile=True, windowed=True, data=[(archive_path, '.'),
-                         (ROOT/'assets/brand/pearplay.ico', 'assets/brand'),
-                         (ROOT/'assets/store/icon-1024.png', 'assets/store')]),
+                         onefile=True, windowed=True, data=[(archive_path, '.')]),
                        stdout=log, stderr=subprocess.STDOUT, check=True)
     gui_installer = output/f'pearplay-helper-{VERSION}-windows-x86_64-unsigned.exe'
     shutil.copy2(output/'frozen/PearPlaySetupGUI.exe', gui_installer)
@@ -283,17 +287,21 @@ def build(output):
     environment = dict(os.environ, PEARPLAY_TEST_PAYLOAD=str(archive_path))
     result = subprocess.run([sys.executable,'-B','-m','pytest','-q','-p','no:cacheprovider',
                              *(str(ROOT/'tests'/name) for name in ('test_windows_native.py', 'test_windows_source.py',
-                                                                  'test_windows_installer.py', 'test_windows_builder.py')),
+                                                                  'test_windows_installer.py', 'test_windows_builder.py', 'test_windows_branding.py')),
                              '--basetemp='+str(output/'test-fixtures')],
                             cwd=ROOT, env=environment, capture_output=True, text=True, timeout=180)
     (output/'native-tests.txt').write_text(result.stdout+result.stderr,encoding='utf-8')
     reject_input_drift(source_hashes, environment_hashes)
     if result.returncode:
         raise ValueError('windows_native_fixture_tests_failed')
+    from scripts.windows_gui_smoke import probe
+    gui_windows = {name: probe(path, output / ('gui-' + name + '.png'))
+                   for name, path in [('native', executable), ('maintenance', installer), ('setup', gui_installer)]}
+    reject_input_drift(source_hashes, environment_hashes)
     report = dict(config, source_hashes=source_hashes, input_drift_checks=['before-freeze', 'after-helper-freeze', 'after-setup-freeze', 'after-tests'],
                   licenses=license_inputs, unsigned=True, installer=gui_installer.name, sha256=hashlib.sha256(gui_installer.read_bytes()).hexdigest(),
                   maintenance=dict(file=installer.name, sha256=hashlib.sha256(installer.read_bytes()).hexdigest()),
-                  gui=dict(windowed=True, runtime_tested=False, icon=gui_icon),
+                  gui=dict(windowed=True, hosted_initial_windows=gui_windows, owner_runtime_tested=False, icon=gui_icon),
                   dependencies=dependency_smoke, native=protocol_smoke, embedded_payload=embedded, windows_fixture_tests=True, installed_frozen_payload_tested=True,
                   icons=dict(helper=helper_icon, installer=installer_icon),
                   chrome_tested=False, receiver_tested=False, security_settings_changed=False)

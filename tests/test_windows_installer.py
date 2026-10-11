@@ -211,7 +211,7 @@ def test_gui_windowed_build_separate_from_native_console(tmp_path):
     from scripts.build_windows_helper import freeze_command
     native = freeze_command(tmp_path, 'native.py', 'Native')
     gui = freeze_command(tmp_path, 'gui.py', 'Setup', onefile=True, windowed=True)
-    assert '--console' in native and '--windowed' not in native
+    assert '--windowed' in native and '--console' not in native
     assert '--windowed' in gui and '--console' not in gui
 
 

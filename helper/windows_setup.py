@@ -342,109 +342,85 @@ def manage(action, payload=None):
         return reconcile(action, files, Registry(), payload)
 
 
-def message(text, *, question=False):
-    import ctypes
-    user = ctypes.WinDLL('user32', use_last_error=True)
-    user.MessageBoxW.argtypes = [W.HWND, W.LPCWSTR, W.LPCWSTR, W.UINT]
-    user.MessageBoxW.restype = C.c_int
-    return user.MessageBoxW(None, text, 'PearPlay Setup', 0x24 if question else 0x40) == 6
-
-
-# Imports for MessageBox only; available as type aliases on non-Windows too.
-import ctypes as C
-from ctypes import wintypes as W
-
-
 def helper_main(argv, config):
     from helper import native
+    from helper.windows_io import restore_stdio
+    redirected = restore_stdio()
     if config.get('extension_id') != EXTENSION_ID or config.get('development') is not False or config.get('platform') != 'win32':
         return 2
     if argv and '://' in argv[0]:
-        # Only Chrome's documented optional HWND argument may follow the
-        # origin: never let argv override the compiled extension-id option.
         if not native.allowed_origin(EXTENSION_ID, argv[0]): return 2
         if len(argv) not in (1, 2): return 2
         if len(argv) == 2:
             match = re.fullmatch(r'--parent-window=([0-9]{1,20})', argv[1])
             if not match or int(match[1]) >= 2**64: return 2
-        return native.main(['native','--extension-id',EXTENSION_ID,*argv])
+        return native.main(['native', '--extension-id', EXTENSION_ID, *argv])
     if argv == ['self-test']:
-        native.Transport()  # imports only: no directory, network or credentials.
+        native.Transport()
         print(json.dumps(dict(ok=True, version=native.VERSION, dependencies='loaded', network='not used')))
         return 0
     if not getattr(sys, 'frozen', False):
         return 2
-    if not argv:
-        if not message('Connect or repair this installed helper\'s Chrome registration?\n\nNo TV action, firewall change or administrator access is requested.', question=True):
-            return 0
-        argv = ['connect']
-    if argv not in (['connect'], ['disconnect'], ['remove']):
-        message('Run the downloaded PearPlay installer with repair, upgrade or uninstall. Saved TV pairing is kept.')
+    from helper.windows_gui import show_setup
+    valid = argv in (['connect'], ['disconnect'], ['remove'])
+    if not argv or not redirected:
+        action = ('disconnect' if argv == ['remove'] else argv[0]) if valid else None
+        notice = 'Use the downloaded PearPlay Setup for repair, update or removal. Saved TV pairing is kept.' if argv and not valid else None
+        return show_setup(installed_host=True, initial_action=action, notice=notice)
+    if not valid:
         return 2
     try:
-        result = manage('disconnect' if argv in (['disconnect'], ['remove']) else 'connect')
-        print(json.dumps(result))
-        message('Chrome connection updated. Fully quit and reopen Chrome. Saved TV pairing is kept.')
+        print(json.dumps(manage('disconnect' if argv in (['disconnect'], ['remove']) else 'connect')))
         return 0
     except Exception:
-        message('Connection refused. Run the downloaded installer with repair. Existing files and saved pairing are kept.')
+        print(json.dumps(dict(ok=False, error='setup_refused_or_failed', pairing='preserved')), file=sys.stderr)
         return 1
 
 
 def main(argv=None):
-    import argparse
     from helper.native import VERSION
-    argv = sys.argv[1:] if argv is None else argv
-    parser = argparse.ArgumentParser(description='Per-user PearPlay Windows setup (no TV actions)')
-    parser.add_argument('action', nargs='?', choices=['install','repair','upgrade','connect','disconnect','uninstall','self-test','verify-payload'])
-    args = parser.parse_args(argv)
+    from helper.windows_io import restore_stdio
     if sys.platform != 'win32':
         return 2
-    if args.action == 'self-test':
+    redirected = restore_stdio()
+    argv = sys.argv[1:] if argv is None else argv
+    if argv == ['self-test']:
         print(json.dumps(dict(ok=True, version=VERSION, platform='win32', network='not used')))
         return 0
     if not getattr(sys, 'frozen', False):
         return 2
-    gui = args.action is None
+    valid = len(argv) == 1 and argv[0] in ('install', 'repair', 'upgrade', 'connect', 'disconnect', 'uninstall', 'verify-payload')
+    if not argv or not redirected:
+        from helper.windows_gui import show_setup
+        action = argv[0] if valid and argv[0] not in ('install', 'upgrade', 'verify-payload') else None
+        notice = 'Choose an action below. Changes are made only after confirmation.' if argv and not valid else None
+        return show_setup(initial_action=action, notice=notice)
+    if not valid:
+        print(json.dumps(dict(ok=False, error='invalid_setup_action')), file=sys.stderr)
+        return 2
     try:
-        if args.action == 'verify-payload':
-            raw = (Path(sys._MEIPASS)/'windows-payload.zip').read_bytes()
+        action = argv[0]
+        if action == 'verify-payload':
+            raw = (Path(sys._MEIPASS) / 'windows-payload.zip').read_bytes()
             contents, config = payload_files(raw)
             print(json.dumps(dict(ok=True, version=config['version'], extension_id=config['extension_id'],
                                   files=len(contents), sha256=hashlib.sha256(raw).hexdigest(), network='not used')))
             return 0
-        action = args.action
-        if gui:
-            text = ('Install or upgrade PearPlay for this Windows user and connect Google Chrome?\n\n'
-                    'This preview is unsigned. No administrator rights or firewall changes are requested. '
-                    'Fully close casting first. Saved pairing is kept. Choose No to cancel.\n\n'
-                    'For repair, disconnect or uninstall, run this installer from a terminal with the named action.')
-            if not message(text, question=True):
-                return 0
-            api = Win32()
-            f = Files(api, api.local_appdata()/'PearPlay')
-            try:
-                with f.directory(create=False):
-                    installed = 'install-receipt.json' in f.inventory()
-            except FileNotFoundError:
-                installed = False
-            action = 'upgrade' if installed else 'install'
-        payload = None
-        if action in ('install','repair','upgrade'):
-            payload = (Path(sys._MEIPASS)/'windows-payload.zip').read_bytes()
-        result = manage(action, payload)
-        print(json.dumps(result))
-        if gui:
-            message('PearPlay is connected to Chrome. Fully quit and reopen Chrome, then click Check connection in the extension.\n\nNo TV action was taken. Saved pairing is kept.')
+        payload = (Path(sys._MEIPASS) / 'windows-payload.zip').read_bytes() if action in ('install', 'repair', 'upgrade') else None
+        print(json.dumps(manage(action, payload)))
         return 0
     except Exception:
-        if gui:
-            message('Setup refused or failed. Existing/changed files and saved pairing are protected.\n\nUse the command-line action for a sanitized error and consult the Windows guide. No security settings were changed.')
-        else:
-            # Avoid raw exception messages with filesystem/user data.
-            print(json.dumps(dict(ok=False, error='setup_refused_or_failed', pairing='preserved')), file=sys.stderr)
+        print(json.dumps(dict(ok=False, error='setup_refused_or_failed', pairing='preserved')), file=sys.stderr)
+        return 1
+
+
+def safe_main(argv=None):
+    try:
+        return main(argv)
+    except Exception:
+        # Never let PyInstaller replace PearPlay with a generic traceback.
         return 1
 
 
 if __name__ == '__main__':
-    raise SystemExit(main())
+    raise SystemExit(safe_main())

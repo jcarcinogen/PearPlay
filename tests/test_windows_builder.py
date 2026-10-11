@@ -138,7 +138,7 @@ def test_both_windows_executables_embed_pearplay_icon(tmp_path, name, onefile):
     build = builder()
     argv = build.freeze_command(tmp_path, ROOT/'helper/app.py', name, onefile=onefile)
     assert argv[argv.index('--icon') + 1] == str(ROOT/'assets/brand/pearplay.ico')
-    assert '--console' in argv and '--windowed' not in argv  # preserve native stdio
+    assert '--windowed' in argv and '--console' not in argv  # stdio restored from inherited pipes
 
 
 def test_windows_icon_contains_all_shell_sizes():

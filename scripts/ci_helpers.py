@@ -83,7 +83,7 @@ def collect(build, output, root):
         if Path(name).name != name or digest(build / name) != entry['sha256']:
             raise ValueError('invalid_artifact: ' + name)
         shutil.copy2(build / name, output / name)
-    for name in ('arch-report.json', 'build-report.json', 'source-hashes.json', 'smoke.json', 'environment-inputs.json', 'native-tests.txt'):
+    for name in ('gui-native.png', 'gui-maintenance.png', 'gui-setup.png', 'arch-report.json', 'build-report.json', 'source-hashes.json', 'smoke.json', 'environment-inputs.json', 'native-tests.txt'):
         if (build / name).is_file():
             shutil.copy2(build / name, output / name)
     for path in root.glob('*.log'):

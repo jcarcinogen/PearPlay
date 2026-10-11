@@ -129,7 +129,12 @@ def main(argv=None, config=None):
     if not valid_build(config): return 2
     if sys.platform == 'win32':
         from helper.windows_setup import helper_main
-        return helper_main(argv, config)
+        try:
+            return helper_main(argv, config)
+        except Exception:
+            # No bootloader traceback dialog or sensitive error text. Native
+            # startup failure is an EOF/nonzero exit, not a protocol reply.
+            return 1
     if argv and argv[0] == 'firewall-privileged':
         if len(argv) != 3: return 2
         from helper.firewall import privileged_main

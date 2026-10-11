@@ -6,6 +6,18 @@ import json
 import subprocess
 from helper import install
 
+def system_environment():
+    """External OS tools must not load PyInstaller's bundled Linux libraries."""
+    env = dict(os.environ)
+    if sys.platform == 'linux' and getattr(sys, 'frozen', False):
+        original = env.get('LD_LIBRARY_PATH_ORIG')
+        if original is None:
+            env.pop('LD_LIBRARY_PATH', None)
+        else:
+            env['LD_LIBRARY_PATH'] = original
+    return env
+
+
 def choose_browsers(detected, platform=None, run=subprocess.run):
     platform = sys.platform if platform is None else platform
     if platform == 'darwin':
@@ -23,8 +35,10 @@ def choose_browsers(detected, platform=None, run=subprocess.run):
     argv = ['zenity', '--list', '--checklist', '--title=PearPlay Setup', '--text=Choose browsers to connect or disconnect.',
             '--column=Use', '--column=Browser ID', '--column=Browser', '--hide-column=2', '--print-column=2', '--separator=|', '--width=480', '--height=320']
     for browser,label in LABELS.items(): argv += ['TRUE' if browser in detected else 'FALSE', browser, label]
-    result = run(argv, capture_output=True, text=True)
-    if result.returncode: return []
+    result = run(argv, capture_output=True, text=True, env=system_environment())
+    if result.returncode == 1: return []  # Deliberate Cancel/close.
+    if result.returncode:
+        raise OSError('linux_setup_dialog_failed')
     return [browser for browser in result.stdout.strip().split('|') if browser in LABELS]
 
 

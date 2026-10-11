@@ -82,7 +82,7 @@ def dialog(text):
     if sys.platform == 'darwin':
         subprocess.run(['/usr/bin/osascript','-e','display dialog '+json.dumps(text, ensure_ascii=False)+' with title "PearPlay Setup" buttons {"OK"} default button "OK"'],capture_output=True)
     else:
-        subprocess.run(['zenity','--info','--no-markup','--title=PearPlay Setup','--text='+text],capture_output=True)
+        subprocess.run(['zenity','--info','--no-markup','--title=PearPlay Setup','--text='+text],capture_output=True,env=setup.system_environment(),check=True)
 
 def gui(config, parent, executable):
     # First launch goes straight to browser selection. Any existing registration,
@@ -97,7 +97,9 @@ def gui(config, parent, executable):
             script='choose from list {'+','.join(json.dumps(x) for x in choices)+'} with title "PearPlay Setup" with prompt "One helper for your browsers. End casting before updates or removal."'
             selected=subprocess.run(['/usr/bin/osascript','-e',script],capture_output=True,text=True)
         else:
-            selected=subprocess.run(['zenity','--list','--title=PearPlay Setup','--text=One helper for your browsers. End casting before updates or removal.','--column=Action','--width=500','--height=350',*choices],capture_output=True,text=True)
+            selected=subprocess.run(['zenity','--list','--title=PearPlay Setup','--text=One helper for your browsers. End casting before updates or removal.','--column=Action','--width=500','--height=350',*choices],capture_output=True,text=True,env=setup.system_environment())
+            if selected.returncode not in (0, 1):
+                raise OSError('linux_setup_dialog_failed')
         if selected.returncode or selected.stdout.strip() not in ACTIONS: return 0
         action=ACTIONS[selected.stdout.strip()]
     if action == 'update': webbrowser.open(UPDATES); return 0
@@ -164,7 +166,7 @@ def main(argv=None, config=None):
         print(json.dumps(result))
         return 1 if any(v in ('conflict','preserved') for v in result.values()) else 0
     try: return gui(config,parent,executable)
-    except (OSError,ValueError):
+    except (OSError,ValueError,subprocess.CalledProcessError):
         detail='Check macOS permission to show the setup dialog.' if sys.platform=='darwin' else 'Linux graphical setup requires Zenity.'
         print('PearPlay Setup could not open. '+detail+' Use the developer guide.',file=sys.stderr)
         return 1

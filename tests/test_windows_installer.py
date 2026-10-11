@@ -165,3 +165,72 @@ def test_payload_case_collision_file_directory_collision_and_receipt_paths():
     r['files']['../../state/credentials.dpapi'] = 'a'*64
     with pytest.raises(ValueError):
         receipt(r)
+
+
+# Pure model tests for GUI (dependency injection, no production writes)
+def test_gui_model_instantiation_and_hooks():
+    calls = []
+    def fake_op():
+        calls.append('op')
+        return {'ok': True, 'version': '0.3.1'}
+    def on_succ(r):
+        calls.append(('succ', r))
+    def on_fail(e):
+        calls.append(('fail', e))
+    # Note: actual class import in test to avoid Tk at import time for headless
+    from helper.windows_gui import PearPlayGUI as GUIClass
+    g = GUIClass(run_operation=fake_op, on_success=on_succ, on_failure=on_fail)
+    assert g.title == "PearPlay Setup"
+    assert callable(g.run_operation)
+    # Synthetic run without mainloop for inspection
+    res = g.run_operation()
+    assert res['ok'] is True
+    on_succ(res)
+    assert calls == ['op', ('succ', {'ok': True, 'version': '0.3.1'})]
+
+
+def test_gui_sanitized_failure_path():
+    def bad_op():
+        raise RuntimeError("C:\\raw\\path\\secret")
+    from helper.windows_gui import PearPlayGUI as GUIClass
+    errs = []
+    g = GUIClass(run_operation=bad_op, on_failure=lambda e: errs.append(e))
+    g._run_bg()
+    kind, text = g.result_queue.get_nowait()
+    assert kind == 'failure'
+    assert 'raw' not in text and 'secret' not in text
+    assert 'Close Chrome' in text
+
+
+def test_gui_default_operation_is_real_transaction():
+    from helper.windows_gui import PearPlayGUI, install_or_upgrade
+    assert PearPlayGUI().run_operation is install_or_upgrade
+
+
+def test_gui_windowed_build_separate_from_native_console(tmp_path):
+    from scripts.build_windows_helper import freeze_command
+    native = freeze_command(tmp_path, 'native.py', 'Native')
+    gui = freeze_command(tmp_path, 'gui.py', 'Setup', onefile=True, windowed=True)
+    assert '--console' in native and '--windowed' not in native
+    assert '--windowed' in gui and '--console' not in gui
+
+
+def test_gui_operation_dispatches_receipted_upgrade(monkeypatch, tmp_path):
+    from helper import windows_gui as gui, windows_setup as setup
+    from contextlib import nullcontext
+    calls = []
+    class API:
+        def local_appdata(self): return tmp_path
+    class Files:
+        def __init__(self, api, root): pass
+        def directory(self, create=False): return nullcontext()
+        def inventory(self): return {'install-receipt.json': 'digest'}
+    monkeypatch.setattr(gui.sys, 'platform', 'win32')
+    monkeypatch.setattr(gui.sys, 'frozen', True, raising=False)
+    monkeypatch.setattr(gui.sys, '_MEIPASS', str(tmp_path), raising=False)
+    monkeypatch.setattr(setup, 'Win32', API)
+    monkeypatch.setattr(setup, 'Files', Files)
+    monkeypatch.setattr(setup, 'manage', lambda action, data: calls.append((action, data)) or {'action': action})
+    (tmp_path/'windows-payload.zip').write_bytes(b'fixture')
+    assert gui.install_or_upgrade() == {'action': 'upgrade'}
+    assert calls == [('upgrade', b'fixture')]

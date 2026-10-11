@@ -2,7 +2,7 @@
 
 No cross-compilation claim: inventory works on any OS; build requires Windows.
 Uses PyInstaller already present in an isolated environment, never installs it.
-Outputs an onedir console native host and a onefile console/MessageBox installer.
+Outputs a console native host, console maintenance tool and windowed setup.
 """
 import argparse
 import hashlib
@@ -65,7 +65,8 @@ def build_source_snapshot():
              ROOT/'scripts/build_windows_helper.py', ROOT/'scripts/build_windows_helper.ps1',
              ROOT/'scripts/build_helper.py', ROOT/'spikes/001-airplay/pearplay.py',
              ROOT/'spikes/002-command/command.py', ROOT/'spikes/002-command/LICENSE.md',
-             ROOT/'spikes/002-command/requirements.txt', ROOT/'requirements.txt', ROOT/'LICENSE']
+             ROOT/'spikes/002-command/requirements.txt', ROOT/'requirements.txt', ROOT/'LICENSE',
+             ROOT/'assets/store/icon-1024.png', ROOT/'assets/brand/pearplay.ico']
     return {p.relative_to(ROOT).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(paths)}
 
 
@@ -103,15 +104,73 @@ def inventory():
                 packages=versions, tools={name:shutil.which(name) for name in ('powershell','pwsh','iexpress','signtool')})
 
 
-def freeze_command(output, entry, name, *, onefile=False, data=()):
-    argv = [sys.executable,'-m','PyInstaller','--noconfirm','--clean','--console',
+def freeze_command(output, entry, name, *, onefile=False, windowed=False, data=()):
+    argv = [sys.executable,'-m','PyInstaller','--noconfirm','--clean','--windowed' if windowed else '--console',
             '--onefile' if onefile else '--onedir','--noupx','--name',name,
+            '--icon',str(ROOT/'assets/brand/pearplay.ico'),
             '--distpath',str(output/'frozen'),'--workpath',str(output/('work-'+name)),
             '--specpath',str(output),'--paths',str(ROOT),'--collect-all','pyatv',
             '--recursive-copy-metadata','pyatv']
     for source, destination in data:
         argv.extend(['--add-data', str(source) + os.pathsep + destination])
     return argv + [str(entry)]
+
+
+def icon_frames(raw):
+    """Read the committed ICO without adding an image-library build dependency."""
+    if len(raw) < 6:
+        raise ValueError('invalid_brand_icon')
+    reserved, kind, count = struct.unpack_from('<HHH', raw)
+    if reserved or kind != 1 or not 1 <= count <= 32 or len(raw) < 6 + 16 * count:
+        raise ValueError('invalid_brand_icon')
+    frames = []
+    for index in range(count):
+        width, height, colors, reserved, planes, bits, size, offset = struct.unpack_from('<BBBBHHII', raw, 6 + index * 16)
+        if reserved or offset < 6 + 16 * count or not size or offset + size > len(raw):
+            raise ValueError('invalid_brand_icon_frame')
+        frames.append(((width, height, colors, reserved, planes, bits, size), raw[offset:offset + size]))
+    return frames
+
+
+def verify_executable_icon(executable):
+    """Fail the build unless every embedded PE icon frame matches our ICO."""
+    import pefile  # Already a PyInstaller dependency on Windows.
+    raw = (ROOT/'assets/brand/pearplay.ico').read_bytes()
+    expected = icon_frames(raw)
+    pe = pefile.PE(str(executable))
+    try:
+        resources = {entry.id: entry for entry in pe.DIRECTORY_ENTRY_RESOURCE.entries}
+        groups = resources[14].directory.entries  # RT_GROUP_ICON
+        if len(groups) != 1:
+            raise ValueError('unexpected_executable_icon_groups')
+        images = {entry.id: entry for entry in resources[3].directory.entries}  # RT_ICON
+        def resource_bytes(entry):
+            leaves = entry.directory.entries
+            if len(leaves) != 1:
+                raise ValueError('unexpected_executable_icon_languages')
+            data = leaves[0].data.struct
+            return pe.get_data(data.OffsetToData, data.Size)
+        group = resource_bytes(groups[0])
+        if len(group) != 6 + 14 * len(expected) or struct.unpack_from('<HHH', group) != (0, 1, len(expected)):
+            raise ValueError('executable_icon_directory_mismatch')
+        for index, (metadata, pixels) in enumerate(expected):
+            actual = struct.unpack_from('<BBBBHHIH', group, 6 + 14 * index)
+            if actual[:-1] != metadata or resource_bytes(images[actual[-1]]) != pixels:
+                raise ValueError('executable_icon_pixels_mismatch')
+        return dict(ico_sha256=hashlib.sha256(raw).hexdigest(),
+                    sizes=[metadata[0] or 256 for metadata, _ in expected],
+                    embedded_frames_match=True)
+    except (AttributeError, KeyError, struct.error) as error:
+        raise ValueError('missing_or_invalid_executable_icon') from error
+    finally:
+        pe.close()
+
+
+def verify_windowed(executable):
+    import pefile
+    with pefile.PE(str(executable)) as pe:
+        if pe.OPTIONAL_HEADER.Subsystem != 2:
+            raise ValueError('gui_installer_is_not_windowed')
 
 
 def native_smoke(executable):
@@ -180,6 +239,7 @@ def build(output):
     shutil.copy2(ROOT/'LICENSE',payload/'LICENSE')
     (payload/'build-info.json').write_bytes(encoded(config))
     executable = payload/'PearPlayHelper.exe'
+    helper_icon = verify_executable_icon(executable)
     smoke = subprocess.run([str(executable),'self-test'], capture_output=True, text=True, check=True, timeout=60)
     dependency_smoke = json.loads(smoke.stdout)
     if dependency_smoke.get('ok') is not True or dependency_smoke.get('version') != VERSION or smoke.stderr:
@@ -197,8 +257,9 @@ def build(output):
         subprocess.run(freeze_command(output,ROOT/'helper/windows_setup.py','PearPlaySetup',onefile=True,
                                      data=[(archive_path,'.')]), stdout=log, stderr=subprocess.STDOUT, check=True)
     reject_input_drift(source_hashes, environment_hashes)
-    installer = output/f'pearplay-helper-{VERSION}-windows-x86_64-unsigned.exe'
+    installer = output/f'pearplay-helper-{VERSION}-windows-x86_64-maintenance.exe'
     shutil.copy2(output/'frozen/PearPlaySetup.exe',installer)
+    installer_icon = verify_executable_icon(installer)
     setup_smoke = subprocess.run([str(installer),'self-test'], capture_output=True, text=True, check=True, timeout=60)
     if json.loads(setup_smoke.stdout).get('ok') is not True or setup_smoke.stderr:
         raise ValueError('installer_smoke_failed')
@@ -206,6 +267,18 @@ def build(output):
     embedded = json.loads(verify.stdout)
     if embedded.get('sha256') != hashlib.sha256(archive_path.read_bytes()).hexdigest() or embedded.get('version') != VERSION or verify.stderr:
         raise ValueError('embedded_installer_payload_smoke_failed')
+    # Owner-facing download is a real windowed setup; console maintenance stays separate.
+    with (output/'gui-freeze.log').open('w', encoding='utf-8') as log:
+        subprocess.run(freeze_command(output, ROOT/'helper/windows_gui.py', 'PearPlaySetupGUI',
+                         onefile=True, windowed=True, data=[(archive_path, '.'),
+                         (ROOT/'assets/brand/pearplay.ico', 'assets/brand'),
+                         (ROOT/'assets/store/icon-1024.png', 'assets/store')]),
+                       stdout=log, stderr=subprocess.STDOUT, check=True)
+    gui_installer = output/f'pearplay-helper-{VERSION}-windows-x86_64-unsigned.exe'
+    shutil.copy2(output/'frozen/PearPlaySetupGUI.exe', gui_installer)
+    gui_icon = verify_executable_icon(gui_installer)
+    verify_windowed(gui_installer)
+    reject_input_drift(source_hashes, environment_hashes)
     # Native fixture tests verify DPAPI/ACLs, sharing lease and setup readbacks.
     environment = dict(os.environ, PEARPLAY_TEST_PAYLOAD=str(archive_path))
     result = subprocess.run([sys.executable,'-B','-m','pytest','-q','-p','no:cacheprovider',
@@ -218,8 +291,11 @@ def build(output):
     if result.returncode:
         raise ValueError('windows_native_fixture_tests_failed')
     report = dict(config, source_hashes=source_hashes, input_drift_checks=['before-freeze', 'after-helper-freeze', 'after-setup-freeze', 'after-tests'],
-                  licenses=license_inputs, unsigned=True, installer=installer.name, sha256=hashlib.sha256(installer.read_bytes()).hexdigest(),
+                  licenses=license_inputs, unsigned=True, installer=gui_installer.name, sha256=hashlib.sha256(gui_installer.read_bytes()).hexdigest(),
+                  maintenance=dict(file=installer.name, sha256=hashlib.sha256(installer.read_bytes()).hexdigest()),
+                  gui=dict(windowed=True, runtime_tested=False, icon=gui_icon),
                   dependencies=dependency_smoke, native=protocol_smoke, embedded_payload=embedded, windows_fixture_tests=True, installed_frozen_payload_tested=True,
+                  icons=dict(helper=helper_icon, installer=installer_icon),
                   chrome_tested=False, receiver_tested=False, security_settings_changed=False)
     (output/'build-report.json').write_bytes(encoded(report))
     print(json.dumps(report,indent=2))

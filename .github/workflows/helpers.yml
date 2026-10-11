@@ -53,6 +53,11 @@ jobs:
         with:
           version: '0.13.0'
           enable-cache: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        if: runner.os == 'Windows'
+        with:
+          python-version: '3.13.16'
+          architecture: x64
       - name: Linux package tools (disposable runner only)
         if: runner.os == 'Linux'
         run: |
@@ -64,7 +69,8 @@ jobs:
           import os, pathlib, subprocess, sys, venv
           root = pathlib.Path(os.environ['RUNNER_TEMP']) / 'pearplay-ci'
           root.mkdir(exist_ok=False)
-          subprocess.run(['uv', 'venv', '--python', '3.11.15', '--managed-python', str(root / 'venv')], check=True)
+          interpreter = [sys.executable] if sys.platform == 'win32' else ['3.11.15', '--managed-python']
+          subprocess.run(['uv', 'venv', '--python', *interpreter, str(root / 'venv')], check=True)
           python = root / ('venv/Scripts/python.exe' if sys.platform == 'win32' else 'venv/bin/python')
           subprocess.run(['uv', 'pip', 'install', '--python', str(python), 'pyatv==0.18.0', 'PyInstaller==6.21.0', 'pytest==9.0.2'], check=True)
           with (root / 'dependencies.txt').open('w', encoding='utf-8') as log:

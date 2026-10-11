@@ -95,7 +95,7 @@ try{
   assert.equal(c.state.findDisabled,!ready);
   const hello=await c.native('hello');
   if(ready){
-   assert.equal(hello.ok,true);assert.equal(hello.helperVersion,'0.3.0');
+   assert.equal(hello.ok,true);assert.equal(hello.helperVersion,extensionVersion);
    const status=await c.native('status');assert.equal(status.ok,true);assert.equal(status.state,'idle');
    report.phases.push({phase,setup:c.state.kind,helperVersion:hello.helperVersion,status:status.state});
    if(phase==='ready' && process.env.PEARPLAY_LIVE_DISCOVERY==='1'){

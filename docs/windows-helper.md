@@ -1,4 +1,4 @@
-# Windows helper 0.3.0 — unsigned engineering preview
+# Windows helper 0.3.1 — unsigned engineering preview
 
 ## Scope
 
@@ -8,26 +8,21 @@ The installer is a per-user, self-contained PyInstaller executable containing th
 
 ## Install and maintain
 
-Run `pearplay-helper-0.3.0-windows-x86_64-unsigned.exe` as the ordinary signed-in Windows user. Double-click presents a native Yes/No confirmation for install/upgrade and a completion message. It deliberately uses a console-subsystem bootloader: Windows native messaging requires inherited stdin/stdout, which a windowless PyInstaller helper does not reliably provide. A console may therefore be visible during setup. The native host remains a console executable, with no setup dialog on Chrome's native invocation.
+Download `pearplay-helper-0.3.1-windows-x86_64-unsigned.exe` and the checksums from the [0.3.1 release](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.3.1). End casting and fully close Chrome first. Run as your ordinary signed-in Windows user; no administrator access is requested.
 
-Terminal actions (replace the file path with the downloaded installer):
+The branded PearPlay window offers **Install / update**, **Repair installation**, **Connect Chrome**, **Disconnect Chrome**, and **Remove helper**. Select an action, choose Continue, read the confirmation and confirm. Saved TV pairing is kept. Buttons and closing are disabled during a transaction. Fully quit and reopen Chrome after changes, then use **Check connection** in the extension. Registration alone is not proof of connection or playback.
 
-    .\pearplay-helper-0.3.0-windows-x86_64-unsigned.exe install
-    .\pearplay-helper-0.3.0-windows-x86_64-unsigned.exe repair
-    .\pearplay-helper-0.3.0-windows-x86_64-unsigned.exe upgrade
-    .\pearplay-helper-0.3.0-windows-x86_64-unsigned.exe connect
-    .\pearplay-helper-0.3.0-windows-x86_64-unsigned.exe disconnect
-    .\pearplay-helper-0.3.0-windows-x86_64-unsigned.exe uninstall
-    .\pearplay-helper-0.3.0-windows-x86_64-unsigned.exe self-test
-    .\pearplay-helper-0.3.0-windows-x86_64-unsigned.exe verify-payload
+Repair restores missing owned files of the same version. Update permits the same or newer version, never a downgrade. Unknown or changed files are not overwritten. Removal deletes only unchanged receipt-owned files and reports preserved files; it never recursively deletes the PearPlay tree or saved pairing. Keep the downloaded installer for future maintenance. There is no Apps & Features entry in this preview.
 
-`install` refuses an existing receipt. `repair` requires the same version and restores missing recorded files. `upgrade` allows the same/newer version and refuses downgrades. Both refuse changed or foreign files rather than merge unknown code into the runtime. Fully end casting before any maintenance. An active pairing/playback lease blocks maintenance. Close other running helper/setup processes if Windows refuses to replace an in-use executable.
+Every shipped executable is windowed and branded, including manual native-host and maintenance launch. Native messaging uses inherited pipes without allocating a console. The installed native host offers Connect/Disconnect; use the downloaded installer for repair, update or removal.
 
-`disconnect` removes only matching registrations, leaving the helper and pairing. `connect` requires the recorded payload to be intact. `uninstall` removes only unchanged, receipt-owned files and matching registry keys. Changed and foreign files are preserved and reported; a receipt is retained when changed owned files remain. It never recursively deletes the PearPlay tree. It always preserves saved TV pairing. The downloaded installer is not installed into its own removal target and is not deleted by uninstall; retain it for maintenance, then remove that download yourself if desired. There is no Apps & Features/uninstall shortcut in this preview.
+**Unsigned Windows builds can be blocked by Smart App Control or Application Control. This occurred on the owner’s test PC. Stop if blocked; do not disable security, elevate to evade a block, or try an alternate executable.** Hosted Windows builds, exact-installer tests and GUI observations are distinct from acceptance under your PC’s policy. The maintainer has submitted a SignPath application; approval, integration and trusted signing are not yet available. No SignPath sponsorship is claimed.
 
-Fully quit and reopen Chrome after registration changes, then use the extension's Check connection action. Registry registration alone is not proof that Chrome connected.
+For deliberate automation, the same installer accepts explicit `install`, `repair`, `upgrade`, `connect`, `disconnect`, `uninstall`, `self-test`, or `verify-payload` actions when stdout is redirected/captured. With no action, it opens the confirmation UI. Ordinary users should use the branded window, not a terminal.
 
-This build is unsigned. Windows may warn or block it. Do not disable SmartScreen/Defender, change execution policy, or use an elevation workaround. A signed consumer release and owner-observed GUI/Chrome testing remain release gates.
+## Executable branding
+
+The installer, maintenance executable and native host embed the original colored PearPlay ICO at 16/24/32/48/64/128/256 pixels. Build gates verify the PE resources, GUI subsystem, native framing and initial frozen window title/icon/cancel. Real Tk confirmation/progress/result tests use fixture operations; this does not claim a successful owner-policy installation.
 
 ## Exact owned locations
 
@@ -59,36 +54,12 @@ The boundary does not defend against malware already running as the same Windows
 
 Ordinary installation failures attempt rollback and verify registry/files/receipt readbacks. `transaction.json` remains if a transaction or rollback is interrupted. Later maintenance fails closed rather than guessing ownership. Automated power-loss recovery is not supplied: preserve the journal/receipt and seek engineering review; do not delete unknown files or remove the journal merely to force installation.
 
-Windows discovery uses pyatv's existing multicast/unicast scan. No Avahi/Bonjour service or firewall exception is installed. If existing network policy blocks discovery/playback, this helper reports the failure; it does not change security policy. Windows responses advertise `firewallSupport: false` and reject firewall operations. Receiver scanning, pairing, playback, stop and timing/event-channel behavior still require actual owner/receiver acceptance tests.
+Windows discovery uses pyatv's existing multicast/unicast scan. No Avahi/Bonjour service or firewall exception is installed. If existing network policy blocks discovery/playback, this helper reports the failure; it does not change security policy. Windows responses advertise `firewallSupport: false` and reject firewall operations. Recorded Windows Chrome/Apple TV owner checks cover scanning, pairing, picture/sound and physical pause/resume/session ending on tested streams; broader receiver and stream behavior is not generally verified.
 
-## Build from source
+## Build from source and verification
 
-Build natively on Windows x64; PyInstaller is not a Windows cross-compiler. Keep source canonical and build from an explicit test/build staging snapshot with no Git checkout or secrets. Use a new output directory outside source. The Python builder inventories installed tools/dependencies first; PowerShell/.NET/IExpress are not required because PyInstaller supplies the self-contained installer.
+The [helper workflow](../.github/workflows/helpers.yml) builds on Windows x64 using official Python 3.13.16 with complete Tk, pyatv 0.18.0, PyInstaller 6.21.0 and pytest 9.0.2. Managed Windows Python 3.11.15 was found to lack a required Tk theme; binary/protocol success alone did not prove GUI startup. Do not skip the GUI gates.
 
-An isolated Python 3.11 environment requires:
+Use an existing approved environment: `python scripts/build_windows_helper.py --output <new-directory-outside-source>`. The builder does not install tools or bypass security. See [CI documentation](helper-ci.md).
 
-    pyatv==0.18.0
-    PyInstaller==6.21.0
-    pytest==9.0.2
-
-With an existing isolated Python:
-
-    C:\path\to\venv\Scripts\python.exe scripts\build_windows_helper.py --inventory
-    C:\path\to\venv\Scripts\python.exe -m pytest -q tests\test_windows_source.py tests\test_windows_installer.py tests\test_windows_native.py
-    C:\path\to\venv\Scripts\python.exe scripts\build_windows_helper.py --output C:\path\outside\source\new-build
-
-The optional `scripts/build_windows_helper.ps1` inventories tools and can prepare an isolated environment using an explicitly supplied existing/approved uv executable. It never downloads/installs a global tool or changes script policy. If policy blocks the PowerShell driver, leave it blocked: direct uv/Python executable commands are the independent supported build path. Do not invoke a script-execution-policy bypass.
-
-Direct isolated uv environment setup, if dependencies/runtime installation has been explicitly authorized:
-
-    set UV_CACHE_DIR=C:\path\to\work\uv-cache
-    set UV_PYTHON_INSTALL_DIR=C:\path\to\work\python
-    set UV_PYTHON_BIN_DIR=C:\path\to\work\bin
-    C:\path\to\approved\uv.exe venv --python 3.11 --managed-python --no-project C:\path\to\work\venv
-    C:\path\to\approved\uv.exe pip install --python C:\path\to\work\venv\Scripts\python.exe pyatv==0.18.0 PyInstaller==6.21.0 pytest==9.0.2
-
-The builder freezes and exercises the native host, tests CR/LF-bearing frame headers, bounded oversize rejection, compiled-origin override rejection and EOF exit, embeds/verifies the exact ZIP, then requires real Win32 fixture tests. Those install the actual frozen payload into a random fixture directory, register a random HKCU test key (not Chrome), run the installed executable, repair a missing executable, perform same-version upgrade/uninstall, and verify fixture DPAPI pairing survives. Every build saves dependency/license metadata, source hashes, artifact SHA-256 and an explicit `chrome_tested:false` / `receiver_tested:false` report. A failed gate does not produce a successful build report.
-
-## Evidence and remaining gates
-
-Read the durable `WINDOWS-HANDOFF.md` and `build-report.json` beside the preview artifact for the actual commands, hashes and results. Portable source tests are not Win32 execution evidence; the Win32 fixture log and frozen executable smoke results are separate. Do not publish this preview as a signed or TV-verified release.
+Native gates cover DPAPI/ACLs, receipt/hash/registration readback, frozen native framing and origin rejection, real Tk fixture states, and exact frozen initial windows with clean cancel. On disposable hosted Windows only, the exact shipping installer is exercised through install, repair, update, disconnect, reconnect and removal. No owner registry is used for that test. Build reports distinguish native/hosted acceptance from real Chrome, receiver and owner-policy evidence.

@@ -1,12 +1,12 @@
 # PearPlay privacy policy
 
-**Cross-platform development-preview policy draft: Linux, Mac and Windows Chrome. Safari extension development is paused.**
+**Privacy policy for PearPlay’s cross-platform experimental release.**
 
-This local revision describes the 0.3.0 candidate and separate per-platform helper intent; it has not been published as a new policy. Published Linux helper 0.2.8 is at https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.8. Mac and Windows helpers are development previews without public installer links. Newest STATUS reports Scott's Store 0.2.8 submission/publication without independently confirming the live version; the source version is not evidence of Store approval. See [preview evidence and gates](cross-platform-preview.md).
+This policy describes PearPlay extension and helper 0.3.1 for desktop Chrome on Linux, macOS and Windows. Extension Store approval and native helper availability are separate; refer to the release and installation pages for current downloads. Mac and Windows helpers are unsigned experimental software. Safari extension development is paused. See [preview evidence and gates](cross-platform-preview.md).
 
 ## What PearPlay does with data
 
-PearPlay finds compatible media on pages for which you grant access. It processes video resource addresses, relevant page/video titles and frame/navigation information to offer a choice of video. Resource addresses can contain temporary authorization tokens. The extension keeps a bounded discovery session and session-only interface state; it does not offer a browsing-history collection service.
+PearPlay finds compatible media on pages for which you grant access. It processes video resource addresses, relevant page/video titles and frame/navigation information to offer a choice of video. Resource addresses can contain temporary authorization tokens. The extension keeps a bounded discovery session and session-only interface state, including the selected jump interval. Browser-video controls read playback position, duration, seek ranges, pause/mute and Picture in Picture state from the selected video and apply your requested actions. During supported TV sessions, the helper processes session-bound pause/resume commands and receiver playback events. It does not offer a browsing-history collection service.
 
 When you select a receiver and send a video, PearPlay passes the selected media address to its native helper and the selected AirPlay receiver. The receiver fetches the media from its original provider. That provider can observe the receiver's requests and network address under its own policy. PearPlay supports HTTP as well as HTTPS media and does not promise that every media transfer is encrypted.
 

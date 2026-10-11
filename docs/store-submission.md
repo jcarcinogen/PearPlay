@@ -1,66 +1,12 @@
-# PearPlay Store submission — current candidate held
+# Chrome Web Store update — 0.3.1
 
-Extension 0.3.0 is a local cross-platform development preview, not an approved upload. Published Linux helper 0.2.8 downloads remain the catalog; no Mac/Windows public links or human-observed playback are established. Safari extension development is paused. This work is uncommitted/unpublished and authorizes no external action.
+Use existing item `eoadahoncjfpnennmkjifohclbafjkol`; do not create a second listing. The final release kit supplies the 0.3.1 ZIP, SHA256, listing text, reviewer/privacy fields and updated RGB PNG images with a one-click copy page.
 
-Use permanent item `eoadahoncjfpnennmkjifohclbafjkol`. Newest [STATUS](../STATUS.md) records Linux 0.2.8 publication/download verification, Scott's reported 0.2.8 Store transition without independent live confirmation, and separately prepared 0.2.9 ZIP. Do not upload old 0.2.7/0.2.8 kits as the new candidate or infer Store approval from a source version.
+1. Confirm the release-kit public-download/Pages/ZIP checks passed. Use the new kit, not the older held candidate.
+2. In the existing item’s dashboard, upload `pearplay-0.3.1.zip`. If an unpublished Ready to publish draft locks upload, cancel that pending publish on the same item first.
+3. Confirm package version0.3.1, production identity and expected permissions. Paste [listing text](store-listing.md), privacy/permission explanations and reviewer notes from the kit.
+4. Upload the three 1280×800 screenshots, 440×280 tile and optional 1400×560 marquee. These show actual shipping controls with synthetic example data.
+5. Privacy policy: https://jcarcinogen.github.io/PearPlay/privacy.html. Website: https://jcarcinogen.github.io/PearPlay/. Keep required disclosures truthful.
+6. Scott submits for Google review. Leave automatic publishing off unless he explicitly chooses it. Read back submission state; GitHub release is not Store approval.
 
-Before a separately authorized submission: close the [current readiness gates](web-store-readiness.md#current-candidate-gates); attach exact Mac/Windows native artifact/lifecycle evidence; obtain the new platform human-TV results; reconcile [listing draft](store-listing.md), both privacy renderings, permissions and reviewer flow; regenerate parent-owned artwork and landing; build/test the exact final production-ID ZIP with no fixture key/rehearsal flag; verify published helper download hashes. Upload, submission, approval and public availability are distinct read-back steps. No current candidate artifact path is specified until packaging supplies one.
-
-Mac Chrome/Brave share registration and disconnect affects both. Windows pairing uses user-local DPAPI and HKCU registration, not portable cross-OS state. Do not supply Gatekeeper/quarantine/SmartScreen/Defender bypasses in reviewer instructions. Separate local helper installation and qualified platform availability must stay prominent.
-
-## Historical 0.2.7 upload preparation — superseded, do not execute
-
-The original workflow/evidence below is preserved as history, including its then-current Linux-only and paused-Mac scope. Its earlier authorizations do not authorize publication of 0.3.0; old release kits remain immutable.
-
-**Linux only. Mac support is coming soon.**
-
-## Current publication scope
-
-The owner approved the MIT license, committing/pushing the source, and publishing the project website and privacy policy. The Linux helper preview release is now also authorized. Scott subsequently approved committing/pushing and submitting/publishing extension 0.2.7, and submitted the 0.2.7 update for review from the dashboard on 2026-09-28; Google approval is pending and publication after approval is not yet done. The public Store page lists 0.2.6 (updated September 28, 2026), verified during this release preparation. Root LICENSE covers original project code; existing third-party notices remain applicable.
-
-- Website: https://jcarcinogen.github.io/PearPlay/
-- Privacy: https://jcarcinogen.github.io/PearPlay/privacy.html
-- Support: https://github.com/jcarcinogen/PearPlay/issues
-- Dashboard: https://chrome.google.com/webstore/devconsole
-
-Verify the website/privacy HTTP responses after Pages deploys. The privacy page is a static HTML rendering of docs/privacy.md; update both together whenever the policy changes.
-
-## Upload to the verified existing item
-
-1. Scott signs into the Chrome Web Store Developer Dashboard himself.
-2. Open **PearPlay**, Item ID **`eoadahoncjfpnennmkjifohclbafjkol`**. Do not select Open Autofill or create a duplicate item.
-3. Under **Package**, upload **`pearplay-0.2.7.zip`** from `Stuff/PearPlay/Web Store/0.2.7/`. Do not upload a helper package or the old DRAFT-ONLY ZIP.
-4. Confirm extension version **0.2.7** (helper remains **0.2.5**) and the unchanged Item ID. Add the supplied icon/screenshots and reconcile listing/privacy fields with the final source. If upload is locked, inspect the existing publication state rather than creating a new item.
-5. Submission/publication is now approved by Scott. After the listing, privacy declarations and reviewer instructions match this package, use **Submit for review** for this update, then publish after approval (or use publication after approval if the dashboard offers it). Read back the dashboard status—upload, submission, approval and public availability are distinct states.
-
-The Store public key was verified to derive to this Item ID. The final ZIP retains that public key and the production download catalog; it excludes fixture keys, localInstallerTest, helpers, Python, tests, credentials and caches. The helper release is separate from the Store extension. The existing public Store version is 0.2.6; this upload updates the same item to 0.2.7.
-
-## Listing assets and text
-
-Use `docs/store-listing.md` for the description, excluding its title and internal submission note. Keep the Flatpak Chrome warning as the very first line; use uppercase in the plain-text Store description rather than Markdown bold markers. `extension/manifest.json` supplies the name and short description. `docs/web-store-readiness.md` supplies the single-purpose statement and permission explanations.
-
-- Store icon: `extension/icons/icon128.png` (128 × 128).
-- Screenshots: `assets/store/listing-light.png` and `listing-dark.png` (1280 × 800).
-- Images use isolated, synthetic UI; they are not new playback evidence.
-- The listing must disclose the separate Linux helper and qualified compatibility. Do not claim general smart-TV, Linux distro, Brave or Chromium playback support.
-- Complete data-use disclosures against the final package. Local processing still counts as handling user data; do not select a blanket “no user data” assertion. HTTP media is supported, so do not promise all transfers are encrypted.
-
-## Extension-only 0.2.7 scope
-
-This update retains published helper 0.2.5 downloads. It releases the compact popup, clearer static errors and full-browser-restart guidance; it does not deliver a new helper or an LG HLS fix. New helper discovery, diagnostic and privileged-firewall code is a source checkpoint only. Real packaged privilege/rollback, upgrade and platform-baseline tests remain prerequisites to shipping those helper changes. The 0.2.7 extension hides new firewall actions when the old helper does not advertise support.
-
-## Final verification and submission gates
-
-- Build the Linux helper with the verified store ID, never the rehearsal fixture ID.
-- Exercise cross-version upgrade and the requested clean non-Omarchy Linux installation. Existing Acer Chrome playback is recorded separately in STATUS.md.
-- Publish real matching helper artifacts and checksums; verify downloaded bytes; populate extension/releases.json with only those verified URLs and supported targets.
-- Repeat the clean-install journey with the exact extension/helper identity and final ZIP.
-- Reconcile privacy, permissions, reviewer instructions, a working authorized sample, and screenshots against that build.
-- Scott’s submission/publication approval is recorded; verify each actual dashboard transition for the update to the already-public item.
-
-Mac signing and playback are not Linux release gates. Mac work stays paused.
-
-## Official references
-
-- https://developer.chrome.com/docs/webstore/publish
-- https://developer.chrome.com/docs/extensions/reference/manifest/key
+The last observed public Store version in preparation was0.2.9. No0.3.1 submission or approval is claimed. Mac/Windows remain unsigned experimental; Windows policy may block installation. These limits must remain visible in the listing and reviewer notes.

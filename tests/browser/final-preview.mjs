@@ -87,7 +87,7 @@ async function start(){
  const catalog=JSON.parse(readFileSync(join(extension,'releases.json')));
  assert.notEqual(catalog.localInstallerTest,true);
  assert.ok(links.length>0);for(const link of links)assert.ok(JSON.stringify(catalog).includes(link));
- if(mac){assert.equal(links.length,1);assert.match(links[0],/pearplay-helper-0\.3\.0-darwin-arm64\.pkg$/);}
+ if(mac){assert.equal(links.length,1);assert.match(links[0],/pearplay-helper-0\.3\.1-darwin-arm64-development\.pkg$/);}
  report.renderedDownloads=links;
  const native=op=>evaluate(sessionId,`new Promise(resolve=>{const p=chrome.runtime.connectNative('com.pearplay.helper');p.onMessage.addListener(m=>{p.disconnect();resolve(m)});p.onDisconnect.addListener(()=>resolve({missing:true,error:chrome.runtime.lastError?.message}));p.postMessage({v:1,id:'mac_preview_${op}',op:${JSON.stringify(op)},args:{}})})`);
  return {state,native,send,evaluate,sessionId};

@@ -48,7 +48,7 @@ test('current product pages distinguish cross-platform preview from published su
     const content=read(path).toString();
     assert.match(content,/Mac|macOS/,path);
     assert.match(content,/Windows/,path);
-    assert.match(content,/preview|development|unpublished/i,path);
+    assert.match(content,/preview|development|experimental|unsigned/i,path);
     assert.doesNotMatch(content,/Mac support is coming soon\.|Windows is not supported/,path);
   }
 });
@@ -62,7 +62,7 @@ test('onboarding keeps the established manifest permissions and identity', () =>
 
 test('landing template stays synchronized with the edited site (preserved install edits)', () => {
   const page=read('assets/landing/page.html').toString();
-  for (const phrase of ['Flatpak-installed','Chrome Web Store','0.3.0','Fedora helper','Store installs do not need that folder','Closing only a tab or reloading the extension is not enough']) {
+  for (const phrase of ['Flatpak-installed','Chrome Web Store','0.3.1','Fedora helper','Store installs do not need that folder','Closing only a tab or reloading the extension is not enough']) {
     assert.match(page,new RegExp(phrase.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')),phrase);
   }
   assert.doesNotMatch(page,/not yet submitted or public/);

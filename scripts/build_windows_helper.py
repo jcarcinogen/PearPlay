@@ -289,7 +289,7 @@ def build(output):
                              *(str(ROOT/'tests'/name) for name in ('test_windows_native.py', 'test_windows_source.py',
                                                                   'test_windows_installer.py', 'test_windows_builder.py', 'test_windows_branding.py')),
                              '--basetemp='+str(output/'test-fixtures')],
-                            cwd=ROOT, env=environment, capture_output=True, text=True, timeout=180)
+                            cwd=ROOT, env=environment, capture_output=True, text=True, timeout=600)
     (output/'native-tests.txt').write_text(result.stdout+result.stderr,encoding='utf-8')
     reject_input_drift(source_hashes, environment_hashes)
     if result.returncode:

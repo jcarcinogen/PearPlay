@@ -24,6 +24,35 @@ def run(argv, log):
     result.check_returncode()
 
 
+def package_arch(build, root):
+    # Freeze on Ubuntu's older libc; package those exact bytes with native
+    # makepkg in a pinned disposable Arch container, without a network at build.
+    sys.path.insert(0, str(REPO))
+    from scripts.build_helper import linux_dependencies
+    config = json.loads((build / 'build-report.json').read_text())
+    work = build / 'arch-ci'
+    work.mkdir()
+    recipe = (f"pkgname=pearplay-helper\npkgver={config['version']}\npkgrel=1\n"
+              "pkgdesc='PearPlay helper and browser setup'\narch=('x86_64')\n"
+              "url='https://github.com/jcarcinogen/PearPlay'\nlicense=('MIT')\n"
+              f"depends=({linux_dependencies('arch', platform.libc_ver()[1])})\n"
+              "options=('!strip' '!debug')\npackage() { cp -a /stage/. \"$pkgdir/\"; }\n")
+    (work / 'PKGBUILD').write_text(recipe)
+    image = 'archlinux@sha256:99e98cdd1c714023ca481b4959c9214415323129530bfc101da2ff50dd9a6106'
+    run(['docker', 'pull', image], root / 'arch-image.log')
+    run(['docker', 'run', '--rm', '--network', 'none', '-v', str(build / 'stage') + ':/stage:ro',
+         '-v', str(work) + ':/work', image, 'bash', '-ec',
+         'useradd --uid "$1" --no-create-home builder; cd /work; exec runuser -u builder -- makepkg --nodeps --noconfirm',
+         'pearplay', str(os.getuid())], root / 'arch-package.log')
+    packages = list(work.glob('*.pkg.tar.zst'))
+    if len(packages) != 1:
+        raise ValueError('expected_one_arch_package')
+    target = build / f"pearplay-helper-{config['version']}-linux-x86_64.pkg.tar.zst"
+    shutil.copy2(packages[0], target)
+    (build / 'arch-report.json').write_text(json.dumps(dict(file=target.name, sha256=digest(target),
+        image=image, scope='Arch packaging of the same Ubuntu-frozen stage; not a system install'), indent=2) + '\n')
+
+
 def collect(build, output, root):
     report = json.loads((build / 'build-report.json').read_text())
     if report['extension_id'] != EXTENSION_ID or report['platform'] != sys.platform:
@@ -37,7 +66,9 @@ def collect(build, output, root):
             raise ValueError('windows_acceptance_missing')
         entries = [dict(file=report['installer'], sha256=report['sha256']), report['maintenance']]
     else:
-        entries = report['artifacts']
+        entries = list(report['artifacts'])
+        if sys.platform == 'linux' and (build / 'arch-report.json').is_file():
+            entries.append(json.loads((build / 'arch-report.json').read_text()))
         if not entries:
             raise ValueError('missing_packages')
         suffixes = {Path(e['file']).suffix for e in entries}
@@ -52,7 +83,7 @@ def collect(build, output, root):
         if Path(name).name != name or digest(build / name) != entry['sha256']:
             raise ValueError('invalid_artifact: ' + name)
         shutil.copy2(build / name, output / name)
-    for name in ('build-report.json', 'source-hashes.json', 'smoke.json', 'environment-inputs.json', 'native-tests.txt'):
+    for name in ('arch-report.json', 'build-report.json', 'source-hashes.json', 'smoke.json', 'environment-inputs.json', 'native-tests.txt'):
         if (build / name).is_file():
             shutil.copy2(build / name, output / name)
     for path in root.glob('*.log'):
@@ -80,6 +111,20 @@ def main():
         os.environ[key] = str(temporary)
     # Windows builder already runs all Windows source/fixture tests against the
     # actual frozen payload. POSIX suite includes platform skips explicitly.
+    if sys.platform == 'win32':
+        # Read-only descriptor serialization probe for hosted-runner ACL failures.
+        import ctypes as C
+        from ctypes import wintypes as W
+        sys.path.insert(0, str(REPO))
+        from helper.windows_security import Win32
+        api = Win32()
+        text = W.LPWSTR()
+        with api.attributes() as attrs:
+            api.require(api.advapi.ConvertSecurityDescriptorToStringSecurityDescriptorW(attrs.descriptor, 1, 1 | 4, C.byref(text), None))
+            try:
+                print('ACL_SERIALIZATION', json.dumps({'requested': api.sddl, 'serialized': text.value}), flush=True)
+            finally:
+                api.kernel.LocalFree(C.cast(text, W.HANDLE))
     if sys.platform != 'win32':
         tests = sorted(str(p) for p in (REPO / 'tests').glob('test_*.py') if not p.name.startswith('._'))
         run([sys.executable, '-m', 'pytest', '-q', '-p', 'no:cacheprovider', *tests,
@@ -91,6 +136,8 @@ def main():
         if sys.platform == 'darwin':
             argv += ['--development']
     run(argv, root / 'build-driver.log')
+    if sys.platform == 'linux':
+        package_arch(build, root)
     collect(build, root / 'artifacts', root)
     return 0
 

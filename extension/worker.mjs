@@ -1,6 +1,6 @@
-import {Sessions} from './core.mjs';
+import {Sessions,httpURL} from './core.mjs';
 import {Native} from './native.mjs';
-const KNOWN_ERRORS=['NATIVE_DISCONNECTED','NATIVE_TIMEOUT','INVALID_RESPONSE','busy','pairing_required','pairing_failed','transport_failed','receiver_not_discovered','receiver_unavailable','discovery_failed','VIDEO_CHANGED_OR_UNCONFIRMED'];
+const KNOWN_ERRORS=['NATIVE_DISCONNECTED','NATIVE_TIMEOUT','INVALID_RESPONSE','busy','pairing_required','pairing_failed','transport_failed','receiver_not_discovered','receiver_unavailable','discovery_failed','VIDEO_CHANGED_OR_UNCONFIRMED','NO_EXACT_VIDEO','VIDEO_NOT_SENDABLE','NO_SEEK_WINDOW','INVALID_CONTROL','PIP_OTHER_VIDEO','BROWSER_CONTROL_BLOCKED','TV_SESSION_ACTIVE','TV_CONTROL_UNAVAILABLE'];
 export function createWorker(chrome,native=new Native(()=>chrome.runtime.connectNative('com.pearplay.helper'))) {
  const sessions=new Sessions();let receiver=null;let local=null;let firewall=null;let firewallBusy=false;let pairing=null;let pairingBusy=false;
  async function checkFirewall(explicit=false){
@@ -16,8 +16,8 @@ export function createWorker(chrome,native=new Native(()=>chrome.runtime.connect
  async function message(m,sender){
   if(m?.op==='videos'){
    const tabId=sender.tab?.id;const enabled=sessions.view(tabId).enabled;
-   if(enabled&&Array.isArray(m.videos)) sessions.videos({tabId,frameId:sender.frameId,documentId:sender.documentId},m.videos);
-   return {enabled};
+   const keepAlive=enabled&&Array.isArray(m.videos)&&sessions.videos({tabId,frameId:sender.frameId,documentId:sender.documentId},m.videos)===true;
+   return {enabled,keepAlive};
   }
   if(sender.url===chrome.runtime.getURL('setup.html')&&sender.frameId===0){
    if(firewallBusy)throw Error('busy');
@@ -60,6 +60,7 @@ export function createWorker(chrome,native=new Native(()=>chrome.runtime.connect
    case 'start':{
     if(native.view().session?.delivery==='accepted')return native.view();
     const c=sessions.selected(tabId);
+    if(!httpURL(c.url))throw Error('VIDEO_NOT_SENDABLE');
     const r=native.view().receivers.find(r=>r.identifier===receiver);
     if(!r)throw Error('NO_RECEIVER');
     if(c.videoId){
@@ -81,6 +82,17 @@ export function createWorker(chrome,native=new Native(()=>chrome.runtime.connect
      return result;
     }finally{pairingBusy=false;}
    }
+   case 'browserControl':{
+    const tv=native.view();
+    if(['connecting','playing','paused','stopping'].includes(tv.state)||tv.session?.delivery==='accepted')throw Error('TV_SESSION_ACTIVE');
+    const c=sessions.selected(tabId);
+    if(!c.videoId)throw Error('NO_EXACT_VIDEO');
+    if(m.id!==c.id)throw Error('VIDEO_CHANGED_OR_UNCONFIRMED');
+    if(!['status','play','pause','mute','seek','skip','pip','return'].includes(m.action))throw Error('INVALID_CONTROL');
+    const result=await chrome.tabs.sendMessage(tabId,{op:'browserControl',videoId:c.videoId,url:c.url,action:m.action,value:m.value},{documentId:c.documentId});
+    if(!sessions.current(tabId,c)||sessions.selected(tabId)!==c)return {ok:false,error:'VIDEO_CHANGED_OR_UNCONFIRMED'};
+    return result;
+   }
    case 'localPause':{if(m.confirmed!==true)throw Error('CONFIRM_TV_FIRST');const c=sessions.selected(tabId);if(!c.videoId)throw Error('NO_EXACT_VIDEO');const result=await chrome.tabs.sendMessage(tabId,{op:'localPause',confirmed:true,videoId:c.videoId,url:c.url},{documentId:c.documentId});if(!sessions.current(tabId,c))return {ok:false,error:'VIDEO_CHANGED_OR_UNCONFIRMED'};if(result?.ok)local={tabId,...c};return result;}
    case 'localResume':{const c=local;if(!c||!sessions.current(c.tabId,c))throw Error('NO_LOCAL_VIDEO');const result=await chrome.tabs.sendMessage(c.tabId,{op:'localResume',videoId:c.videoId,url:c.url},{documentId:c.documentId});return local===c&&sessions.current(c.tabId,c)?result:{ok:false,error:'VIDEO_CHANGED_OR_UNCONFIRMED'};}
    case 'discover':{
@@ -90,7 +102,12 @@ export function createWorker(chrome,native=new Native(()=>chrome.runtime.connect
     else if(receiver&&!list.some(r=>r.identifier===receiver)) receiver=null;
     await checkFirewall();return result;}
    case 'stop':{const result=await native.request('stop',{});pairing=null;return result;}
-   case 'hello':case 'status':case 'pause':case 'resume':return native.request(m.op,{});
+   case 'pause':case 'resume':{
+    const tv=native.view(),control=tv.tvControl;
+    if(!control||control.receiver!==receiver||m.session!==control.session||!tv.capabilities.includes(m.op)||tv.state!==(m.op==='pause'?'playing':'paused'))throw Error('TV_CONTROL_UNAVAILABLE');
+    return native.request(m.op,{session:control.session});
+   }
+   case 'hello':case 'status':return native.request(m.op,{});
    default:throw Error('UNKNOWN_OPERATION');
   }
  }

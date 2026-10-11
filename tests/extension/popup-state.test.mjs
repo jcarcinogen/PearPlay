@@ -5,14 +5,60 @@ import vm from 'node:vm';
 const source=await readFile(new URL('../../extension/popup.js',import.meta.url),'utf8');
 const html=await readFile(new URL('../../extension/popup.html',import.meta.url),'utf8');
 async function popup(overrides={}) {
-  const {rejectOps={}, ...rest} = overrides;
+  const {rejectOps={}, onHello, ...rest} = overrides;
   const elements=new Map([...html.matchAll(/id="([^"]+)"/g)].map(m=>[m[1],{value:'',textContent:'',disabled:false,dataset:{},replaceChildren(){},append(){},addEventListener(){}}]));
   const view={enabled:true,selected:'video',receiver:'tv',localAvailable:false,candidates:[{id:'video',label:'Example film',videoId:'element'}],native:{state:'idle',error:null,receivers:[{identifier:'tv',label:'Living Room'}],capabilities:['start','stop']},...rest};
   let timer;const calls=[];let fail=false;let release;let hold=false;
-  const chrome={tabs:{query:async()=>[{id:1,url:'https://example.test/watch'}]},permissions:{getAll:async()=>({origins:['http://*/*','https://*/*']})},runtime:{getPlatformInfo:async()=>({os:'linux'}),sendMessage:async m=>{calls.push(m);if(m.op==='view')return structuredClone(view);if(rejectOps[m.op]!==undefined)return {ok:false,error:rejectOps[m.op]};if(fail)throw Error('NATIVE_DISCONNECTED');if(hold)await new Promise(r=>{release=r});return m.op==='discover'?{receivers:view.native.receivers}:{ok:true}}}};
+  const chrome={tabs:{query:async()=>[{id:1,url:'https://example.test/watch'}]},permissions:{getAll:async()=>({origins:['http://*/*','https://*/*']})},runtime:{getPlatformInfo:async()=>({os:'linux'}),sendMessage:async m=>{calls.push(m);if(m.op==='hello')onHello?.(view);if(m.op==='view')return structuredClone(view);if(rejectOps[m.op]!==undefined)return {ok:false,error:rejectOps[m.op]};if(fail)throw Error('NATIVE_DISCONNECTED');if(hold)await new Promise(r=>{release=r});return m.op==='discover'?{receivers:view.native.receivers}:{ok:true}}}};
   await vm.runInNewContext(source,{document:{getElementById:id=>elements.get(id),createElement:()=>({})},chrome,URL,setInterval:fn=>{timer=fn},clearInterval(){}});
   return {elements,view,calls,refresh:()=>timer(),fail:()=>{fail=true},hold:()=>{hold=true},release:()=>{hold=false;release()}};
 }
+test('TV pause/resume target advertised cast only and never mutate browser playback',async()=>{
+ const token='a'.repeat(32);
+ const p=await popup({native:{state:'playing',evidence:'protocol',error:null,receivers:[{identifier:'tv',label:'Apple TV'}],capabilities:['start','stop','pause','resume'],tvControl:{session:token,receiver:'tv'}}});
+ assert.equal(p.elements.get('pause').hidden,false);assert.equal(p.elements.get('resume').hidden,true);
+ await p.elements.get('pause').onclick();
+ assert.equal(p.calls.find(c=>c.op==='pause').session,token);
+ assert.equal(p.view.native.state,'playing','ACK must not optimistically mark paused');
+ p.view.native.state='paused';await p.refresh();
+ assert.equal(p.elements.get('resume').hidden,false);await p.elements.get('resume').onclick();
+ assert.equal(p.calls.find(c=>c.op==='resume').session,token);
+ assert.equal(p.calls.some(c=>['browserControl','localPause','localResume'].includes(c.op)),false);
+ p.view.receiver='other';await p.refresh();assert.equal(p.elements.get('tvTransport').hidden,true);
+ p.view.receiver='tv';delete p.view.native.tvControl;await p.refresh();assert.equal(p.elements.get('tvTransport').hidden,true);
+});
+for (const state of ['connecting','playing','paused','stopping']) {
+ test(`reopening ${state} preserves session without hello or discovery`,async()=>{
+  const p=await popup({native:{state,error:null,receivers:[{identifier:'tv',label:'Living Room'}],capabilities:['start','stop']}});
+  assert.equal(p.calls.some(c=>['hello','discover'].includes(c.op)),false);
+  assert.equal(p.elements.get('stop').disabled,false);
+  assert.equal(p.elements.get('sessionControls').hidden,false);
+  if(state==='paused') assert.match(p.elements.get('phase').textContent,/Helper reports paused/);
+  assert.doesNotMatch(p.elements.get('tvStatus').textContent,/Choose one|Looking for AirPlay TVs/);
+  await p.elements.get('discover').onclick();
+  await p.refresh();
+  assert.doesNotMatch(p.elements.get('tvStatus').textContent,/Choose one|Choose a video, then send/);
+ });
+}
+test('idle popup retains TVs and searches only on deliberate Find TVs',async()=>{
+ const idle=await popup();
+ assert.equal(idle.calls.some(c=>['hello','discover'].includes(c.op)),false);
+ assert.equal(idle.view.native.receivers[0].identifier,'tv');
+ await idle.refresh();await idle.refresh();
+ assert.equal(idle.calls.some(c=>['hello','discover'].includes(c.op)),false);
+ await idle.elements.get('discover').onclick();
+ assert.equal(idle.calls.filter(c=>c.op==='discover').length,1);
+ const empty=await popup({native:{state:'idle',error:null,receivers:[],capabilities:[]}});
+ assert.equal(empty.calls.some(c=>['hello','discover'].includes(c.op)),false);
+ assert.match(empty.elements.get('tvStatus').textContent,/Find TVs/);
+});
+test('active cast action errors remain visible across refresh',async()=>{
+ const p=await popup({native:{state:'playing',error:null,receivers:[{identifier:'tv',label:'Living Room'}],capabilities:['start','stop']},rejectOps:{discover:'NATIVE_DISCONNECTED'}});
+ await p.elements.get('discover').onclick();
+ const text=p.elements.get('tvStatus').textContent;
+ await p.refresh();assert.equal(p.elements.get('tvStatus').textContent,text);
+ assert.equal(p.elements.get('phase').dataset.state,'error');
+});
 test('visible phase distinguishes idle, empty and protocol playing without claiming TV confirmation',async()=>{
   const p=await popup();const phase=p.elements.get('phase');
   assert.ok(phase,'phase live region exists');

@@ -10,7 +10,7 @@ import re
 import struct
 import sys
 
-VERSION = '0.3.0'
+VERSION = '0.3.1'
 
 async def native_stdio(output, factory=None):
     import sys

@@ -29,7 +29,7 @@ def entries(root):
 def verify(build,kit):
     build=build.resolve();kit=kit.resolve()
     metadata=json.loads((build/'build-report.json').read_text())
-    assert metadata['version']=='0.3.0' and metadata['development'] is True
+    assert metadata['version']=='0.3.1' and metadata['development'] is True
     assert metadata['extension_id']=='eoadahoncjfpnennmkjifohclbafjkol'
     assert metadata['notarized'] is False
     package=build/metadata['artifacts'][0]['file']
@@ -45,7 +45,7 @@ def verify(build,kit):
     app=payload/'Applications/PearPlay Setup.app';binary=app/'Contents/MacOS/PearPlayHelper'
     plist=plistlib.loads((app/'Contents/Info.plist').read_bytes())
     assert plist['CFBundleIdentifier']=='com.pearplay.helper'
-    assert plist['CFBundleVersion']=='0.3.0'
+    assert plist['CFBundleVersion']=='0.3.1'
     assert plist['NSLocalNetworkUsageDescription']
     assert plist['NSBonjourServices']==['_airplay._tcp']
     tests={
@@ -59,7 +59,7 @@ def verify(build,kit):
       'binary_uuid':run(['dwarfdump','--uuid',str(binary)]),
     }
     assert tests['self_test']['exit_code']==0
-    assert json.loads(tests['self_test']['stdout'])=={'ok':True,'version':'0.3.0','dependencies':'loaded','network':'not used'}
+    assert json.loads(tests['self_test']['stdout'])=={'ok':True,'version':'0.3.1','dependencies':'loaded','network':'not used'}
     assert tests['codesign_strict_deep']['exit_code']==0
     assert 'Signature=adhoc' in tests['signature_identity']['stderr']
     assert 'Identifier=com.pearplay.helper' in tests['signature_identity']['stderr']

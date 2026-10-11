@@ -26,6 +26,18 @@ test('popup offers a Ko-fi coffee badge beside X Money without remote assets', a
   assert.match(links[1], /aria-label="[^"]*Ko-fi/);
   assert.doesNotMatch(footer, /(?:src|srcset)="https?:|<script|<iframe/);
 });
+test('setup support badges are local, accessible and external only on click', async () => {
+  const html = await read('setup.html');
+  const footer = html.match(/<footer[\s\S]*?<\/footer>/)?.[0] ?? '';
+  assert.match(footer, /Support PearPlay/);
+  assert.match(footer, /href="https:\/\/x\.com\/scottito22"/);
+  assert.match(footer, /href="https:\/\/ko-fi\.com\/scottangel"/);
+  assert.match(footer, /src="tip-with-x-money.png"/);
+  assert.equal([...footer.matchAll(/rel="noopener noreferrer"/g)].length, 2);
+  assert.doesNotMatch(footer, /(?:src|srcset)="https?:|<script|<iframe/);
+  assert.match(html, /PearPlay 0\.3\.1 preview/);
+  assert.match(html, /TV seeking and volume are not supported/);
+});
 test('local-only stop is not labeled as confirmed TV control', async () => {
   const html = await read('popup.html');
   assert.match(html, /<button id="stop">End helper session<\/button>/);
@@ -58,7 +70,7 @@ test('MV3 popup requests optional access on clicks, never renders URLs, explicit
   assert.doesNotMatch(await read('popup.js'), /localPause|localResume|confirmTV/);
   assert.ok(html.indexOf('id="grantAll"') < html.indexOf('id="enable"'));
   assert.match(html, /id="permissionBox"/);
-  assert.match(html, /<details id="helpDetails"><summary>Help &amp; options<\/summary>/);
+  assert.match(html, /<details id="helpDetails"><summary>Settings &amp; help<\/summary>/);
   assert.ok(html.indexOf('id="start"') < html.indexOf('id="helpDetails"'), 'primary action precedes advanced help');
   const elements = new Map([...html.matchAll(/id="([^"]+)"/g)].map(m => [m[1], { value: '', textContent: '', disabled: false, dataset: {}, replaceChildren() { }, append() { }, addEventListener() { } }]));
   const actions = [];
@@ -84,7 +96,9 @@ test('popup exposes idle/working/empty/error/playing states with live regions an
   const html = await read('popup.html');
   assert.match(html, /id="phase" role="status" aria-live="polite"/);
   assert.match(html, /aria-live="polite"/);
-  assert.match(html, /tabindex="-1"/);
+  assert.match(html, /id="tvTransport"[^>]*hidden/);
+  assert.match(html, /id="pause" hidden/);
+  assert.match(html, /id="resume" hidden/);
   assert.match(html, /width:400px/);
   assert.match(html, /min-height:40px/, 'keep comfortable desktop hit targets');
 });

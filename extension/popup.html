@@ -8,8 +8,9 @@
 :root{color-scheme:light dark;--bg:#f6f7f2;--surface:#fff;--ink:#19271d;--muted:#52604f;--accent:#355b29;--accent-ink:#fff;--line:#76816c;--soft:color-mix(in srgb,var(--line) 24%,transparent);--error:#9c322d}
 @media(prefers-color-scheme:dark){:root{--bg:#111914;--surface:#1a251d;--ink:#f4f7ed;--muted:#bac7b2;--accent:#c1e67a;--accent-ink:#172310;--line:#819277;--error:#ffb4a9}}
 *{box-sizing:border-box}
+html{width:400px}
 body{width:400px;margin:0;padding:14px;font:14px/1.45 system-ui;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
-header{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+header{display:flex;align-items:center;gap:9px;margin-bottom:6px}
 header img{width:32px;height:32px;flex-shrink:0}
 h1{font-size:20px;font-weight:650;letter-spacing:-.5px;margin:0}
 h2{font-size:13px;margin:0;font-weight:650}
@@ -22,6 +23,19 @@ button:disabled,input:disabled,select:disabled{opacity:.45;cursor:default}
 button:focus-visible,select:focus-visible,summary:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 select,input{width:100%}
 select{text-overflow:ellipsis;padding-right:24px}
+.timeline{margin-top:4px}
+#browserPosition{display:block;width:100%;height:40px;margin:0;accent-color:var(--accent);cursor:pointer}
+.times{display:flex;justify-content:space-between;gap:8px;margin-top:-5px;color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}
+#browserHint{font-size:11px;color:var(--muted);margin-top:4px}
+.transport{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:8px 0 12px}
+.icon{width:40px;min-width:40px;height:40px;padding:9px}
+.icon>span{display:flex;align-items:center;justify-content:center}
+#browserPlay{width:48px;height:48px;border-radius:50%}
+#browserPlay svg{width:24px;height:24px}
+.seek svg{width:26px;height:26px}
+.seconds{font-size:8.5px;font-weight:600;fill:currentColor;stroke:none;font-variant-numeric:tabular-nums}
+
+.transport svg{width:22px;height:22px;flex-shrink:0}.transport{margin:4px 0 4px}.timeline{margin-top:0}#browserPosition{height:30px;min-height:30px;padding:0;border:0;background:transparent}#browserHint{font-size:11px}#browserError:empty{display:none}#browserControls{margin-top:8px}#browserReturn{width:40px;height:40px;padding:9px}#browserReturn svg{width:22px;height:22px}#enable{flex:1}.jump-setting{display:flex;align-items:center;justify-content:space-between;gap:8px}.jump-setting select{width:auto}
 .primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:650}
 .primary:hover:not(:disabled){background:color-mix(in srgb,var(--accent) 88%,var(--ink))}
 #helperSetup{margin-left:auto;font-size:12px;background:transparent;border-color:transparent;padding:8px}
@@ -29,15 +43,17 @@ select{text-overflow:ellipsis;padding-right:24px}
 .eyebrow{text-transform:uppercase;letter-spacing:1px;font-size:10px;font-weight:650;color:var(--muted)}
 #candidate{margin-bottom:8px}
 #videoInfo{margin-top:0;border:0}
-#videoInfo summary{padding:0;color:var(--ink);gap:8px;justify-content:flex-start}
+#videoInfo summary{min-height:32px;padding:0;color:var(--ink);gap:8px;justify-content:flex-start}
 #videoInfo summary::after{content:'⌄';font-size:14px;color:var(--muted);flex:none}
 #identity{display:block;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:17px;font-weight:600;line-height:1.35;letter-spacing:-.25px}
 #identityFull{margin:4px 0 8px;font-size:12px;color:var(--muted)}
 .muted,.safety,#state{color:var(--muted);font-size:12px}
 #videoHint{margin-top:4px}
-#receiverSection{margin-top:12px}
-.field-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+#receiverSection{margin-top:8px}
+.field-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
 #start{width:100%;min-height:46px;margin-top:8px}
+.field-heading button{flex:none;white-space:nowrap}
+.field-heading select{flex:1;width:0}
 #phase{display:block;margin-top:8px;font-size:12px;font-weight:600;color:var(--accent)}
 #phase[data-state="working"]::before{content:'◌ '}
 #phase[data-state="error"]{color:var(--error)}
@@ -90,16 +106,27 @@ footer svg{width:20px;height:20px;flex:none}
   <button id="grantAll" class="primary">Allow all websites</button>
 </div>
 <section aria-label="Video selection">
-  <nav id="videoNavigation" class="navigation" aria-label="Find videos"><label for="candidate" class="eyebrow">Video on this page</label><button id="enable">Find videos</button></nav>
+  <nav id="videoNavigation" class="navigation" aria-label="Find videos"><button id="enable">Find videos</button><button id="browserReturn" aria-label="Return to browser video" title="Return to browser video" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M9 5H4v15h15v-5M13 4h7v7M20 4l-9 9"/></svg></button></nav>
   <select id="candidate" aria-label="Choose a video"></select>
   <div id="selectedVideo" hidden><p class="eyebrow">Selected video</p>
   <details id="videoInfo"><summary aria-label="Selected video details"><span id="identity">Choose a video</span></summary><p id="identityFull">No video selected.</p></details>
   </div>
+  <p id="tvPlaybackNotice" class="safety" role="status" hidden>Use your TV remote to pause or skip. PearPlay does not receive the TV’s timeline.</p>
+  <div id="browserControls" aria-label="Browser video controls"><div class="timeline"><input id="browserPosition" type="range" min="0" max="1" step="0.1" value="0" aria-label="Browser video position" aria-describedby="browserHint" disabled><div class="times"><span id="browserElapsed">—:—</span><span id="browserDuration">—:—</span></div><p id="browserHint">Choose a video to use playback controls.</p></div>
+<div class="transport">
+<button id="browserMute" type="button" class="icon" aria-label="Mute" title="Mute" disabled><span id="volumeGlyph" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m11 4-5 4H3v8h3l5 4Z"/><path d="M15 8a6 6 0 0 1 0 8M18 5a10 10 0 0 1 0 14"/></svg></span><span id="mutedGlyph" aria-hidden="true" hidden><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m11 4-5 4H3v8h3l5 4Z"/><path d="m16 9 6 6m0-6-6 6"/></svg></span></button>
+<button id="browserBack" type="button" class="icon seek" aria-label="Jump back 10 seconds" title="Jump back 10 seconds" disabled><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6.343 7.343A8 8 0 1 1 4 13M6.343 2.843v4.5h4.5"/><text id="backSeconds" class="seconds" x="12" y="13" text-anchor="middle" dominant-baseline="central">10</text></svg></button>
+<button id="browserPlay" type="button" class="icon" aria-label="Play" title="Play" disabled><span id="playGlyph" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 11 7-11 7Z" fill="currentColor" stroke="none"/></svg></span><span id="pauseGlyph" aria-hidden="true" hidden><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5v14M16 5v14" stroke-width="3.5"/></svg></span></button>
+<button id="browserForward" type="button" class="icon seek" aria-label="Jump forward 10 seconds" title="Jump forward 10 seconds" disabled><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6.343 7.343A8 8 0 1 1 4 13M6.343 2.843v4.5h4.5" transform="translate(24 0) scale(-1 1)"/><text id="forwardSeconds" class="seconds" x="12" y="13" text-anchor="middle" dominant-baseline="central">10</text></svg></button>
+<button id="browserPip" type="button" class="icon" aria-label="Picture in Picture" title="Picture in Picture" disabled><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><rect x="12" y="11" width="7" height="6" rx="1" fill="currentColor" stroke="none"/></svg></button>
+</div>
+<p id="browserError" role="status" aria-live="polite" class="muted"></p></div>
   <p id="videoHint" class="muted">Play the video on this page, then find it here.</p>
 </section>
+<p id="chosenTV" class="muted" hidden></p>
 <section id="receiverSection">
-  <div class="field-heading"><label for="receiver" class="eyebrow">AirPlay TV</label><button id="discover">Find TVs</button></div>
-  <select id="receiver" aria-label="Choose an AirPlay TV"></select>
+  <label for="receiver" class="eyebrow">AirPlay TV</label>
+  <div class="field-heading"><select id="receiver" aria-label="Choose an AirPlay TV"></select><button id="discover">Find TVs</button></div>
 </section>
 <button id="pairRestart" class="primary" hidden>Show a new PIN</button>
 <div id="pairBox" hidden>
@@ -109,9 +136,11 @@ footer svg{width:20px;height:20px;flex:none}
 <button id="start" class="primary">Send to TV</button>
 <span id="phase" role="status" aria-live="polite" data-state="idle">Opening…</span>
 <p id="tvStatus" role="status" aria-live="polite" aria-atomic="true"></p>
-<div id="sessionControls" hidden><button id="stop">End helper session</button><p class="safety">If the TV keeps playing, use its remote.</p></div>
+<div id="sessionControls" hidden><div id="tvTransport" class="row" aria-label="TV playback controls" hidden><button id="pause" hidden>Pause TV</button><button id="resume" hidden>Resume TV</button></div><button id="stop">End helper session</button><p class="safety">If the TV keeps playing, use its remote.</p></div>
 <button id="firewallReview" type="button" hidden>Review TV firewall permission</button>
-<details id="helpDetails"><summary>Help &amp; options</summary>
+<details id="helpDetails"><summary>Settings &amp; help</summary>
+  <label class="jump-setting" for="browserJump">Skip interval<select id="browserJump"><option value="5">5 sec</option><option value="10" selected>10 sec</option><option value="15">15 sec</option><option value="30">30 sec</option></select></label>
+  <p class="muted">The timeline, playback buttons and Picture in Picture control the selected browser video, not the TV. Use the TV remote for TV playback. Some sites block browser controls; live videos need a seek window.</p>
   <details id="videoDetails"><summary>Video not showing up?</summary>
     <p class="muted">Reload this page, press play and look again. Only videos the TV can fetch directly can be sent.</p>
     <p class="muted">Your video choice stays with this tab for up to 10 minutes after a search. Closing this popup does not switch it. Switching tabs shows that tab’s own choices. A browser restart clears choices. If the video or page changes, choose again; PearPlay never sends a replacement automatically.</p>
@@ -124,7 +153,7 @@ footer svg{width:20px;height:20px;flex:none}
     <p class="muted">Paste an address, then press Find TVs or Enter.</p>
     <p id="state" class="muted"></p>
     <p class="muted">Other AirPlay TVs may appear, but playback compatibility is unverified. Audio-only speakers are not listed.</p>
-    <p class="safety">Ending the helper session closes its connection; it does not confirm that the TV stopped. Use the physical remote if playback continues. TV pause/resume are unavailable. Use the TV remote for playback controls; this helper does not provide a timeline or Picture in Picture.</p>
+    <p class="safety">Ending the helper session closes its connection; it does not confirm that the TV stopped. Use the physical remote if playback continues. TV pause/resume appear only when supported by the connected helper and active session. Use the TV remote for other playback controls; the browser-video timeline and Picture in Picture do not control the TV.</p>
   </details>
   <details id="firewallBox"><summary>TV firewall permission</summary>
     <p id="firewallStatus" role="status" aria-live="polite"></p>
@@ -151,7 +180,7 @@ footer svg{width:20px;height:20px;flex:none}
     </footer>
   </details>
 </details>
-<button id="pause" hidden tabindex="-1">Pause TV</button><button id="resume" hidden tabindex="-1">Resume TV</button>
 </div>
+<script src="browser-controls.js"></script>
 <script src="popup.js"></script>
 </body></html>

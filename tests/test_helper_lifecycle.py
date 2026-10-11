@@ -8,7 +8,7 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
         m=load()
         def forbidden(): raise AssertionError('hello must not contact the network')
         result=await m.Host(forbidden, lambda value: None).handle(request())
-        self.assertEqual(result.get('helperVersion'), '0.3.0')
+        self.assertEqual(result.get('helperVersion'), m.VERSION)
 
     async def test_pairing_required_event_has_static_cli_guidance(self):
         m=load(); events=[]

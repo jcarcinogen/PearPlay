@@ -23,6 +23,7 @@
     // PIN values are deliberately never retained, even in fixtures.
     f.calls.push(op==='pair'?{op}:structuredClone(message));
     if(op==='view') return structuredClone(f.view);
+    if(op==='browserControl') return {ok:true,paused:true,muted:false,time:40,duration:90,ranges:[[0,90]],pipAvailable:true,pip:false};
     if(f.fail) throw Error('NATIVE_DISCONNECTED');
     if(f.hold) await new Promise(resolve => {f.release=resolve;});
     if(op==='enable') f.view.enabled=true;

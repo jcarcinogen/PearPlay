@@ -1,5 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+test('TV controls require validated current-session metadata and explicit token',async()=>{
+ const {Native}=await import('../../extension/native.mjs');const p=fakePort();const n=new Native(()=>p);const session='a'.repeat(32);
+ const hello=n.request('hello');p.onMessage.emit({v:1,id:p.sent[0].id,ok:true,state:'playing',evidence:'protocol',capabilities:['pause','resume'],tvControl:{session,receiver:'tv'}});await hello;
+ assert.deepEqual(n.view().tvControl,{session,receiver:'tv'});
+ await assert.rejects(n.request('pause'),/INVALID_REQUEST/);
+ const pause=n.request('pause',{session});assert.deepEqual(p.sent[1].args,{session});
+ p.onMessage.emit({v:1,id:p.sent[1].id,ok:true,state:'paused',evidence:'protocol',capabilities:['pause','resume'],tvControl:{session,receiver:'tv'}});await pause;
+ for(const delta of [{state:'stopped'},{evidence:'unverified'},{capabilities:['pause']},{tvControl:{session:'bad',receiver:'tv'}},{tvControl:{session,receiver:'tv',extra:true}}]){
+  p.onMessage.emit({v:1,id:'event',ok:true,state:'playing',evidence:'protocol',capabilities:['pause','resume'],tvControl:{session,receiver:'tv'},...delta});assert.equal(n.view().tvControl,null);
+ }
+});
 test('malformed receiver entries fail closed without throwing out of the message listener',async()=>{
  const {Native}=await import('../../extension/native.mjs');
  for(const receivers of [[null],[{}],[{identifier:'',address:'192.168.1.2'}],{},[{identifier:'r',address:'host.test'}]]) {

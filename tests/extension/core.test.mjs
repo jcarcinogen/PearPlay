@@ -82,6 +82,21 @@ test('URL validation rejects parser repair while keeping accepted signed strings
  }
 });
 const load = () => import('../../extension/core.mjs');
+test('freshly revalidated selected DOM video survives TTL and EOF; other sources expire',async()=>{
+ const {Sessions}=await load();let now=0;const s=new Sessions({now:()=>now,ttl:100});
+ const e={tabId:1,frameId:0,documentId:'d'}, video={videoId:'v1',url:'https://example.test/a.mp4'};
+ s.enable(1);s.commit(e);s.videos(e,[video]);const id=s.view(1).candidates[0].id;s.select(1,id);
+ s.observe({...e,url:'https://example.test/unselected.mp4'});
+ for(now=50;now<500;now+=50){s.videos(e,[video]);assert.equal(s.view(1).selected,id);}
+ assert.equal(s.selected(1).url,video.url);assert.equal(s.view(1).candidates.length,1,'unselected stale network entry still expires');
+ s.videos({...e,documentId:'stale'},[video]);
+ s.videos(e,[{...video,url:'https://example.test/b.mp4'}]);
+ assert.equal(s.view(1).selected,null);assert.equal(s.view(1).selectionLost,true);
+ now=700;assert.equal(s.view(1).enabled,false);
+ s.enable(2);s.commit({...e,tabId:2});s.observe({...e,tabId:2,url:video.url});
+ s.select(2,s.view(2).candidates[0].id);now=750;s.videos({...e,tabId:2},[video]);
+ now=801;assert.equal(s.view(2).enabled,false,'network candidates cannot renew from DOM sightings');
+});
 test('explicit candidate selection preserves exact URL and hides it in labels', async () => {
   const { Sessions } = await load(); const s = new Sessions();
   s.enable(7); s.commit({tabId:7,frameId:0,documentId:'doc'});

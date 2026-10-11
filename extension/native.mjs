@@ -21,13 +21,18 @@ function safeSession(s) {
  if(!s||typeof s!=='object'||Object.keys(s).length!==5||typeof s.receiver!=='string'||!s.receiver.length||s.receiver.length>1024||!literalIP(s.host)||s.transport!=='airplay-v1'||s.delivery!=='accepted'||s.timingRequired!==false)return null;
  return {receiver:s.receiver,host:s.host,transport:s.transport,delivery:s.delivery,timingRequired:false};
 }
+function safeTVControl(m) {
+ const c=m.tvControl;
+ if(!m.ok||m.evidence!=='protocol'||!['playing','paused'].includes(m.state)||!['pause','resume'].every(op=>m.capabilities.includes(op))||!c||Object.keys(c).length!==2||typeof c.session!=='string'||! /^[0-9a-f]{32}$/.test(c.session)||typeof c.receiver!=='string'||!c.receiver.length||c.receiver.length>1024)return null;
+ return {session:c.session,receiver:c.receiver};
+}
 export class Native {
  constructor(connect,{timeout=15000,discoveryTimeout=25000,firewallTimeout=140000,pairingTimeout=35000}={}) {this.connect=connect;this.timeout=timeout;this.discoveryTimeout=discoveryTimeout;this.firewallTimeout=firewallTimeout;this.pairingTimeout=pairingTimeout;this.pending=new Map();this.serial=0;this.applied=0;this.port=null;this.state={state:'idle',evidence:'none',capabilities:[],receivers:[]};}
  view(){return structuredClone(this.state);}
  fail(code){this.state={state:'error',evidence:'none',capabilities:[],receivers:[],error:code};for(const p of this.pending.values()){clearTimeout(p.timer);p.reject(Error(code));}this.pending.clear();const old=this.port;this.port=null;old?.disconnect();}
  async request(op,args={}) {
  const keys=Object.keys(args);
- if(!ops.includes(op)|| (op==='start' ? !(keys.length===3&&typeof args.receiver==='string'&&args.receiver.length>0&&args.receiver.length<=1024&&literalIP(args.host)&&httpURL(args.url)) : op==='pair' ? !(keys.length===3&&typeof args.receiver==='string'&&args.receiver.length>0&&literalIP(args.host)&&/^\d{4}$/.test(args.pin)) : op==='pair_begin' ? !(keys.length===2&&typeof args.receiver==='string'&&args.receiver.length>0&&literalIP(args.host)) : op==='firewall' ? !(keys.length===3&&typeof args.receiver==='string'&&/^[0-9a-fA-F:-]{12,64}$/.test(args.receiver)&&literalIP(args.host)&&['check','allow','remove'].includes(args.action)) : op==='discover' ? !(keys.length===0 || keys.length===1&&literalIP(args.host)) : keys.length!==0)) throw Error('INVALID_REQUEST');
+ if(!ops.includes(op)|| (op==='start' ? !(keys.length===3&&typeof args.receiver==='string'&&args.receiver.length>0&&args.receiver.length<=1024&&literalIP(args.host)&&httpURL(args.url)) : op==='pair' ? !(keys.length===3&&typeof args.receiver==='string'&&args.receiver.length>0&&literalIP(args.host)&&/^\d{4}$/.test(args.pin)) : op==='pair_begin' ? !(keys.length===2&&typeof args.receiver==='string'&&args.receiver.length>0&&literalIP(args.host)) : op==='firewall' ? !(keys.length===3&&typeof args.receiver==='string'&&/^[0-9a-fA-F:-]{12,64}$/.test(args.receiver)&&literalIP(args.host)&&['check','allow','remove'].includes(args.action)) : op==='discover' ? !(keys.length===0 || keys.length===1&&literalIP(args.host)) : ['pause','resume'].includes(op) ? !(keys.length===1&&typeof args.session==='string'&&/^[0-9a-f]{32}$/.test(args.session)) : keys.length!==0)) throw Error('INVALID_REQUEST');
  if(this.pending.size>=16) throw Error('NATIVE_BUSY');
  if(!this.port){try{const port=this.connect();this.port=port;port.onDisconnect.addListener(()=>{if(this.port===port)this.fail('NATIVE_DISCONNECTED');});port.onMessage.addListener(m=>{if(this.port===port)this.receive(m);});}catch{this.fail('NATIVE_DISCONNECTED');throw Error('NATIVE_DISCONNECTED');}}
  const id=`p${++this.serial}`;const message={v:1,id,op,args};
@@ -46,7 +51,7 @@ export class Native {
  const code=m.ok?null:(codes.includes(m.error)?m.error:'HELPER_ERROR');
  const preserve=m.ok&&pending&&['hello','status','discover'].includes(pending.op)&&this.state.error&&codes.includes(this.state.error)?this.state.error:null;
  const receiverIssue=preserve==='transport_failed'?this.state.receiverIssue??null:!m.ok&&m.error==='transport_failed'&&['unsupported_access','incomplete_advertisement','unsupported_protocol'].includes(m.receiverIssue)?m.receiverIssue:null;
- this.state={session:m.ok&&!preserve&&m.state==='connecting'&&m.evidence==='unverified'?safeSession(m.session):null,receiverIssue,state:m.ok?m.state:'error',evidence:m.evidence,capabilities:[...m.capabilities],receivers,error:preserve??code,firewallSupport:m.firewallSupport===true,diagnostic:m.state==='error'?safeDiagnostic(m.diagnostic):null,helperVersion:typeof m.helperVersion==='string'&&/^\d{1,4}\.\d{1,4}\.\d{1,4}$/.test(m.helperVersion)?m.helperVersion:null};
+ this.state={tvControl:preserve?null:safeTVControl(m),session:m.ok&&!preserve&&m.state==='connecting'&&m.evidence==='unverified'?safeSession(m.session):null,receiverIssue,state:m.ok?m.state:'error',evidence:m.evidence,capabilities:[...m.capabilities],receivers,error:preserve??code,firewallSupport:m.firewallSupport===true,diagnostic:m.state==='error'?safeDiagnostic(m.diagnostic):null,helperVersion:typeof m.helperVersion==='string'&&/^\d{1,4}\.\d{1,4}\.\d{1,4}$/.test(m.helperVersion)?m.helperVersion:null};
  if(pending){clearTimeout(pending.timer);this.pending.delete(m.id);if(m.ok)pending.resolve(this.view());else pending.reject(Error(code));}
  }
 }

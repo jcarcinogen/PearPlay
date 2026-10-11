@@ -284,7 +284,7 @@ def build(output):
     verify_windowed(gui_installer)
     reject_input_drift(source_hashes, environment_hashes)
     # Native fixture tests verify DPAPI/ACLs, sharing lease and setup readbacks.
-    environment = dict(os.environ, PEARPLAY_TEST_PAYLOAD=str(archive_path))
+    environment = dict(os.environ, PEARPLAY_TEST_PAYLOAD=str(archive_path), PEARPLAY_TEST_INSTALLER=str(gui_installer))
     result = subprocess.run([sys.executable,'-B','-m','pytest','-q','-p','no:cacheprovider',
                              *(str(ROOT/'tests'/name) for name in ('test_windows_native.py', 'test_windows_source.py',
                                                                   'test_windows_installer.py', 'test_windows_builder.py', 'test_windows_branding.py')),

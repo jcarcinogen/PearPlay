@@ -1,4 +1,8 @@
 """Portable UI policy and native Windows Tk tests; no real setup transactions."""
+import os
+import json
+import hashlib
+import subprocess
 import sys
 import threading
 import time
@@ -62,6 +66,54 @@ def test_source_has_no_legacy_dialog_or_console_allocation():
         text = (root / 'helper' / name).read_text()
         for forbidden in ('MessageBoxW', 'AllocConsole(', 'AttachConsole(', 'ShowWindow('):
             assert forbidden not in text
+
+
+@pytest.mark.skipif(sys.platform != 'win32' or os.environ.get('GITHUB_ACTIONS') != 'true' or not os.environ.get('PEARPLAY_TEST_INSTALLER'), reason='exact installer lifecycle is restricted to disposable GitHub Windows runner')
+def test_exact_shipping_installer_lifecycle_on_clean_runner():
+    from scripts.build_windows_helper import native_smoke
+    from helper.native import VERSION
+    api = setup.Win32()
+    files = setup.Files(api, api.local_appdata() / 'PearPlay')
+    registry = setup.Registry()
+    # Refuse to disturb an existing installation even on a hosted runner.
+    assert registry.snapshot() == [None, None]
+    assert not files.root.exists()
+    installer = Path(os.environ['PEARPLAY_TEST_INSTALLER'])
+    phases = []
+    def action(name):
+        result = subprocess.run([str(installer), name], input=b'', capture_output=True, timeout=45)
+        assert result.returncode == 0 and not result.stderr, (name, result.returncode)
+        data = json.loads(result.stdout)
+        assert data['action'] == name and data['pairing'] == 'preserved'
+        phases.append(name)
+        return data
+    def readback():
+        owned = setup.receipt(json.loads(files.read('install-receipt.json')))
+        assert owned['version'] == VERSION
+        assert registry.snapshot() == [str(files.root / (setup.HOST + '.json'))] * 2
+        actual = files.inventory()
+        assert all(actual.get(name) == digest for name, digest in owned['files'].items())
+        host = json.loads(files.read(setup.HOST + '.json'))
+        assert host['allowed_origins'] == ['chrome-extension://' + setup.EXTENSION_ID + '/']
+        assert host['path'] == str(files.root / 'runtime/PearPlayHelper.exe')
+    try:
+        action('install'); readback()
+        protocol = native_smoke(files.root / 'runtime/PearPlayHelper.exe')
+        action('repair'); readback()
+        action('upgrade'); readback()
+        action('disconnect'); assert registry.snapshot() == [None, None]
+        action('connect'); readback()
+        action('uninstall')
+        assert registry.snapshot() == [None, None]
+        assert files.inventory() == {}
+        report = dict(installer_sha256=hashlib.sha256(installer.read_bytes()).hexdigest(), phases=phases,
+                      receipt_manifest_payload_readback=True, protocol=protocol, cleanup=True,
+                      scope='Exact frozen installer lifecycle on disposable hosted Windows user; not owner policy or GUI-click installation')
+        (installer.parent / 'installer-lifecycle.json').write_text(json.dumps(report, indent=2) + '\n')
+    finally:
+        if (files.root / 'install-receipt.json').exists():
+            action('uninstall')
+        assert registry.snapshot() == [None, None]
 
 
 @pytest.mark.skipif(sys.platform != 'win32', reason='requires native Windows Tk rendering')

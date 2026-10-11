@@ -77,6 +77,18 @@ class Win32:
         self.bind(self.ole, 'CoTaskMemFree', None, W.LPVOID)
         self.sid = self.user_sid()
         self.sddl = f'O:{self.sid}D:P(A;;FA;;;{self.sid})(A;;FA;;;SY)'
+        # Windows serializes well-known account SIDs as aliases (for example
+        # RID 500 becomes LA). Canonicalize our exact expected descriptor with
+        # the same API used by private(); do not relax owner/DACL comparison.
+        text = W.LPWSTR()
+        with self.attributes() as attrs:
+            try:
+                self.require(self.advapi.ConvertSecurityDescriptorToStringSecurityDescriptorW(
+                    attrs.descriptor, 1, 1 | 4, C.byref(text), None))
+                self.sddl = text.value
+            finally:
+                if text:
+                    self.kernel.LocalFree(C.cast(text, W.HANDLE))
 
     @staticmethod
     def bind(dll, name, result, *args):

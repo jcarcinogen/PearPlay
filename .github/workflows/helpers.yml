@@ -2,7 +2,7 @@ name: Helper builds
 
 on:
   push:
-    branches: [main, 'ci/**']
+    branches: [main]
   workflow_dispatch:
   pull_request:
     paths:

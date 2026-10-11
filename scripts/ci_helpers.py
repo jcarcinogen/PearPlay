@@ -111,20 +111,6 @@ def main():
         os.environ[key] = str(temporary)
     # Windows builder already runs all Windows source/fixture tests against the
     # actual frozen payload. POSIX suite includes platform skips explicitly.
-    if sys.platform == 'win32':
-        # Read-only descriptor serialization probe for hosted-runner ACL failures.
-        import ctypes as C
-        from ctypes import wintypes as W
-        sys.path.insert(0, str(REPO))
-        from helper.windows_security import Win32
-        api = Win32()
-        text = W.LPWSTR()
-        with api.attributes() as attrs:
-            api.require(api.advapi.ConvertSecurityDescriptorToStringSecurityDescriptorW(attrs.descriptor, 1, 1 | 4, C.byref(text), None))
-            try:
-                print('ACL_SERIALIZATION', json.dumps({'requested': api.sddl, 'serialized': text.value}), flush=True)
-            finally:
-                api.kernel.LocalFree(C.cast(text, W.HANDLE))
     if sys.platform != 'win32':
         tests = sorted(str(p) for p in (REPO / 'tests').glob('test_*.py') if not p.name.startswith('._'))
         run([sys.executable, '-m', 'pytest', '-q', '-p', 'no:cacheprovider', *tests,

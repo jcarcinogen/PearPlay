@@ -32,6 +32,7 @@ async function fixture(){
   await vm.runInNewContext(source,{document:{visibilityState:'visible',getElementById:id=>elements.get(id),createElement:()=>({})},chrome,URL,setInterval:fn=>{tick=fn},clearInterval(){},addEventListener:(e,f)=>{events[e]=f}});
   return {el:id=>elements.get(id),click:id=>elements.get(id).onclick(),refresh:()=>tick(),close:()=>events.pagehide()};
  }
+ await worker.message({op:'discover'},{url:'popup.html'});
  const p=await mount();native.state.error='pairing_required';await p.refresh();
  return {p,native,operations,mount,other,success:()=>{success=true},addReceiver:()=>native.state.receivers.push({...native.state.receivers[0],identifier:other}),hold:op=>{blocked={op};return()=>{const reply=blocked.reply;blocked=null;reply()}}};
 }

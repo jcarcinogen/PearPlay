@@ -1,21 +1,21 @@
 # Install PearPlay
 
-**Cross-platform development preview.** Linux has published packages; Mac and Windows helpers are active candidate work with no public installer links yet. Safari extension development is paused. See [candidate artifacts, safety and self-service TV checks](cross-platform-preview.md). Do not treat source-only files as an installer or disable Gatekeeper, remove quarantine, or disable SmartScreen/Defender. For a deliberately trusted unsigned Mac preview, see the [Mac installation guide with screenshots](mac-install.md), including Apple’s optional per-item Open Anyway route and clear stop conditions.
+**Cross-platform experimental release.** Helper 0.3.1 is available for Mac Apple silicon, Windows x64, Debian/Ubuntu x64 and Arch/Omarchy x64. Fedora retains helper 0.2.8. Mac and Windows packages are unsigned; Windows security policy may block installation. Do not disable security protections or remove quarantine. See the [Mac installation guide with screenshots](mac-install.md) for Apple’s per-item approval flow and stop conditions, and the [Windows guide](windows-helper.md). Safari extension development remains paused.
 
-## Guided setup — published Linux helper 0.2.8
+## Guided setup
 
 The extension opens a setup tab on first installation. Use **Helper setup** in the popup to reopen it. A successful check is a local helper handshake, not TV playback. Choose **Find my TV** only when you want network discovery.
 
 The Linux package supplies Python and dependencies. Open **PearPlay Setup**, select your browser, **fully quit and reopen it**, then choose **Check connection**. Later launches offer repair and disconnection. Website permissions remain separate.
 
-Download from the **[0.2.8 helper release](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.8)**:
+Use the **[0.3.1 release](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.3.1)** for Mac, Windows, Debian and Arch; the **[0.2.8 release](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.8)** still supplies Fedora:
 
-- [Ubuntu/Debian x86_64 `.deb`](https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.8/pearplay-helper-0.2.8-linux-x86_64.deb): Ubuntu 24.04 baseline, glibc 2.39+.
-- [Arch/Omarchy x86_64 package](https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.8/pearplay-helper-0.2.8-linux-x86_64.pkg.tar.zst): glibc 2.44+.
+- [Ubuntu/Debian x86_64 `.deb`](https://github.com/jcarcinogen/PearPlay/releases/download/v0.3.1/pearplay-helper-0.3.1-linux-x86_64.deb): Ubuntu 22.04 baseline, glibc 2.35+.
+- [Arch/Omarchy x86_64 package](https://github.com/jcarcinogen/PearPlay/releases/download/v0.3.1/pearplay-helper-0.3.1-linux-x86_64.pkg.tar.zst): glibc 2.35+.
 
-[Fedora 44 x86_64 RPM](https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.8/pearplay-helper-0.2.8-linux-x86_64.rpm) is also published, requiring glibc 2.43+. See [Fedora instructions and limits](fedora-install.md). No Linux ARM package is offered. Packages are unsigned: use the trusted GitHub release, compare all three packages with its `SHA256SUMS`, and use normal package-manager authentication without disabling security. Checksums detect mismatched bytes; they are not a signing certificate.
+[Fedora 44 x86_64 RPM](https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.8/pearplay-helper-0.2.8-linux-x86_64.rpm) is also published, requiring glibc 2.43+. See [Fedora instructions and limits](fedora-install.md). No Linux ARM package is offered. Packages are unsigned: use the trusted GitHub release, compare each package with its own release’s `SHA256SUMS`, and use normal package-manager authentication without disabling security. Checksums detect mismatched bytes; they are not a signing certificate.
 
-The **[Chrome Web Store item](https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol)** is public. Newest STATUS reports Scott's 0.2.8 submission/publication without independent live-Store verification; 0.2.9 was prepared separately. To test this local 0.3.0 candidate, load this repository's `extension/` with **Load unpacked**; it is not a published Store update. Its pinned public key supplies the matching production identity. The packaged helper requires no Python setup or manual extension-ID command.
+The **[Chrome Web Store item](https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol)** is public. Its public Details page was checked during 0.3.1 preparation and shows version 0.2.9, updated October 1, 2026. To test this local 0.3.1 candidate, load this repository's `extension/` with **Load unpacked**; it is not a published Store update. Its pinned public key supplies the matching production identity. The packaged helper requires no Python setup or manual extension-ID command.
 
 End casting and quit browsers before updating the package. Chrome Web Store updates do not update the helper. Disconnect browsers before package removal; saved TV pairing is preserved. Modified or unknown registrations are never overwritten or deleted. Remove a legacy source registration using its original installer before switching helper types.
 
@@ -37,7 +37,7 @@ Ubuntu/Debian, after downloading the matching package:
 
 ```sh
 cd ~/Downloads
-sudo apt install ./pearplay-helper-0.2.8-linux-x86_64.deb
+sudo apt install ./pearplay-helper-0.3.1-linux-x86_64.deb
 ```
 
 ### Arch / Omarchy — step-by-step installation
@@ -48,7 +48,7 @@ Without a graphical package installer, use the **Terminal** app. Do not extract 
 2. Open **Terminal**, paste this whole command, and press Enter:
 
    ```sh
-   sudo pacman -U "$HOME/Downloads/pearplay-helper-0.2.8-linux-x86_64.pkg.tar.zst"
+   sudo pacman -U "$HOME/Downloads/pearplay-helper-0.3.1-linux-x86_64.pkg.tar.zst"
    ```
 
 3. If asked, type your computer password and press Enter. **Nothing appears while you type the password—that is normal.** Review the installation prompt, then type **Y** and press Enter to continue. Wait until installation finishes.
@@ -131,7 +131,7 @@ The configuration parent is not Chrome’s `Default` profile folder. Custom `--u
 4. Press **Send to Apple TV**. If pairing is requested, look at the TV and enter its PIN in the masked popup field. Do not put PINs, credentials or media URLs in bug reports.
 5. Confirm moving video and audible sound yourself. Then use the website’s own controls if you want to pause the browser video.
 
-TV pause/resume are unavailable. **End helper session** closes local transport and **does not confirm that the TV stopped**. Use the **physical remote** if playback continues.
+Helper 0.3.1 supports Pause TV / Resume TV for supported authenticated Apple TV sessions. TV seeking, timeline, jumps and volume remain unavailable. **End helper session** closes local transport and **does not confirm that the TV stopped**. Use the **physical remote** if playback continues.
 
 ## Linux timing and network troubleshooting
 

@@ -1,35 +1,35 @@
-# PearPlay 0.3.0 cross-platform preview
+# PearPlay 0.3.1 — cross-platform experimental release
 
-[Download the release and checksums](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.3.0).
-
-This free experimental release is tested for official Apple TV on Mac Chrome: pairing, public MP4 picture and sound, and stopping after ending the helper session were human-observed. Linux has prior Apple TV playback evidence. **Other AirPlay TVs: playback unverified.** Windows Chrome and playback are also unverified; testing follows release. Not every stream works.
+Chrome extension and helpers are separate downloads. Use the [0.3.1 release](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.3.1) and compare exact SHA256 values; old assets are never replaced in place. Store approval is separate from GitHub publication.
 
 ## Downloads
 
-| Computer | Helper |
-|---|---|
-| Mac Apple silicon | 0.3.0 `.pkg`, unsigned package/ad-hoc app, not Apple signed or notarized. No Intel Mac installer. |
-| Windows x86_64 | 0.3.0 unsigned per-user `.exe`; native installer/security tests passed, Chrome/playback unverified. |
-| Ubuntu/Debian x86_64 | 0.3.0 `.deb`; Ubuntu 24.04 / glibc 2.39+ baseline. |
-| Fedora 44 x86_64 | Existing verified 0.2.8 `.rpm`, glibc 2.43+. |
-| Arch/Omarchy x86_64 | Existing verified 0.2.8 `.pkg.tar.zst`, glibc 2.44+. |
+- Mac Apple silicon: unsigned 0.3.1 development PKG and ad-hoc app, not Developer ID signed/notarized.
+- Windows x64: unsigned 0.3.1 fully branded per-user installer. Smart App Control/Application Control may block it, including on the owner PC. Stop if blocked; signing via SignPath is pending.
+- Ubuntu/Debian x64: 0.3.1 DEB, Ubuntu 22.04/glibc 2.35+ baseline.
+- Arch/Omarchy x64: 0.3.1 package, glibc 2.35+.
+- Fedora 44 x64: retains [helper 0.2.8](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.8), glibc 2.43+; no new RPM and no new TV pause/resume controls.
 
-No Linux/Windows ARM, Snap/Flatpak or browser beta/dev installer support. Safari extension work remains paused. Mac Brave shares Chrome registration but does not have a new watched-playback result. Windows Edge/Brave are not installer targets.
+No Intel Mac or Linux/Windows ARM installer. Safari is paused. Flatpak/Snap browsers are unsupported.
 
-## Install and send
+## Controls and evidence
 
-Use the actual release installer and checksum, not a source-only kit. Follow the [Mac screenshot guide](mac-install.md), [Windows guide](windows-helper.md) or [Linux installation guide](install.md). Keep Gatekeeper, SmartScreen, Defender and your firewall enabled. Do not remove quarantine or reset privacy permissions. A per-item Mac Open Anyway decision is voluntary; stop on malware/damage warnings. If Windows blocks the unsigned installer, stop rather than disabling protections.
+Before casting: browser play/pause, timeline, 5/10/15/30-second jumps, mute and Picture in Picture. Actual Chrome browser-control checks exist on Mac, Windows and Linux. During a TV session these browser controls are hidden and cannot control the TV.
 
-Connect your browser in PearPlay Setup, fully quit/reopen it, then Check connection. Until Store 0.3.0 approval, extract the release extension ZIP and Load unpacked through chrome://extensions. Keep that folder in place; GitHub release does not update the Store automatically.
+Send to TV and End helper session are supported. Helper 0.3.1 also exposes Pause TV / Resume TV only for a supported authenticated Apple TV session. TV seek, timeline, jumps and volume are not implemented. Ending a helper session is not a universal guarantee that the TV stops; use its remote if it continues.
 
-Keep computer and TV on the same trusted network. Allow websites, Find videos, select your stream, Find TVs and select Apple TV. Enter any pairing PIN only into PearPlay’s masked field. A failed attempt needs Show a new PIN. Pairing never automatically sends video.
+Prior owner observations cover Apple TV picture/sound on Mac/Windows and prior Linux playback; Windows pause/resume/end were tested with an earlier candidate. No new receiver observation is claimed for the final packages. LG HLS remains unresolved; other receiver compatibility is not generally established.
 
-Send to TV, check picture/sound, and stop duplicate browser playback with the site’s controls. End helper session closes its connection; if the TV keeps playing, use its physical remote. No popup TV pause/resume, timeline, seeking or volume controls are offered. Images depict this actual UI with example data, not live playback proof.
+All three helper builds passed [hosted CI](https://github.com/jcarcinogen/PearPlay/actions/runs/38164027595). Windows exact-installer lifecycle, registry/receipt/hash checks and initial branded frozen GUI passed on hosted Windows, not under the owner PC’s policy. Mac expanded-package and isolated native Chrome checks are distinct from privileged system installation and protected owner-profile consent. Arch payload parity is not a new pacman installation claim. [Current evidence](../STATUS.md).
 
-## Privacy and scope
+## Install and safety
 
-Pairing stays OS-user-local; Windows uses DPAPI and user-local access controls. It is not portable between OSes/users/computers. Pair separately on each OS. No PearPlay account, cloud relay or first-party telemetry uploader. The media provider and TV still use the network. Directly fetchable HTTP(S) media only; no browser cookies, DRM or restriction bypass.
+Use a real package rather than a source-only kit. Keep your computer and TV on the same trusted network. Pairing is not portable between OS users or computers. Only human observation establishes picture and sound; use the physical remote if session ending leaves playback running.
 
-The earlier extensive candidate tests and repaired Mac build remain recorded in STATUS and the retained candidate kit. This release accepts the bounded official-Apple-TV owner result; broader receiver and Windows playback testing are follow-ups, not hidden passes. Signed/notarized distribution remains future work. Original candidate installers/checksums stay unchanged; the released Mac package uses the owner-installed dialog/registration/icon repair bytes.
+Follow the [Mac guide](mac-install.md), [Windows guide](windows-helper.md) or [Linux guide](install.md). Keep OS/firewall protections enabled. Do not remove quarantine or disable Gatekeeper, SmartScreen, Defender, Application Control or package-signature checks. Stop on malware/damage warnings or a Windows policy block.
 
-[README](../README.md) · [Privacy](privacy.md) · [Latest status](../STATUS.md)
+End casting and fully quit browsers before helper updates. Open PearPlay Setup, connect your browser, fully restart it, then Check connection. Mac Chrome/Brave share registration; Linux browser connections are separate. Pairing PINs belong only in PearPlay’s masked field. Pairing never automatically sends video.
+
+Pairing stays OS-user-local; Windows uses DPAPI. No account, cloud relay or first-party telemetry uploader. Media providers and TVs still use the network. Only receiver-fetchable HTTP(S) media can be sent; cookies, DRM and access restrictions are not bypassed.
+
+[README](../README.md) · [Privacy](privacy.md)

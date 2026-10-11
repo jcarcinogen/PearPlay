@@ -32,6 +32,25 @@ def boundary():
         shutil.rmtree(base)
 
 
+def test_expected_acl_uses_windows_canonical_sid_spelling():
+    import ctypes as C
+    from ctypes import wintypes as W
+    from helper.windows_security import Win32
+    api = Win32()
+    expected = api.sddl
+    # Start from the full current-user SID even for Windows' built-in account.
+    api.sddl = f'O:{api.sid}D:P(A;;FA;;;{api.sid})(A;;FA;;;SY)'
+    text = W.LPWSTR()
+    with api.attributes() as attrs:
+        try:
+            api.require(api.advapi.ConvertSecurityDescriptorToStringSecurityDescriptorW(
+                attrs.descriptor, 1, 1 | 4, C.byref(text), None))
+            assert expected == text.value
+        finally:
+            if text:
+                api.kernel.LocalFree(C.cast(text, W.HANDLE))
+
+
 def test_dpapi_roundtrip_and_plaintext_never_on_disk(boundary):
     _, store = boundary
     value = dict(identifier='AA:BB:CC:DD:EE:FF', credentials='fixture-secret-only')

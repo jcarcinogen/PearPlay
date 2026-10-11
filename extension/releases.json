@@ -5,8 +5,8 @@
       "os": "linux",
       "arch": "x86-64",
       "format": "deb",
-      "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.3.0/pearplay-helper-0.3.0-linux-x86_64.deb",
-      "sha256": "34fac8098a089ad9ea9f716f1f2d308a470efb009cdc914037f53dd080716b12"
+      "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.3.1/pearplay-helper-0.3.1-linux-x86_64.deb",
+      "sha256": "b0a056ce7a4c2412b77f22a0ef3a80b83e5053a776ef9dfdd9b2aa2fe96859af"
     },
     {
       "os": "linux",
@@ -19,22 +19,22 @@
       "os": "linux",
       "arch": "x86-64",
       "format": "pkg.tar.zst",
-      "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.8/pearplay-helper-0.2.8-linux-x86_64.pkg.tar.zst",
-      "sha256": "fa5d8a92e8d125d395b094936bcb1ce4492b0d6b66536148868ac7624b1117d8"
+      "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.3.1/pearplay-helper-0.3.1-linux-x86_64.pkg.tar.zst",
+      "sha256": "029d5d06a3f08cba56fb924623a634517c808b745086e7c515b8bf4e7eeaed1e"
     },
     {
       "os": "mac",
       "arch": "arm64",
       "format": "pkg",
-      "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.3.0/pearplay-helper-0.3.0-darwin-arm64.pkg",
-      "sha256": "640f8fc40cb66e0658c44de8dd637b17dace9df93b4fab811349768ab08ec4f6"
+      "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.3.1/pearplay-helper-0.3.1-darwin-arm64-development.pkg",
+      "sha256": "c9d1c3e2d4c6e9335258065d496e2f6249dde9f1f0d58d664fad2c94e3dae320"
     },
     {
       "os": "win",
       "arch": "x86-64",
       "format": "exe",
-      "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.3.0/pearplay-helper-0.3.0-windows-x86_64-unsigned.exe",
-      "sha256": "8b34bcaf0feecee1dcebda16a3a012b590e561b8f6f5ce971e11fcb9a7aab7a4"
+      "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.3.1/pearplay-helper-0.3.1-windows-x86_64-unsigned.exe",
+      "sha256": "4d501f44c7d69e1a2be6ceb116642037bd7d3fec3e4fcd2fbc5a1e441c9f1abd"
     }
   ]
 }

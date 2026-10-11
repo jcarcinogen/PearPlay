@@ -1,0 +1,107 @@
+name: Helper builds
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+      - '.gitattributes'
+      - 'helper/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - 'spikes/001-airplay/**'
+      - 'spikes/002-command/**'
+      - 'assets/brand/**'
+      - 'assets/store/icon-1024.png'
+      - 'requirements.txt'
+      - 'LICENSE'
+
+permissions:
+  contents: read
+concurrency:
+  group: helpers-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: windows-x64
+            runner: windows-2022
+            architecture: x64
+          - target: macos-arm64
+            runner: macos-14
+            architecture: arm64
+          - target: linux-x64
+            runner: ubuntu-22.04
+            architecture: x64
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PIP_DISABLE_PIP_VERSION_CHECK: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+        with:
+          version: '0.13.0'
+          enable-cache: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        if: runner.os == 'Windows'
+        with:
+          python-version: '3.13.16'
+          architecture: x64
+      - name: Linux package tools (disposable runner only)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends zstd libavahi-client3
+      - name: Build environment (disposable runner only)
+        shell: python
+        run: |
+          import os, pathlib, subprocess, sys, venv
+          root = pathlib.Path(os.environ['RUNNER_TEMP']) / 'pearplay-ci'
+          root.mkdir(exist_ok=False)
+          interpreter = [sys.executable] if sys.platform == 'win32' else ['3.11.15', '--managed-python']
+          subprocess.run(['uv', 'venv', '--python', *interpreter, str(root / 'venv')], check=True)
+          python = root / ('venv/Scripts/python.exe' if sys.platform == 'win32' else 'venv/bin/python')
+          subprocess.run(['uv', 'pip', 'install', '--python', str(python), 'pyatv==0.18.0', 'PyInstaller==6.21.0', 'pytest==9.0.2'], check=True)
+          with (root / 'dependencies.txt').open('w', encoding='utf-8') as log:
+              subprocess.run(['uv', 'pip', 'freeze', '--python', str(python)], stdout=log, check=True)
+      - name: Test, build and verify candidate
+        shell: python
+        run: |
+          import os, pathlib, subprocess, sys
+          root = pathlib.Path(os.environ['RUNNER_TEMP']) / 'pearplay-ci'
+          python = root / ('venv/Scripts/python.exe' if sys.platform == 'win32' else 'venv/bin/python')
+          env = dict(os.environ)
+          env.pop('PYTHONPATH', None)
+          env.pop('PYTHONHOME', None)
+          subprocess.run([str(python), '-B', 'scripts/ci_helpers.py', '--root', str(root)], env=env, check=True)
+      - name: Upload verified engineering candidate
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: pearplay-${{ matrix.target }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/pearplay-ci/artifacts/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Preserve diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: diagnostics-${{ matrix.target }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/pearplay-ci/*.log
+            ${{ runner.temp }}/pearplay-ci/dependencies.txt
+            ${{ runner.temp }}/pearplay-ci/build/*.log
+            ${{ runner.temp }}/pearplay-ci/build/native-tests.txt
+            ${{ runner.temp }}/pearplay-ci/build/source-hashes.json
+          if-no-files-found: warn
+          retention-days: 7

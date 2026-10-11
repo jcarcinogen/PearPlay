@@ -72,7 +72,8 @@ def test_source_snapshot_covers_runtime_setup_build_licenses_and_tests():
     for relative in ['helper/app.py', 'helper/windows_setup.py', 'helper/native.py',
                      'scripts/build_windows_helper.py', 'scripts/build_windows_helper.ps1',
                      'scripts/build_helper.py', 'spikes/002-command/LICENSE.md', 'LICENSE',
-                     'requirements.txt', 'tests/test_windows_native.py', 'tests/test_windows_builder.py']:
+                     'requirements.txt', 'tests/test_windows_native.py', 'tests/test_windows_builder.py',
+                     'assets/store/icon-1024.png', 'assets/brand/pearplay.ico']:
         assert snapshot[relative] == hashlib.sha256((ROOT/relative).read_bytes()).hexdigest()
 
 
@@ -98,6 +99,8 @@ def test_build_rejects_source_changed_after_each_stage(tmp_path, monkeypatch, st
         return {'scope': 'fixture', 'notices': []}
     monkeypatch.setattr(build, 'collect_licenses', notices)
     monkeypatch.setattr(build, 'native_smoke', lambda _: {})
+    monkeypatch.setattr(build, 'verify_executable_icon', lambda _: {'scope': 'synthetic freeze'})
+    monkeypatch.setattr(build, 'verify_windowed', lambda _: None)
     monkeypatch.setattr(build, 'payload_files', lambda _: {})
     output = tmp_path/'output'
     calls = []
@@ -105,7 +108,7 @@ def test_build_rejects_source_changed_after_each_stage(tmp_path, monkeypatch, st
         if 'PyInstaller' in argv:
             name = argv[argv.index('--name')+1]
             current = 'helper' if name == 'PearPlayHelper' else 'setup'
-            dest = output/'frozen'/('PearPlayHelper/PearPlayHelper.exe' if current == 'helper' else 'PearPlaySetup.exe')
+            dest = output/'frozen'/('PearPlayHelper/PearPlayHelper.exe' if current == 'helper' else name+'.exe')
             dest.parent.mkdir(parents=True, exist_ok=True)
             dest.write_bytes(b'synthetic fixture executable')
         elif 'pytest' in argv:
@@ -128,6 +131,26 @@ def test_build_rejects_source_changed_after_each_stage(tmp_path, monkeypatch, st
     manifest = json.loads((output/'source-hashes.json').read_text())
     assert manifest['helper/native.py'] != hashlib.sha256((source/'helper/native.py').read_bytes()).hexdigest()
     assert calls[-1] == stage
+
+
+@pytest.mark.parametrize('name,onefile', [('PearPlayHelper', False), ('PearPlaySetup', True)])
+def test_both_windows_executables_embed_pearplay_icon(tmp_path, name, onefile):
+    build = builder()
+    argv = build.freeze_command(tmp_path, ROOT/'helper/app.py', name, onefile=onefile)
+    assert argv[argv.index('--icon') + 1] == str(ROOT/'assets/brand/pearplay.ico')
+    assert '--windowed' in argv and '--console' not in argv  # stdio restored from inherited pipes
+
+
+def test_windows_icon_contains_all_shell_sizes():
+    frames = builder().icon_frames((ROOT/'assets/brand/pearplay.ico').read_bytes())
+    assert [row[0] or 256 for row, _ in frames] == [256, 128, 64, 48, 32, 24, 16]
+    assert all(row[0] == row[1] and row[5] == 32 and pixels for row, pixels in frames)
+
+
+@pytest.mark.parametrize('raw', [b'', b'not an icon', b'\x00\x00\x01\x00\x01\x00'])
+def test_invalid_brand_icon_is_refused(raw):
+    with pytest.raises(ValueError, match='invalid_brand_icon'):
+        builder().icon_frames(raw)
 
 
 def test_environment_drift_rejected(tmp_path, monkeypatch):

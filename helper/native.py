@@ -10,7 +10,7 @@ import re
 import struct
 import sys
 
-VERSION = '0.3.0'
+VERSION = '0.3.1'
 
 async def native_stdio(output, factory=None):
     import sys
@@ -262,6 +262,9 @@ def validate(value):
             raise ValueError('invalid_request')
         if not isinstance(args['pin'], str) or not re.fullmatch(r'\d{4}', args['pin']):
             raise ValueError('invalid_request')
+    elif op in ('pause', 'resume'):
+        if keys and (keys != {'session'} or not isinstance(args['session'], str) or not re.fullmatch(r'[0-9a-f]{32}', args['session'])):
+            raise ValueError('invalid_request')
     elif keys:
         raise ValueError('invalid_request')
     if 'host' in args:
@@ -443,6 +446,7 @@ class Transport:
         self.probe_timeout = probe_timeout
         self.probe_delays = probe_delays
         self.wire = None
+        self.rate_control = None
         self.mdns = mdns
         self.advertised = []
 
@@ -771,6 +775,9 @@ class Transport:
                             pass
                     if session.started and not was_playing: notify('playing', 'protocol')
                 session.on_event = event
+                if video_kind(getattr(service, 'properties', {})) == 'apple-tv' and self.probe_playback_info is None:
+                    from helper.tv_control import RateControl
+                    self.rate_control = RateControl(session, notify)
                 await session.start(self.wire.timing_port, args['url'])
                 # Release the URL after submission; the native connection owns the session lifetime.
                 args.clear()
@@ -788,6 +795,8 @@ class Transport:
                         probe_task.cancel()
                         await asyncio.gather(probe_task, return_exceptions=True)
             finally:
+                control, self.rate_control = self.rate_control, None
+                if control is not None: control.close()
                 self._trace('close', stage=self.playback_stage[0])
                 if self.wire is not None: self.wire.close()
                 else: connection.close()
@@ -996,10 +1005,22 @@ class Host:
         self.diagnostic = None
         self.session = None
         self.receiver_issue = None
+        self.transport = None
+        self.control_identity = None
+
+    def tv_control(self):
+        control = getattr(self.transport, 'rate_control', None)
+        if self.task and not self.task.done() and self.state in ('playing', 'paused') and control is not None and control.available:
+            return self.control_identity
+        return None
 
     def response(self, identifier, error=None, **fields):
         result = dict(v=1, id=identifier, ok=error is None, state=self.state,
                       evidence=self.evidence, capabilities=list(self.capabilities), helperVersion=VERSION, firewallSupport=sys.platform != 'win32', **fields)
+        control = self.tv_control()
+        if control is not None and not error:
+            result['tvControl'] = dict(control)
+            result['capabilities'].extend(['pause', 'resume'])
         if self.state == 'error' and self.diagnostic is not None:
             result['diagnostic'] = dict(self.diagnostic)
         if not error and self.state == 'connecting' and self.evidence == 'unverified' and self.session:
@@ -1019,7 +1040,11 @@ class Host:
 
     async def playback(self, args):
         try:
-            evidence = await self.factory().run(args, self.changed)
+            self.transport = transport = self.factory()
+            def notify(state, evidence, **fields):
+                if self.transport is transport and self.state not in ('stopping', 'stopped'):
+                    self.changed(state, evidence, **fields)
+            evidence = await transport.run(args, notify)
             self.changed('stopped', evidence or 'protocol')
         except asyncio.CancelledError:
             raise
@@ -1030,6 +1055,9 @@ class Host:
             code = str(error) if isinstance(error, HelperError) and str(error) in ('pairing_required','busy','receiver_unavailable') else 'transport_failed'
             self.diagnostic = error.diagnostic if isinstance(error, PlaybackError) else None
             self.emit(self.response('event', code))
+        finally:
+            self.transport = None
+            self.control_identity = None
 
     async def _drop_pair(self):
         session = self.open_pair[1] if self.open_pair else None
@@ -1056,8 +1084,17 @@ class Host:
         except Exception:
             return self.response(identifier, 'invalid_request')
         op, args = value['op'], value['args']
-        if op not in self.capabilities and op != 'firewall': return self.response(identifier, 'unsupported')
+        if op not in self.capabilities and op not in ('firewall', 'pause', 'resume'): return self.response(identifier, 'unsupported')
         try:
+            if op in ('pause', 'resume'):
+                identity = self.tv_control()
+                if not identity or args.get('session') != identity['session']:
+                    return self.response(identifier, 'unsupported')
+                control = self.transport.rate_control
+                if self.state != ('playing' if op == 'pause' else 'paused'):
+                    return self.response(identifier, 'busy')
+                await control.set_rate(op)
+                return self.response(identifier)
             if op == 'firewall':
                 if sys.platform == 'win32': return self.response(identifier, 'unsupported')
                 from helper import firewall
@@ -1094,6 +1131,8 @@ class Host:
                 self.session = None
                 self.receiver_issue = None
                 self.state, self.evidence = 'connecting', 'none'
+                import secrets
+                self.control_identity = {'session': secrets.token_hex(16), 'receiver': args['receiver']}
                 self.task = asyncio.create_task(self.playback(dict(args)))
             elif op == 'stop':
                 self.changed('stopping', 'unverified')

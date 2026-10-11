@@ -30,13 +30,14 @@ async function mount(os='linux', initialVisibility='visible') {
  await initialization;
  return {elements,calls,view,writes,document,holdOp:op=>{let done;gates.set(op,new Promise(r=>{done=r}));return ()=>{gates.delete(op);done()};},failOp:(op,when='before')=>failures.set(op,when),refresh:()=>tick(),hold:()=>{hold=true},release:()=>{hold=false;release()},holdPair:()=>{holdPair=true},releasePair:()=>releasePair(),close:()=>events.pagehide(),deny:()=>{allowed=false;grant=false},grant:()=>{grant=true}};
 }
-for(const os of ['linux','mac','win']) test(`${os} popup keeps existing helper flow available`,async()=>{const p=await mount(os);assert.ok(p.calls.some(m=>m.op==='hello'));assert.equal(p.elements.get('start').disabled,false);});
-test('initially hidden action document waits then initializes when Chrome makes it visible',async()=>{const p=await mount('mac','hidden');assert.ok(p.calls.some(m=>m.op==='hello'));});
+for(const os of ['linux','mac','win']) test(`${os} popup keeps existing helper flow available`,async()=>{const p=await mount(os);assert.ok(p.calls.some(m=>m.op==='view'));assert.equal(p.calls.some(m=>['hello','discover'].includes(m.op)),false);assert.equal(p.elements.get('start').disabled,false);});
+test('initially hidden action document waits then initializes when Chrome makes it visible',async()=>{const p=await mount('mac','hidden');assert.ok(p.calls.some(m=>m.op==='view'));assert.equal(p.calls.some(m=>['hello','discover'].includes(m.op)),false);});
 test('other OS stops before native connection and shows clear unavailability',async()=>{const p=await mount('cros');assert.equal(p.calls.length,0);assert.equal(p.elements.get('casting').hidden,true);assert.match(p.elements.get('platformNotice').textContent,/not supported/);});
 test('quiet refresh has one in-flight view, blocks racing actions and preserves unchanged option DOM',async()=>{
  const p=await mount();const before=p.elements.get('candidate').replacements;
+ const viewsBefore=p.calls.filter(m=>m.op==='view').length;
  p.hold();const a=p.refresh(),b=p.refresh();await p.elements.get('start').onclick();
- assert.equal(p.calls.filter(m=>m.op==='view').length,3); // initial + post-hello + one pending
+ assert.equal(p.calls.filter(m=>m.op==='view').length,viewsBefore+1); // exactly one new pending view
  assert.equal(p.calls.some(m=>m.op==='start'),false);assert.equal(p.elements.get('start').disabled,false);
  p.release();await Promise.all([a,b]);assert.equal(p.elements.get('candidate').replacements,before);
  await p.elements.get('start').onclick();assert.equal(p.calls.filter(m=>m.op==='start').length,1);

@@ -86,6 +86,56 @@ class PipeReader:
         # A blocked daemon is discarded on process exit; no executor join.
 
 
+def restore_stdio():
+    """Windowed executables keep inherited pipes/files without creating a console.
+
+    CPython clears sys.std* for pythonw/PyInstaller windowed builds. Duplicate
+    only valid inherited pipe/file handles, so Python owns its copies, never the
+    caller's handles. Missing streams go to NUL; return whether output is real.
+    """
+    import ctypes as C
+    from ctypes import wintypes as W
+    import io
+    import os
+    import sys
+    if os.name != 'nt':
+        return False
+    import msvcrt
+    kernel = C.WinDLL('kernel32', use_last_error=True)
+    kernel.GetStdHandle.argtypes = [W.DWORD]
+    kernel.GetStdHandle.restype = W.HANDLE
+    kernel.GetFileType.argtypes = [W.HANDLE]
+    kernel.GetFileType.restype = W.DWORD
+    kernel.GetCurrentProcess.restype = W.HANDLE
+    kernel.DuplicateHandle.argtypes = [W.HANDLE, W.HANDLE, W.HANDLE, C.POINTER(W.HANDLE), W.DWORD, W.BOOL, W.DWORD]
+    kernel.DuplicateHandle.restype = W.BOOL
+    kernel.CloseHandle.argtypes = [W.HANDLE]
+    kernel.CloseHandle.restype = W.BOOL
+    process = kernel.GetCurrentProcess()
+    output = False
+    for name, number, mode in (('stdin', -10, 'rb'), ('stdout', -11, 'wb'), ('stderr', -12, 'wb')):
+        handle = kernel.GetStdHandle(number & 0xffffffff)
+        usable = handle not in (None, C.c_void_p(-1).value) and kernel.GetFileType(handle) in (1, 3)
+        if name == 'stdout':
+            output = usable
+        if getattr(sys, name) is not None:
+            continue
+        if usable:
+            duplicate = W.HANDLE()
+            if not kernel.DuplicateHandle(process, handle, process, C.byref(duplicate), 0, False, 2):
+                raise OSError('inherited_pipe_duplicate_failed')
+            try:
+                fd = msvcrt.open_osfhandle(duplicate.value, os.O_BINARY | (os.O_RDONLY if name == 'stdin' else os.O_WRONLY))
+            except BaseException:
+                kernel.CloseHandle(duplicate)
+                raise
+            raw = os.fdopen(fd, mode)
+        else:
+            raw = open(os.devnull, mode)
+        setattr(sys, name, io.TextIOWrapper(raw, encoding='utf-8', newline='', write_through=True))
+    return output
+
+
 def binary_stdio():
     import msvcrt
     import os

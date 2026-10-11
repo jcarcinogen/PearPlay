@@ -340,7 +340,9 @@ def test_rate_resend_is_bounded_while_playback_never_starts():
         session = mod.Session(wire, timeout=.01, feedback_interval=.02,
                               rate_resend_interval=.004, rate_resend_limit=3)
         with pytest.raises(TimeoutError):
-            await session.play(.05)
+            # Windows timer resolution may exceed the 4ms requested tick.
+            # Leave enough wall time to reach the cap, then prove feedback continues.
+            await session.play(.25)
         resends = [c for c in wire.calls if c[0] == 'command-resend']
         feedbacks = [c for c in wire.calls if c[0] == 'feedback']
         assert len(resends) == 3, 'rate re-sends must stop at the limit'

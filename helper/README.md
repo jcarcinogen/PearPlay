@@ -2,7 +2,7 @@
 
 The Chrome extension/helper candidate targets Linux, Mac and Windows. Safari extension development is paused; no WebKit/AVPlayer/Mac relay or screen mirroring is part of this helper. See [cross-platform status](../docs/cross-platform-preview.md) for artifact versus source-only states and remaining gates.
 
-Published Linux helper is [0.2.8](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.8); local extension candidate is 0.3.0. Mac app/pkg development has resumed with ad-hoc signing, not Developer ID/notarized distribution. Windows per-user Chrome/HKCU/DPAPI and bundled installer work is active. Neither Mac nor Windows has a public catalog URL or a human-observed playback claim in this docs handoff.
+Extension candidate 0.3.1 is unpublished. Existing public helpers are 0.3.0 for Mac, Windows and Debian, and 0.2.8 for Fedora/Arch. New same-version helper candidates are distinct unpublished artifacts. Mac and Windows Apple TV picture/sound have owner evidence; Windows pause/resume/end-session also passed. New Windows branded GUI distribution is blocked by Application Control; Mac remains unsigned/not notarized. Public Store 0.2.9 was verified during preparation. See current STATUS and exact hashes; historical checkpoints are not current gates.
 
 ## Runtime and installation
 
@@ -40,7 +40,7 @@ Host `com.pearplay.helper`; use persistent `connectNative`. Origin allowlist is 
 
 Current backend has authenticated command-adapter transport and an affirmatively eligible no-PIN AirPlay V1 route. Do not interpret V1 request acceptance as protocol playing. Optional accepted-session/timing/receiver-issue metadata preserves older-client compatibility; no-PIN paths must not demand irrelevant timing rules. Linux receiver-scoped timing/firewall assistance is separate from installing a helper, never a blanket firewall-disable instruction. See the newest [STATUS](../STATUS.md) and [install troubleshooting](../docs/install.md#linux-timing-and-network-troubleshooting).
 
-`playing` with `evidence:"protocol"` is receiver-reported state, not moving video/audible sound. `Sent` means accepted handoff, not watched success. End helper session tears down local transport with unverified evidence; use the physical remote if playback continues. TV pause/resume/timeline/Picture in Picture and Safari's native AirPlay picker are not helper capabilities.
+`playing` with `evidence:"protocol"` is receiver-reported state, not moving video/audible sound. `Sent` means accepted handoff, not watched success. End helper session tears down local transport with unverified evidence; use the physical remote if playback continues. Newer helper candidates provide session-bound Pause TV / Resume TV only for supported authenticated Apple TV sessions. TV seeking/timeline, volume and Picture in Picture are not helper capabilities; browser Picture in Picture is separate. Safari's native picker is not exposed.
 
 One helper playback/pairing session can be active per OS user. End it in the browser that owns it before switching browsers. Locks/leases coordinate helper instances, not arbitrary other AirPlay apps. Do not delete a lock inode or force another user's/session's state during maintenance.
 

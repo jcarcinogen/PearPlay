@@ -11,7 +11,7 @@ import {readdirSync} from 'node:fs';
 import {setTimeout as delay} from 'node:timers/promises';
 
 assert.equal(process.platform,'darwin');
-const binary=resolve(process.argv[2]);const output=resolve(process.argv[3]);
+const binary=realpathSync(process.argv[2]);const output=resolve(process.argv[3]);
 const chrome='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 assert.ok(existsSync(binary)&&existsSync(chrome));
 const root=realpathSync(mkdtempSync(join(tmpdir(),'pp-mac-')));
@@ -19,7 +19,8 @@ const parent=join(root,'config');const profile=join(parent,'Google/Chrome');
 const extension=join(root,'extension');const id='eoadahoncjfpnennmkjifohclbafjkol';
 const extensionSource=resolve(process.env.PEARPLAY_EXTENSION || 'extension');
 cpSync(extensionSource,extension,{recursive:true});
-assert.equal(JSON.parse(readFileSync(join(extension,'manifest.json'))).version,'0.3.0');
+const extensionVersion=JSON.parse(readFileSync(join(extension,'manifest.json'))).version;
+assert.equal(extensionVersion,'0.3.1');
 assert.equal(JSON.parse(readFileSync(join(extension,'releases.json'))).extensionId,id);
 const host=join(profile,'NativeMessagingHosts/com.pearplay.helper.json');
 function hashes(folder,prefix=''){
@@ -32,7 +33,7 @@ function hashes(folder,prefix=''){
  }
  return result;
 }
-const report={scope:'Real headless official Mac Chrome hello/status and setup page; optional explicitly recorded read-only discovery; no pairing or playback',extensionId:id,version:'0.3.0',extensionHashes:hashes(extension),phases:[]};
+const report={scope:'Real headless official Mac Chrome hello/status and setup page; optional explicitly recorded read-only discovery; no pairing or playback',extensionId:id,version:extensionVersion,extensionHashes:hashes(extension),phases:[]};
 let child,ws;
 async function stop(){
  if(ws){ws.close();ws=null;}
@@ -94,7 +95,7 @@ try{
   assert.equal(c.state.findDisabled,!ready);
   const hello=await c.native('hello');
   if(ready){
-   assert.equal(hello.ok,true);assert.equal(hello.helperVersion,'0.3.0');
+   assert.equal(hello.ok,true);assert.equal(hello.helperVersion,extensionVersion);
    const status=await c.native('status');assert.equal(status.ok,true);assert.equal(status.state,'idle');
    report.phases.push({phase,setup:c.state.kind,helperVersion:hello.helperVersion,status:status.state});
    if(phase==='ready' && process.env.PEARPLAY_LIVE_DISCOVERY==='1'){

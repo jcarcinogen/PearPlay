@@ -1,66 +1,12 @@
-# Public claims and evidence
+# Claims and evidence
 
-**Current scope: cross-platform development preview for Linux, Mac and Windows Chrome. Safari extension paused.**
+- Direct URL handoff/no re-encoding: extension/native control contract and helper transport; only receiver-fetchable HTTP(S) media. No DRM/cookie/access bypass.
+- Cross-platform packages: [CI38164027595](https://github.com/jcarcinogen/PearPlay/actions/runs/38164027595), independently verified artifacts/source hashes. Windows exact installer lifecycle passed on hosted Windows; owner Application Control remains unresolved.
+- Mac: arm64 package, frozen self-test and strict ad-hoc signature checks. Unsigned PKG and no notarization; normal system/owner consent is a separate boundary.
+- Browser controls: real Chrome popup→worker→content tests exist for Mac, Windows and Linux. Synthetic UI captures supplement but do not replace these.
+- Receiver results: earlier owner Apple TV picture/sound observations on Mac/Windows and prior Linux playback; Windows pause/resume/end observed on an earlier candidate. These are not final-package re-tests or universal compatibility.
+- Privacy: local pairing storage (DPAPI on Windows), no first-party telemetry uploader/cloud relay; media provider, dependencies and TV still communicate. Optional support links contact third parties only when clicked.
+- TV controls: helper0.3.1 session-bound pause/resume on supported authenticated Apple TV sessions; no seeking/timeline/jumps/volume. Use TV remote if End helper session leaves playback running.
+- Store images: actual shipping DOM with synthetic example data, never personal account/receiver telemetry.
 
-This is the claims ledger for README/setup and parent-owned landing/store art. The new 0.3.0 candidate is not a release. Published Linux helper 0.2.8 and newest `STATUS.md` evidence supersede older 0.2.5-only release narratives. STATUS reports Scott's 0.2.8 Store submission/publication without independent live-version confirmation and a separately prepared 0.2.9 ZIP. No new TV trial took place in this docs work. UI fixtures, source tests, native-browser checks and human playback are distinct evidence.
-
-Source file references remain stable as lines move. The current landing source is `assets/landing/page.html`; `docs/index.html` is regenerated from it. Raster exports inherit the claims of their editable HTML source. “Verified” below always identifies what kind of verification occurred.
-
-## Claim ledger
-
-| Public claim / qualification | Where it appears | Evidence source | Verdict / boundary |
-|---|---|---|---|
-| “Your browser’s video. Your Apple TV.” | README; landing/store art; positioning | `contract/v1.md`; `STATUS.md` | Promise accompanied by compatible-stream and development-preview/separate-helper qualifications; not every website or OS verified. |
-| Compatible HTTP(S) media is fetched directly by Apple TV; Native Messaging carries control, not media | README; landing 17–18; store listing sources 1; feature-direct.svg 1 | `contract/v1.md`; `extension/worker.mjs`; `helper/native.py` | Source/contract fact, supported by the bounded live result. |
-| No screen mirroring, re-encode/transcode or Mac media relay for Linux | README; landing 17–18 | `STATUS.md`; `helper/README.md`; `contract/v1.md` | Architecture, not a comparative quality or latency claim. |
-| No promised resolution or universal website compatibility | README; landing 17–18,37 | `STATUS.md`; `extension/core.mjs`; `contract/v1.md` | Explicit limitation. URLs and format filtering do not prove codec or site support. |
-| No PearPlay account or cloud service required | README; landing 18,38 | `STATUS.md`; `extension/worker.mjs`; `helper/native.py`; `helper/install.py` | First-party source/architecture audit. Origin-site accounts and network requests remain outside this claim. |
-| Explicit grant, stream and receiver choice; Send initiates handoff | README; landing; listing | `contract/v1.md`; `extension/popup.js`; `extension/core.mjs`; `extension/worker.mjs` | UI port retains deliberate selection; stale/replaced media must not silently send a replacement. Final exact-popup tests belong to UI worker. Sending is never automatic. |
-| Website access is requested on a click, not silently at installation | README; landing 19,37 | `extension/manifest.json`; `extension/popup.js`; `extension/worker.mjs` | Permissions contract; protected by `tests/extension/ui.test.mjs` and worker tests. |
-| This version requires all-sites access; the per-site grant alone does not enable discovery | README; landing 19,37; install guide; popup access details | `extension/popup.js` | Known limitation, plainly disclosed in the README limitations, usage and FAQ. Not fixed or hidden by this refresh. |
-| Browser playback stays under website controls | README; landing 19,37 | `extension/popup.js`; `tests/extension/ui.test.mjs`; `extension/worker.mjs`; `extension/content.js` | Website controls remain responsible for browser playback. |
-| Linux Chrome extension/helper video and audible sound on a tested stream | README; landing 17,20; social and listing footer | `STATUS.md` | Human-confirmed on the recorded receiver/path, not re-tested here. |
-| Pre-roll-to-program transition on the tested stream | README; landing 20,37 | `STATUS.md` | Human-confirmed on that pre-roll. Do not reuse older “not observed” rows as the latest verdict. |
-| PearPlay does not block ads | README; landing 20,37 | `STATUS.md`; `extension/worker.mjs`; `extension/manifest.json` | No ad-blocking feature; network observation is not blocking. No claim that every ad path works. |
-| End helper session stopped one tested session and recast worked | landing 20 | `STATUS.md` | Human-confirmed bounded result. Not a general receiver-stop guarantee. |
-| End helper session does not confirm TV stop; physical remote fallback | README; landing 20,37; popup; install guide | `contract/v1.md`; `helper/native.py`; `helper/README.md` | Safety-critical qualification preserved. Source stops local transport with unverified evidence. |
-| Bounded public MP4/HLS on Apple TV and AirScreen via recorded Linux 0.2.8 popup/runtime trials | Preview guide; candidate evidence | Newest relevant `STATUS.md` watched sections | Human picture/audio confirmed on those exact routes; AirScreen brief HLS startup spinner and rediscovery/reselection are qualified, not seamless recovery. LG HLS remains parked. No Mac/Windows playback inferred. |
-| Pairing credentials persist locally; reconnect without another PIN | README; landing 18,38 | `STATUS.md`; `helper/native.py`; `spikes/001-airplay/pearplay.py` | Human observation plus source. Single-receiver store; no multi-receiver credential-vault promise. |
-| Pairing stays in OS-user-local state | README; privacy; install guide | `spikes/001-airplay/pearplay.py`; Windows store/security source; platform-native tests | Linux/Mac restrictive file permissions are not encryption-at-rest claims. Windows uses current-user DPAPI and user-local access controls; not portable cross-user/machine/OS state. Native Windows tests are required, not POSIX chmod evidence. |
-| PIN not persisted by extension; submitted for pairing with a masked field | README; install guide; popup | `extension/popup.html`; `extension/popup.js`; `extension/worker.mjs`; `contract/v1.md` | Source fact. Render/test fixtures use no real PIN and do not prove authentication. |
-| Signed URLs are transient, not put in logs/reports/marketing | README; install guide | `contract/v1.md`; `extension/core.mjs`; `helper/native.py`; render fixture | Source policy/implementation: memory-only candidate URLs, sanitized helper logging. No assertion about browser/OS forensic memory. |
-| Linux, Mac and Windows Chrome development preview; Safari paused | README, listing, setup, landing | Current scope request; `extension/setup.mjs`; `tests/extension/platform-scope.test.mjs`; `docs/cross-platform-preview.md` | Linux 0.2.8 published. Mac ad-hoc app/pkg and Windows bundled-installer/HKCU/DPAPI active candidates; no public Mac/Windows links or human-observed playback. Historical linux-only-platform evidence remains history, not a current Mac-disabled gate. |
-| Linux Chrome, Brave and Chromium playback user-confirmed | README; landing 17,20; listing footer | Owner report in current release-copy correction; `STATUS.md` for earlier Chrome trial | Chrome video and audio were separately confirmed; Brave/Chromium playback is owner-reported without separately recorded audio, stream or receiver details. Edge is not an installer target. |
-| Invalid/expired-stream and broader receiver lifecycle trials remain open | README; landing 20,37 | `STATUS.md`; `contract/v1.md` | Unverified, plainly labeled; observed stop/recast does not close the wider matrix. |
-| `blob:` cannot be handed off; browser cookies are not transferred | README; landing 37 | `extension/core.mjs`; `extension/content.js`; `contract/v1.md` | HTTP(S)-only validation and URL-only control contract. |
-| No DRM, geography or access-control bypass | README; landing 37; install guide | `contract/v1.md`; `extension/core.mjs`; `STATUS.md` | Deliberate scope: receiver fetch must succeed under the source’s controls. Not a universal geo-failure detector. |
-| Separate explicit helper install; source-only is not an installer | README; install guide; setup | `extension/manifest.json`; `extension/releases.json`; `helper/README.md`; `STATUS.md` | Store item and Linux 0.2.8 exist; 0.3.0 source candidate is not a Store release. Mac/Windows links unavailable pending actual publication. |
-| Python 3.11+, pinned pyatv 0.18.0; machine-local venv; installer changes no packages/firewall | README; landing 21–36; install guide | `helper/README.md`; `requirements.txt:2`; `helper/install.py` | Manual commands reviewed against source; no new dependency installed in this refresh. `uv` is the chosen setup tool, not a helper runtime dependency. |
-| Receiver-scoped UDP timing 49170 was required on the tested Linux host | README; install guide | `STATUS.md`; `helper/native.py` | Host-specific evidence, not a universal network rule. No firewall changed here. |
-| Mac helper resumed; Safari-only capabilities not ported | Preview and lessons guide | `docs/mac-runtime-identity.md`; `docs/safari-lessons-port.md` | Ad-hoc signature is not Developer ID/notarization/Gatekeeper acceptance. Old Terminal route stays archived. Chrome helper does not expose Safari native picker, TV timeline/pause/resume/Picture in Picture. |
-| Uninstall removes exact owned registration, preserves unknown files/credentials/source/venv | README; install guide | `helper/install.py`; `helper/README.md`; `tests/browser/README.md` | Source and historical isolated integration evidence, plus current offline tests. |
-| No telemetry endpoint in audited first-party extension/helper | README; landing 38 | See privacy audit below | Narrow source audit, not a promise of zero browser/dependency/site network activity. |
-| Independent and unaffiliated with Apple; working name not trademark-cleared | README; landing footer | `docs/positioning.md` (brand policy); pre-refresh README recorded working-name status | Project identity declaration, not trademark clearance or third-party endorsement. No Apple/AirPlay mark used. |
-| MIT license for original project code | README; landing footer | Root `LICENSE`, selected by owner; adapter notices retained | Does not replace third-party licenses or trademark rights. |
-| Real extension screenshots with example selections | README; landing 17; listing captions | `scripts/render-brand-assets.mjs`; `tests/browser/brand-fixture.js`; `assets/evidence/render-verification.json` | Headless Chrome renders the actual unpacked popup document. Browser/native responses are synthetic; not an actual action-popup transport or TV trial. |
-
-## Privacy audit
-
-Scope: all first-party files under `extension/` and `helper/`, plus the secure Store implementation called by the helper. The source trace finds DOM/currentSrc collection (`extension/content.js`), in-memory candidate storage and label-only views (`extension/core.mjs`), Chrome Native Messaging (`extension/worker.mjs`, `extension/native.mjs`), receiver discovery (`helper/native.py`) and receiver connection (`helper/native.py`). The installer only writes the local native-host registration (`helper/install.py`).
-
-No analytics/telemetry endpoint, account service or PearPlay cloud integration appears in that first-party path. Search covered HTTP URL literals, fetch/XHR/beacon calls, socket/HTTP imports and telemetry/analytics terms; matches were validated as permission patterns, URL parsing, user-selected media handling, native messaging or receiver transport. This does **not** audit Chrome internals, OS services, all transitive pyatv dependencies, the streaming origin or Apple TV. Do not convert it to “nothing on this computer ever phones home.”
-
-Marketing images are sourced only from an isolated fresh Chrome profile and synthetic fixtures. Their display title and receiver are examples; the only address used is reserved documentation address `192.0.2.10`. No daily browser chrome, desktop, real receiver ID, credential, PIN or signed media URL is captured.
-
-## Generated art and copy inventory — historical captures, parent regeneration pending
-
-- `assets/store/listing-light.html` and `assets/store/listing-dark.html`: parent-owned composites must use the current platform qualifications above. Prior Linux-only/coming-soon captures are historical, not current candidate evidence.
-- `assets/landing/social-preview.html`: parent-owned promise/art must preserve compatible-stream and preview evidence boundaries. Rendering is not receiver playback.
-- `assets/landing/hero.html`: abstract brand mark, actual popup capture, schematic TV; no fabricated video or OS chrome. It is illustrative control-flow art, not the media path diagram.
-- `assets/landing/feature-direct.svg:1`: source → receiver media path, supported by `contract/v1.md`.
-- `assets/landing/readme.html` is generated directly from `README.md`; it carries no independently authored claims.
-- A current unpublished cross-platform Store description draft exists at `docs/store-listing.md`. Existing Store item/public Linux release are distinct from this 0.3.0 source candidate. Submission/approval/public availability require separate evidence and authorization.
-
-## Evidence still needed
-
-No new live playback, daily-profile installation or real pairing was performed in this docs work. Prior Linux Chrome/Brave/Chromium owner confirmation remains qualified; latest STATUS adds bounded Linux 0.2.8 package/native/watched evidence, not all browser/receiver/endurance coverage. Mac/Windows require exact artifact, native-install/lifecycle and human picture/audio evidence. No general stop guarantee or LG HLS fix. Signing/notarization, Windows normal-distribution security, public links and parent-owned regenerated art/final TV checklist remain separate integration gates. Nothing here authorizes commit, push, release or Store publication.
+Consult [privacy](privacy.md), [release scope](cross-platform-preview.md), source tests and exact release-kit reports. Claims are limited to the recorded artifact/OS/path; a successful HTTP response or helper state is not human-observed playback.

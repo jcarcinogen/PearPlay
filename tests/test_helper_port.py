@@ -2,6 +2,7 @@ import asyncio
 import io
 import json
 import struct
+import sys
 import unittest
 from test_helper_protocol import load, request
 
@@ -31,6 +32,23 @@ class PortTests(unittest.IsolatedAsyncioTestCase):
         output=io.BytesIO();await m.serve(reader,output)
         output.seek(0);self.assertEqual(m.read_frame(output)['error'],'invalid_frame')
 
+    async def test_windows_pair_cli_uses_masked_pin_and_always_closes(self):
+        from unittest.mock import patch, AsyncMock
+        from types import SimpleNamespace
+        m=load()
+        session=SimpleNamespace(finish=AsyncMock(),close=AsyncMock())
+        transport=SimpleNamespace(begin_pair=AsyncMock(return_value=session))
+        with patch.object(m.sys,'platform','win32'), patch.object(m,'Transport',return_value=transport), patch('getpass.getpass',return_value='1234'):
+            self.assertEqual(await m.pair_cli('AA:BB:CC:DD:EE:FF','127.0.0.1'),0)
+        session.finish.assert_awaited_once_with('1234')
+        session.close.assert_awaited_once()
+        session.finish.reset_mock();session.close.reset_mock()
+        with patch.object(m.sys,'platform','win32'), patch.object(m,'Transport',return_value=transport), patch('getpass.getpass',return_value='bad'):
+            with self.assertRaisesRegex(ValueError,'invalid_pin'):
+                await m.pair_cli('AA:BB:CC:DD:EE:FF','127.0.0.1')
+        session.finish.assert_not_awaited();session.close.assert_awaited_once()
+
+    @unittest.skipIf(sys.platform == 'win32', 'POSIX legacy pairing/lease; Windows branch is tested separately')
     async def test_pair_cli_reuses_secure_existing_pairing_and_lease(self):
         m=load(); self.assertTrue(callable(getattr(m,'pair_cli',None)), 'pair CLI missing')
         from unittest.mock import patch

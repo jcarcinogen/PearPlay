@@ -1,0 +1,20 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createWorker} from '../../extension/worker.mjs';
+const signal=()=>({addListener(){},removeListener(){}});
+test('worker binds TV controls to exact selected receiver, state and session token',async()=>{
+ const calls=[];const token='a'.repeat(32);
+ const state={state:'playing',capabilities:['pause','resume','stop'],tvControl:{session:token,receiver:'r'},receivers:[{identifier:'r',address:'192.168.1.50'},{identifier:'other',address:'192.168.1.51'}]};
+ const native={view:()=>structuredClone(state),request:async(op,args)=>{calls.push({op,args});return native.view()}};
+ const chrome={runtime:{getURL:p=>`chrome-extension://ext/${p}`,onMessage:signal()},tabs:{onRemoved:signal()},webNavigation:{onCommitted:signal(),onHistoryStateUpdated:signal()},webRequest:{onBeforeRequest:signal(),onResponseStarted:signal()},permissions:{getAll:async()=>({origins:[]}),onAdded:signal(),onRemoved:signal()},alarms:{create(){},onAlarm:signal()}};
+ const w=createWorker(chrome,native);const sender={url:chrome.runtime.getURL('popup.html')};const send=m=>w.message(m,sender);
+ await send({op:'receiver',id:'r'});
+ await send({op:'pause',session:token});assert.deepEqual(calls,[{op:'pause',args:{session:token}}]);
+ await assert.rejects(send({op:'pause',session:'b'.repeat(32)}),/TV_CONTROL_UNAVAILABLE/);
+ await assert.rejects(send({op:'resume',session:token}),/TV_CONTROL_UNAVAILABLE/);
+ state.state='paused';await send({op:'resume',session:token});assert.equal(calls.length,2);
+ await send({op:'receiver',id:'other'});await assert.rejects(send({op:'resume',session:token}),/TV_CONTROL_UNAVAILABLE/);
+ await send({op:'receiver',id:'r'});state.tvControl.session='b'.repeat(32);await assert.rejects(send({op:'resume',session:token}),/TV_CONTROL_UNAVAILABLE/);
+ delete state.tvControl;await assert.rejects(send({op:'resume',session:token}),/TV_CONTROL_UNAVAILABLE/);
+ assert.equal(calls.length,2);
+});

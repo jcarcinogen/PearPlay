@@ -20,7 +20,7 @@ Send to TV and End helper session are supported. Helper 0.3.1 also exposes Pause
 
 Prior owner observations cover Apple TV picture/sound on Mac/Windows and prior Linux playback; Windows pause/resume/end were tested with an earlier candidate. No new receiver observation is claimed for the final packages. LG HLS remains unresolved; other receiver compatibility is not generally established.
 
-All three helper builds passed [hosted CI](https://github.com/jcarcinogen/PearPlay/actions/runs/38164027595). Windows exact-installer lifecycle, registry/receipt/hash checks and initial branded frozen GUI passed on hosted Windows, not under the owner PC’s policy. Mac expanded-package and isolated native Chrome checks are distinct from privileged system installation and protected owner-profile consent. Arch payload parity is not a new pacman installation claim. [Current evidence](../STATUS.md).
+All three helper builds passed [hosted CI](https://github.com/jcarcinogen/PearPlay/actions/runs/38166068566). Windows exact-installer lifecycle, registry/receipt/hash checks and initial branded frozen GUI passed on hosted Windows, not under the owner PC’s policy. Mac expanded-package and isolated native Chrome checks are distinct from privileged system installation and protected owner-profile consent. Arch payload parity is not a new pacman installation claim. [Current evidence](../STATUS.md).
 
 ## Install and safety
 

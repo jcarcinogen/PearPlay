@@ -6,7 +6,7 @@
       "arch": "x86-64",
       "format": "deb",
       "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.3.1/pearplay-helper-0.3.1-linux-x86_64.deb",
-      "sha256": "b0a056ce7a4c2412b77f22a0ef3a80b83e5053a776ef9dfdd9b2aa2fe96859af"
+      "sha256": "3646776b061ffb3856a323b439c429b0f5ab64fd9af27f2fb550a791175af650"
     },
     {
       "os": "linux",
@@ -20,21 +20,21 @@
       "arch": "x86-64",
       "format": "pkg.tar.zst",
       "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.3.1/pearplay-helper-0.3.1-linux-x86_64.pkg.tar.zst",
-      "sha256": "029d5d06a3f08cba56fb924623a634517c808b745086e7c515b8bf4e7eeaed1e"
+      "sha256": "d34942c110a84e44d5d4a8ed5643b983b5889e046bf7b80af71b9f8129b2a659"
     },
     {
       "os": "mac",
       "arch": "arm64",
       "format": "pkg",
       "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.3.1/pearplay-helper-0.3.1-darwin-arm64-development.pkg",
-      "sha256": "c9d1c3e2d4c6e9335258065d496e2f6249dde9f1f0d58d664fad2c94e3dae320"
+      "sha256": "cb94d960c5bb3474c8c3117ce2d38b420165234d67555c2a5c70b40bee759549"
     },
     {
       "os": "win",
       "arch": "x86-64",
       "format": "exe",
       "url": "https://github.com/jcarcinogen/PearPlay/releases/download/v0.3.1/pearplay-helper-0.3.1-windows-x86_64-unsigned.exe",
-      "sha256": "4d501f44c7d69e1a2be6ceb116642037bd7d3fec3e4fcd2fbc5a1e441c9f1abd"
+      "sha256": "bd941412828573c72dd61791cd28ea1989a7acdc3c279ddb6250158462d1fdd5"
     }
   ]
 }

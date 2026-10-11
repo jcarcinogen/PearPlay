@@ -4,7 +4,7 @@ Cross-platform experimental release: Chrome extension 0.3.1 and native helper 0.
 
 ## Build evidence
 
-[Three-platform CI run 38164027595](https://github.com/jcarcinogen/PearPlay/actions/runs/38164027595) built helper inputs from commit `6584da549de35921ec465b4334bd11d1ea8afe12`. Downloaded artifact checksums, source hashes and cross-platform shared inputs were independently verified.
+[Three-platform CI run 38166068566](https://github.com/jcarcinogen/PearPlay/actions/runs/38166068566) built helper inputs from commit `03dedfbe0c03dd6ed7bde14b8d55cb7618e3846b`. Downloaded artifact checksums, source hashes and cross-platform shared inputs were independently verified.
 
 - Windows: 92 native tests. Exact frozen installer install → repair → update → disconnect → connect → uninstall passed on a disposable hosted user with receipt, payload hashes, registry, manifest and native protocol readback. All three initial frozen Windows windows were captured branded; confirmation/progress/result states have real Tk fixture tests.
 - Mac: 557 passed, 38 skipped, 48 subtests. Exact expanded shipping PKG passes frozen self-test, arm64 and strict ad-hoc signature checks. Package is unsigned, app is not Developer ID signed/notarized. Expanded-package/isolated-browser evidence is not a normal system Installer or owner-profile TCC acceptance claim.

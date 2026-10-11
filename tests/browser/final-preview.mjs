@@ -21,7 +21,7 @@ const parent=join(root,'config');const profile=join(parent,mac?'Google/Chrome':'
 const extension=join(root,'extension');const id='eoadahoncjfpnennmkjifohclbafjkol';
 const extensionSource=resolve(process.env.PEARPLAY_EXTENSION);
 cpSync(extensionSource,extension,{recursive:true});
-assert.equal(JSON.parse(readFileSync(join(extension,'manifest.json'))).version,'0.3.0');
+assert.equal(JSON.parse(readFileSync(join(extension,'manifest.json'))).version,'0.3.1');
 assert.equal(JSON.parse(readFileSync(join(extension,'releases.json'))).extensionId,id);
 const host=join(profile,'NativeMessagingHosts/com.pearplay.helper.json');
 function hashes(folder,prefix=''){
@@ -34,7 +34,7 @@ function hashes(folder,prefix=''){
  }
  return result;
 }
-const report={scope:'Real headless official Chrome, unchanged exact-ZIP extraction, hello/status and setup page; no discovery, pairing or playback',extensionId:id,version:'0.3.0',extensionHashes:hashes(extension),helperBinarySha256:createHash('sha256').update(readFileSync(binary)).digest('hex'),phases:[]};
+const report={scope:'Real headless official Chrome, unchanged exact-ZIP extraction, hello/status and setup page; no discovery, pairing or playback',extensionId:id,version:'0.3.1',extensionHashes:hashes(extension),helperBinarySha256:createHash('sha256').update(readFileSync(binary)).digest('hex'),phases:[]};
 let child,ws;
 async function stop(){
  const stopped=child&&child.exitCode===null?new Promise(r=>child.once('exit',r)):Promise.resolve();
@@ -112,7 +112,7 @@ try{
   assert.equal(c.state.findDisabled,!ready);
   const hello=await c.native('hello');
   if(ready){
-   assert.equal(hello.ok,true);assert.equal(hello.helperVersion,'0.3.0');
+   assert.equal(hello.ok,true);assert.equal(hello.helperVersion,'0.3.1');
    const status=await c.native('status');assert.equal(status.ok,true);assert.equal(status.state,'idle');
    report.phases.push({phase,setup:c.state.kind,helperVersion:hello.helperVersion,status:status.state});
 

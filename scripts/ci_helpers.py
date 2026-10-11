@@ -122,6 +122,10 @@ def main():
         if sys.platform == 'darwin':
             argv += ['--development']
     run(argv, root / 'build-driver.log')
+    for name, expected in json.loads((build / 'source-hashes.json').read_text()).items():
+        committed = subprocess.check_output(['git', 'show', 'HEAD:' + name], cwd=REPO)
+        if hashlib.sha256(committed).hexdigest() != expected:
+            raise ValueError('build_input_differs_from_git_blob: ' + name)
     if sys.platform == 'linux':
         package_arch(build, root)
     collect(build, root / 'artifacts', root)

@@ -1,0 +1,7 @@
+# Build provenance must describe identical source bytes on every runner.
+* text=auto eol=lf
+*.png -text
+*.jpg -text
+*.ico -text
+*.icns -text
+*.zip -text

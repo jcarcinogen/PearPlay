@@ -4,7 +4,11 @@
 
 ### Your browser’s video. Your Apple TV.
 
-Send a compatible video stream directly to Apple TV—without screen mirroring, re-encoding or a cloud relay.
+PearPlay is a Chrome extension for sending compatible web videos directly to Apple TV—without screen mirroring, re-encoding or a cloud relay. A separate local helper is required.
+
+**[Website and getting started](https://jcarcinogen.github.io/PearPlay/)** · **[Add to Chrome](https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol)**
+
+The Store currently offers 0.2.9; the 0.3.1 cross-platform preview is available through GitHub releases. Store approval is separate.
 
 **0.3.1 release · Linux, Mac and Windows Chrome · Separate local helper required**
 

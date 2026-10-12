@@ -1,5 +1,7 @@
 # Claims and evidence
 
+- Store publication: the public [PearPlay Details page](https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol) was verified showing 0.3.1, updated October 12, 2026. This establishes extension publication, not native installer signing or new TV playback acceptance.
+
 - Direct URL handoff/no re-encoding: extension/native control contract and helper transport; only receiver-fetchable HTTP(S) media. No DRM/cookie/access bypass.
 - Cross-platform packages: [CI38166068566](https://github.com/jcarcinogen/PearPlay/actions/runs/38166068566), independently verified artifacts/source hashes. Windows exact installer lifecycle passed on hosted Windows; owner Application Control remains unresolved.
 - Mac: arm64 package, frozen self-test and strict ad-hoc signature checks. Unsigned PKG and no notarization; normal system/owner consent is a separate boundary.

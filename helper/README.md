@@ -2,13 +2,13 @@
 
 The Chrome extension/helper candidate targets Linux, Mac and Windows. Safari extension development is paused; no WebKit/AVPlayer/Mac relay or screen mirroring is part of this helper. See [cross-platform status](../docs/cross-platform-preview.md) for artifact versus source-only states and remaining gates.
 
-Extension candidate 0.3.1 is unpublished. Existing public helpers are 0.3.0 for Mac, Windows and Debian, and 0.2.8 for Fedora/Arch. New same-version helper candidates are distinct unpublished artifacts. Mac and Windows Apple TV picture/sound have owner evidence; Windows pause/resume/end-session also passed. New Windows branded GUI distribution is blocked by Application Control; Mac remains unsigned/not notarized. Public Store 0.2.9 was verified during preparation. See current STATUS and exact hashes; historical checkpoints are not current gates.
+PearPlay extension 0.3.1 is published on the Chrome Web Store. Separate public helper 0.3.1 packages are available for Mac Apple silicon, Windows x64, Debian/Ubuntu x64 and Arch/Omarchy x64; Fedora retains helper 0.2.8. Mac and Windows Apple TV picture/sound have prior owner evidence; Windows pause/resume/end-session also passed. Unsigned Windows builds may be blocked by Application Control; trusted signing is not currently available. Mac remains unsigned/not notarized. See current STATUS and exact hashes; historical checkpoints are not current gates.
 
 ## Runtime and installation
 
 Source runtime requires Python 3.11+ and `pyatv==0.18.0` from requirements.txt. Packaged helpers bundle the runtime; users should not choose an arbitrary Python. Native hello/protocol validation is distinct from discovery/playback dependencies. Keep venvs/runtime/state machine-local, not shared across operating systems. Do not use Apple CLT Python 3.9 for the documented test path.
 
-[Consumer installation](../docs/install.md) preserves Linux native package/checksum/security instructions. Mac/Windows setup requires a tested supplied candidate artifact and its exact guide, not guessed commands from a source-only checkout. Do not disable Gatekeeper, remove quarantine, or bypass SmartScreen/Defender. Historical Mac Terminal install is retired, not a fallback permission workaround.
+[Consumer installation](../docs/install.md) preserves Linux native package/checksum/security instructions. Mac/Windows setup uses the published package for that platform and its exact guide, not guessed commands from a source-only checkout. Do not disable Gatekeeper, remove quarantine, or bypass SmartScreen/Defender. Historical Mac Terminal install is retired, not a fallback permission workaround.
 
 ## Source registration — isolated Linux developer opt-in
 

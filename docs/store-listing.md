@@ -1,4 +1,4 @@
-# Chrome Web Store listing draft — 0.3.1
+# Chrome Web Store listing source — 0.3.1
 
 **FLATPAK-INSTALLED VERSIONS OF GOOGLE CHROME AND CHROMIUM ARE NOT SUPPORTED.** On Linux use your distribution’s native browser package format.
 
@@ -12,7 +12,7 @@ Pause TV / Resume TV are available with helper 0.3.1 and a supported authenticat
 
 Browser controls have been checked in Chrome on macOS, Windows and Linux. Apple TV picture and sound have owner-confirmed checks on Mac and Windows. Windows pause/resume and End helper session were owner-tested with a newer helper candidate. Prior playback has been user-confirmed through the extension and helper in Linux Chrome, Brave and Chromium on tested streams. Chrome video and audible sound were separately confirmed. Audio and broader stream compatibility in Brave and Chromium have not been separately documented. These checks are not a promise that every site, browser or receiver works. LG live HLS remains unresolved; other AirPlay TV compatibility varies.
 
-Helper downloads: Mac Apple silicon, Windows x86_64, Ubuntu/Debian x86_64 and Arch/Omarchy x86_64 helper 0.3.1; Fedora 44 retains helper 0.2.8. Python is bundled. No Intel Mac or Linux/Windows ARM installers. Windows setup and maintenance are fully branded. Mac and Windows builds are unsigned experimental software: Windows security policy may block installation, including on the test computer. Stop if blocked; never disable OS protections. Mac builds are not Apple Developer ID signed or notarized. Trusted Windows signing is pending.
+Helper downloads: Mac Apple silicon, Windows x86_64, Ubuntu/Debian x86_64 and Arch/Omarchy x86_64 helper 0.3.1; Fedora 44 retains helper 0.2.8. Python is bundled. No Intel Mac or Linux/Windows ARM installers. Windows setup and maintenance are fully branded. Mac and Windows builds are unsigned experimental software: Windows security policy may block installation, including on the test computer. Stop if blocked; never disable OS protections. Mac builds are not Apple Developer ID signed or notarized. Trusted Windows signing is not currently available.
 
 Only receiver-fetchable HTTP(S) streams can be sent to TV. Browser-only video URLs may work with browser controls but cannot be sent directly. Cookies, DRM, geography and access restrictions are not bypassed. PearPlay does not block ads. Not every website works.
 
@@ -22,4 +22,4 @@ No first-party telemetry uploader or cloud media relay. Your browser, dependenci
 
 ---
 
-Internal submission note — omit this section from listing: reuse item `eoadahoncjfpnennmkjifohclbafjkol`. Upload the final 0.3.1 ZIP only after public-download, Pages and ZIP checks in the release kit pass. GitHub publication and Store approval are separate. Screenshots use actual final extension DOM with safe synthetic example data, not receiver telemetry.
+Maintainer note — omit this section from listing: version 0.3.1 is published on item `eoadahoncjfpnennmkjifohclbafjkol`; the public Details page shows October 12, 2026. Reuse this item for future updates. The signing wording above reflects the subsequent SignPath Foundation rejection; editing this source does not update the live Store description. Screenshots use actual final extension DOM with safe synthetic example data, not receiver telemetry.

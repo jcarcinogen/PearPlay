@@ -27,8 +27,8 @@ account, GitHub release, website update or Store submission is configured. A gre
 build is not owner-visible GUI installation, Chrome connection, TV playback or
 Smart App Control acceptance. Existing Windows launch/branding blockers remain.
 Mac deliberately remains unsigned/not notarized; normal first-run approval and
-installation acceptance are separate. SignPath integration is a future step after
-eligibility approval, not a property of this workflow.
+installation acceptance are separate. The SignPath Foundation application was declined; trusted Windows signing is
+not currently available and is not a property of this workflow.
 
 To run after the workflow reaches main: Actions → Helper builds → Run workflow.
 For review branches, open/update a PR. Download the corresponding platform artifact

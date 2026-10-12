@@ -9,4 +9,4 @@ Use existing item `eoadahoncjfpnennmkjifohclbafjkol`; do not create a second lis
 5. Privacy policy: https://jcarcinogen.github.io/PearPlay/privacy.html. Website: https://jcarcinogen.github.io/PearPlay/. Keep required disclosures truthful.
 6. Scott submits for Google review. Leave automatic publishing off unless he explicitly chooses it. Read back submission state; GitHub release is not Store approval.
 
-The last observed public Store version in preparation was0.2.9. No0.3.1 submission or approval is claimed. Mac/Windows remain unsigned experimental; Windows policy may block installation. These limits must remain visible in the listing and reviewer notes.
+**Current status: 0.3.1 is published.** The public Store Details page was verified showing 0.3.1, updated October 12, 2026. The checklist above is retained as the procedure for future updates, not an outstanding 0.3.1 submission task. Mac/Windows remain unsigned experimental; Windows policy may block installation. These limits must remain visible in the listing and reviewer notes.

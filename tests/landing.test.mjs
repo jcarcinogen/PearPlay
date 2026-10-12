@@ -21,10 +21,11 @@ test('Pages is the exact rendered template using existing branded assets',()=>{
   const rendered=template.replace(/\{\{([A-Z_]+)\}\}/g,(_,key)=>{const [path,type]=assets[key];return `data:${type};base64,${readFileSync(resolve(root,path)).toString('base64')}`;});
   assert.equal(html,rendered);
 });
-test('Store link is prominent without implying preview Store approval',()=>{
+test('Store link reflects verified 0.3.1 publication and separate helpers',()=>{
   assert.match(html,/<a class="button" href="https:\/\/chromewebstore.google.com\/detail\/pearplay\/eoadahoncjfpnennmkjifohclbafjkol">Add to Chrome/);
-  assert.match(html,/Chrome Web Store currently offers 0\.2\.9/);
-  assert.match(html,/Store approval is separate/);
+  assert.match(html,/PearPlay 0\.3\.1 is available on the Chrome Web Store/);
+  assert.match(html,/Developer mode is not required/);
+  assert.doesNotMatch(html,/currently offers 0\.2\.9|update is approved|signing is pending/);
   assert.match(html,/separate PearPlay Helper is required/);
 });
 test('installation warnings, all platform links and copy controls are retained',()=>{

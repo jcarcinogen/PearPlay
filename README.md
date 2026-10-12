@@ -8,7 +8,7 @@ PearPlay is a Chrome extension for sending compatible web videos directly to App
 
 **[Website and getting started](https://jcarcinogen.github.io/PearPlay/)** · **[Add to Chrome](https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol)**
 
-The Store currently offers 0.2.9; the 0.3.1 cross-platform preview is available through GitHub releases. Store approval is separate.
+**PearPlay 0.3.1 is published on the Chrome Web Store.** Install the extension from the Store; download the separate helper for your computer from GitHub releases.
 
 **0.3.1 release · Linux, Mac and Windows Chrome · Separate local helper required**
 
@@ -26,7 +26,7 @@ Public helpers for v0.3.1: pearplay-helper-0.3.1-darwin-arm64-development.pkg; p
 
 - **Official Apple TV:** Mac Chrome pairing, MP4 picture and sound, and session ending were owner-tested with an earlier helper. Linux has prior owner-confirmed Apple TV playback in Chrome, Brave and Chromium; Chrome sound was separately confirmed.
 - **Other AirPlay TVs: playback unverified.** They may appear in discovery. Compatibility varies by TV and stream.
-- **Windows preview:** Chrome browser controls and Apple TV picture, sound, pause/resume and End helper session have passed recorded checks. The fully branded 0.3.1 installer passed exact-install/repair/update/removal and registry/hash checks on a clean hosted Windows runner. The owner PC blocks unsigned builds through Application Control. SignPath signing is pending; stop if blocked rather than disabling security.
+- **Windows preview:** Chrome browser controls and Apple TV picture, sound, pause/resume and End helper session have passed recorded checks. The fully branded 0.3.1 installer passed exact-install/repair/update/removal and registry/hash checks on a clean hosted Windows runner. The owner PC blocks unsigned builds through Application Control. Trusted Windows signing is not currently available; stop if blocked rather than disabling security.
 - **Mac preview:** Apple silicon only, unsigned package and ad-hoc-signed app, not Apple Developer ID signed or notarized. Brave shares Chrome’s registration, but Mac Brave playback is unverified. No Intel Mac installer.
 
 The Safari extension is paused. Snap/Flatpak browsers, browser beta/dev channels, Linux/Windows ARM and Windows Edge/Brave are not advertised installer targets.
@@ -40,7 +40,7 @@ The Safari extension is paused. Snap/Flatpak browsers, browser beta/dev channels
    - **Arch/Omarchy:** 0.3.1 `.pkg.tar.zst`, glibc 2.35+. **Fedora 44:** retains the [0.2.8 RPM](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.8), glibc 2.43+.
 2. Install the helper, open **PearPlay Setup**, and connect your browser. Python is bundled; no manual extension-ID command is needed. Mac Chrome and Brave share one connection, including disconnection. Windows installs for your Windows account.
 3. **Fully quit and reopen the browser.** Closing a tab or reloading the extension is not enough.
-4. Use the currently approved Store extension, or the published 0.3.1 extension for the existing release. For manual installation, download `pearplay-0.3.1.zip` from the release, extract it, open `chrome://extensions`, enable **Developer mode**, and **Load unpacked** from the extracted folder. Keep that folder in place. GitHub publication does not establish Store approval.
+4. Install **[PearPlay 0.3.1 from the Chrome Web Store](https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol)**. Developer mode is not needed for the Store install. For local development only, the release ZIP can still be extracted and loaded unpacked; keep its extracted folder in place.
 5. In PearPlay’s **Setup** tab, select **Check connection**. Put the computer and TV on the same trusted network with AirPlay enabled.
 
 ## Send a video

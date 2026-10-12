@@ -2,7 +2,7 @@
 
 **Privacy policy for PearPlay’s cross-platform experimental release.**
 
-This policy describes PearPlay extension and helper 0.3.1 for desktop Chrome on Linux, macOS and Windows. Extension Store approval and native helper availability are separate; refer to the release and installation pages for current downloads. Mac and Windows helpers are unsigned experimental software. Safari extension development is paused. See [preview evidence and gates](cross-platform-preview.md).
+This policy describes PearPlay extension and helper 0.3.1 for desktop Chrome on Linux, macOS and Windows. Extension 0.3.1 is published on the Chrome Web Store; native helpers are separately installed from GitHub releases. Refer to the release and installation pages for current downloads. Mac and Windows helpers are unsigned experimental software. Safari extension development is paused. See [preview evidence and gates](cross-platform-preview.md).
 
 ## What PearPlay does with data
 

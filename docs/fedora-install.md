@@ -1,6 +1,6 @@
 # Fedora 44 GNOME — RPM installation
 
-**Fedora 44 x86_64, glibc 2.43+.** Current published RPM is [helper 0.2.8](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.8). Newest STATUS records its Fedora package/native lifecycle and bounded watched-runtime results, superseding older pending-release claims. Source extension 0.3.0 is a local cross-platform candidate; Mac/Windows previews and the paused Safari extension are described [separately](cross-platform-preview.md), not Fedora package targets.
+**Fedora 44 x86_64, glibc 2.43+.** Current published RPM is [helper 0.2.8](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.8). Install extension 0.3.1 from the Chrome Web Store; the older Fedora helper does not provide the new TV pause/resume controls. Mac/Windows previews and the paused Safari extension are described [separately](cross-platform-preview.md), not Fedora package targets.
 
 ## Historical 0.2.5 graphical-install evidence — preserved
 
@@ -37,7 +37,7 @@ Do not extract the RPM and register its temporary executable: the package manage
 
 Use a native RPM browser. Acer's pre-existing Chromium and Google Chrome were Flatpaks and were deliberately not used; Fedora's native Chromium was installed alongside them for this test. Snap/Flatpak native messaging remains unsupported. No Flatpak override, host-spawn bridge, or personal-profile workaround is supplied.
 
-The Store item is public; newest STATUS reports Scott's 0.2.8 Store transition without independent live-version confirmation. For this unpublished 0.3.0 candidate use **Load unpacked** with `extension/`; its pinned key supplies production identity `eoadahoncjfpnennmkjifohclbafjkol`. Source catalog offers **Download for Fedora** for published helper 0.2.8. Reopen setup after updating source; native registration still requires full browser exit/reopen. Source/catalog edits do not change installed Store ZIPs.
+Install [PearPlay 0.3.1 from the Chrome Web Store](https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol), using production identity `eoadahoncjfpnennmkjifohclbafjkol`. Developer mode is not required. The catalog offers **Download for Fedora** for published helper 0.2.8; it remains a separate installation and does not gain TV pause/resume from an extension update. Native registration still requires full browser exit/reopen. Load unpacked is a developer option only.
 
 Brave was not used in this historical Fedora rehearsal. Prior Linux Brave playback is separately owner-reported, not a new Fedora/candidate test or separately recorded audio result. A new Brave test must establish a native browser without changing personal data. Connection is not playback certification.
 

@@ -53,7 +53,7 @@ The package supplies the helper’s Python runtime. You do not need to install P
 ## 5. Restart Chrome and check the connection
 
 1. Fully quit Chrome with **Chrome → Quit Google Chrome** (Command-Q), then reopen it. Closing a tab is not enough. Restart Brave too if you use it.
-2. Until the Store update is approved, extract `pearplay-0.3.1.zip` from the release, open `chrome://extensions`, enable Developer mode and Load unpacked from its extracted folder. Keep the folder in place; use a separate preview profile if you already use the Store extension.
+2. Install [PearPlay 0.3.1 from the Chrome Web Store](https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol) and pin it to the toolbar. Developer mode and an unpacked extension folder are not required. The helper is still a separate installation.
 3. Click PearPlay in the toolbar, then **Setup → Check connection**.
 4. Wait for the connected message. A successful connection means the browser can talk to the helper; it does **not** mean your TV was found or that video and sound work.
 

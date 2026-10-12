@@ -1,11 +1,11 @@
 # PearPlay 0.3.1 — cross-platform experimental release
 
-Chrome extension and helpers are separate downloads. Use the [0.3.1 release](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.3.1) and compare exact SHA256 values; old assets are never replaced in place. Store approval is separate from GitHub publication.
+Install extension 0.3.1 from the [Chrome Web Store](https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol). Helpers are separate downloads: use the [0.3.1 release](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.3.1) and compare exact SHA256 values; old assets are never replaced in place. Store publication does not sign the native helpers.
 
 ## Downloads
 
 - Mac Apple silicon: unsigned 0.3.1 development PKG and ad-hoc app, not Developer ID signed/notarized.
-- Windows x64: unsigned 0.3.1 fully branded per-user installer. Smart App Control/Application Control may block it, including on the owner PC. Stop if blocked; signing via SignPath is pending.
+- Windows x64: unsigned 0.3.1 fully branded per-user installer. Smart App Control/Application Control may block it, including on the owner PC. Stop if blocked; trusted Windows signing is not currently available.
 - Ubuntu/Debian x64: 0.3.1 DEB, Ubuntu 22.04/glibc 2.35+ baseline.
 - Arch/Omarchy x64: 0.3.1 package, glibc 2.35+.
 - Fedora 44 x64: retains [helper 0.2.8](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.8), glibc 2.43+; no new RPM and no new TV pause/resume controls.

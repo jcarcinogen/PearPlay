@@ -12,7 +12,7 @@ Cross-platform experimental release: Chrome extension 0.3.1 and native helper 0.
 
 ## Known boundaries
 
-Windows Application Control blocked an earlier unsigned candidate on the owner PC. Hosted success does not remove that policy block. SignPath application submitted; approval, integration and trusted signing are pending. Stop if Windows blocks the installer; never disable protections or switch execution routes to evade it.
+Windows Application Control blocked an earlier unsigned candidate on the owner PC. Hosted success does not remove that policy block. The SignPath Foundation application was declined because the project did not yet meet its public-visibility criteria. Trusted Windows signing is not currently available. Stop if Windows blocks the installer; never disable protections or switch execution routes to evade it.
 
 Mac remains unsigned/experimental by explicit owner choice. Apple’s optional per-item approval is a user trust decision, not signing or notarization. Stop on malware/damage warnings or absent approval controls.
 
@@ -22,4 +22,4 @@ Prior Apple TV picture/sound checks exist on Mac and Windows, with prior Linux p
 
 [0.3.1 downloads and immutable checksums](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.3.1) · [Website](https://jcarcinogen.github.io/PearPlay/) · [Privacy](https://jcarcinogen.github.io/PearPlay/privacy.html)
 
-GitHub publication is separate from Chrome Web Store review. Reuse item `eoadahoncjfpnennmkjifohclbafjkol`; the 0.3.1 Store update requires Scott’s upload/submission and Google review. The last independently observed public Store version during preparation was 0.2.9. No Store approval is claimed here.
+**Chrome Web Store 0.3.1 is published.** The public Details page for item `eoadahoncjfpnennmkjifohclbafjkol` was verified showing version 0.3.1, updated October 12, 2026. Install the extension from the [Store](https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol); native helpers remain separate GitHub downloads. Store publication does not sign the native installers or establish new receiver/owner-policy acceptance.

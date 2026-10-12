@@ -16,7 +16,7 @@ Repair restores missing owned files of the same version. Update permits the same
 
 Every shipped executable is windowed and branded, including manual native-host and maintenance launch. Native messaging uses inherited pipes without allocating a console. The installed native host offers Connect/Disconnect; use the downloaded installer for repair, update or removal.
 
-**Unsigned Windows builds can be blocked by Smart App Control or Application Control. This occurred on the owner’s test PC. Stop if blocked; do not disable security, elevate to evade a block, or try an alternate executable.** Hosted Windows builds, exact-installer tests and GUI observations are distinct from acceptance under your PC’s policy. The maintainer has submitted a SignPath application; approval, integration and trusted signing are not yet available. No SignPath sponsorship is claimed.
+**Unsigned Windows builds can be blocked by Smart App Control or Application Control. This occurred on the owner’s test PC. Stop if blocked; do not disable security, elevate to evade a block, or try an alternate executable.** Hosted Windows builds, exact-installer tests and GUI observations are distinct from acceptance under your PC’s policy. The SignPath Foundation application was declined because the project did not yet meet its public-visibility criteria. Trusted Windows signing is not currently available. No SignPath sponsorship is claimed.
 
 For deliberate automation, the same installer accepts explicit `install`, `repair`, `upgrade`, `connect`, `disconnect`, `uninstall`, `self-test`, or `verify-payload` actions when stdout is redirected/captured. With no action, it opens the confirmation UI. Ordinary users should use the branded window, not a terminal.
 

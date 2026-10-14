@@ -1,14 +1,14 @@
-# Claims and evidence
+# PearPlay 0.3.3 — claims and evidence
 
-- Store publication: the public [PearPlay Details page](https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol) was verified showing 0.3.1, updated October 12, 2026. This establishes extension publication, not native installer signing or new TV playback acceptance.
+- Extension installation: use the permanent [Chrome Web Store item](https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol). Store distribution is separate from helper installation and signing; an extension update does not update the helper.
+- Direct URL handoff/no re-encoding: extension/native contract and transport; receiver-fetchable HTTP(S) media only. No cookies, DRM or access restrictions are bypassed.
+- Helper packages: Mac Apple silicon, Windows x64, Debian/Ubuntu x64 and Arch/Omarchy x64 0.3.3 artifacts match canonical build inputs. Linux packages use the same frozen payload with glibc 2.39 baseline. Fedora 44 has helper 0.3.3 (glibc 2.43+) packaged from that same frozen payload; all 930 entries match, normal DNF container installation and rpm -V pass, as do frozen self-test/non-root native hello. No new Fedora desktop, discovery or TV acceptance.
+- Mac owner evidence: exact helper 0.3.3 installation, payload hashes and Chrome native connection; matching extension/official Apple TV MP4 picture and sound, pause/resume, accurate read-only progress, popup reopen/tab switching, original-source-only browser mute and ending the session passed. Browser graphics acceleration was temporarily off after an observed platform decoder failure; restored afterward.
+- Windows owner evidence: branded 0.3.3 update and Chrome native connection, 1,621 receipt-owned file hashes and both registry views match. 22 transport tests and 91 Windows tests passed, one disposable-hosted lifecycle test skipped. Frozen self-tests/framing/payload/icons passed. SSH frozen GUI probe timed out, separately supplemented by owner visible initial/result windows. No new Windows 0.3.3 physical TV test or hosted full lifecycle pass is claimed.
+- Linux: package payload equivalence and frozen self-tests are distinct from normal installation and receiver evidence. Prior playback has been user-confirmed through the extension and helper in Linux Chrome, Brave and Chromium. Chrome video and audible sound were separately confirmed. Audio and broader stream compatibility in Brave and Chromium have not been separately documented.
+- TV controls: supported authenticated sessions, helper 0.3.1+ pause/resume; helper 0.3.3 read-only progress. No TV seeking, jumps or volume. Use the TV remote if session ending leaves playback running.
+- Privacy: persistent local preferred receiver identity; media/cast context stays in memory. Pairing stays OS-user-local, DPAPI on Windows. No first-party telemetry uploader or cloud relay; providers/dependencies/TV still communicate. Optional support links are user-initiated.
+- Unsigned limits: Mac PKG/app are not Developer ID signed/notarized; Windows policy may reject unsigned builds. The owner's explicit Windows security-policy change is not a signing result or an end-user remedy. Stop if blocked.
+- Other receivers: playback unverified; LG live HLS remains unresolved. Evidence does not establish every site or stream.
 
-- Direct URL handoff/no re-encoding: extension/native control contract and helper transport; only receiver-fetchable HTTP(S) media. No DRM/cookie/access bypass.
-- Cross-platform packages: [CI38166068566](https://github.com/jcarcinogen/PearPlay/actions/runs/38166068566), independently verified artifacts/source hashes. Windows exact installer lifecycle passed on hosted Windows; owner Application Control remains unresolved.
-- Mac: arm64 package, frozen self-test and strict ad-hoc signature checks. Unsigned PKG and no notarization; normal system/owner consent is a separate boundary.
-- Browser controls: real Chrome popup→worker→content tests exist for Mac, Windows and Linux. Synthetic UI captures supplement but do not replace these.
-- Receiver results: earlier owner Apple TV picture/sound observations on Mac/Windows and prior Linux playback; Windows pause/resume/end observed on an earlier candidate. These are not final-package re-tests or universal compatibility.
-- Privacy: local pairing storage (DPAPI on Windows), no first-party telemetry uploader/cloud relay; media provider, dependencies and TV still communicate. Optional support links contact third parties only when clicked.
-- TV controls: helper0.3.1 session-bound pause/resume on supported authenticated Apple TV sessions; no seeking/timeline/jumps/volume. Use TV remote if End helper session leaves playback running.
-- Store images: actual shipping DOM with synthetic example data, never personal account/receiver telemetry.
-
-Consult [privacy](privacy.md), [release scope](cross-platform-preview.md), source tests and exact release-kit reports. Claims are limited to the recorded artifact/OS/path; a successful HTTP response or helper state is not human-observed playback.
+[Release scope](cross-platform-preview.md) · [Installation](install.md) · [Control contract](../contract/v1.md)

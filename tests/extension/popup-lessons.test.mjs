@@ -31,6 +31,12 @@ async function mount(os='linux', initialVisibility='visible') {
  return {elements,calls,view,writes,document,holdOp:op=>{let done;gates.set(op,new Promise(r=>{done=r}));return ()=>{gates.delete(op);done()};},failOp:(op,when='before')=>failures.set(op,when),refresh:()=>tick(),hold:()=>{hold=true},release:()=>{hold=false;release()},holdPair:()=>{holdPair=true},releasePair:()=>releasePair(),close:()=>events.pagehide(),deny:()=>{allowed=false;grant=false},grant:()=>{grant=true}};
 }
 for(const os of ['linux','mac','win']) test(`${os} popup keeps existing helper flow available`,async()=>{const p=await mount(os);assert.ok(p.calls.some(m=>m.op==='view'));assert.equal(p.calls.some(m=>['hello','discover'].includes(m.op)),false);assert.equal(p.elements.get('start').disabled,false);});
+for(const os of ['linux','mac','win']) test(`${os} first Find prefers the sole sendable stream, but never replaces a deliberate choice`,async()=>{
+ const p=await mount(os);p.view.selected=null;p.view.candidates=[{id:'blob',label:'Browser player',sendable:false,videoId:'v1'},{id:'hls',label:'Stream',sendable:true}];
+ await p.refresh();assert.equal(p.view.selected,'hls');assert.equal(p.elements.get('start').disabled,false);
+ p.view.selected='blob';await p.refresh();assert.equal(p.view.selected,'blob');assert.equal(p.elements.get('start').disabled,true);
+ p.view.selected=null;p.view.candidates.push({id:'other',label:'Other stream',sendable:true});await p.refresh();assert.equal(p.view.selected,null);assert.equal(p.elements.get('start').disabled,true);
+});
 test('initially hidden action document waits then initializes when Chrome makes it visible',async()=>{const p=await mount('mac','hidden');assert.ok(p.calls.some(m=>m.op==='view'));assert.equal(p.calls.some(m=>['hello','discover'].includes(m.op)),false);});
 test('other OS stops before native connection and shows clear unavailability',async()=>{const p=await mount('cros');assert.equal(p.calls.length,0);assert.equal(p.elements.get('casting').hidden,true);assert.match(p.elements.get('platformNotice').textContent,/not supported/);});
 test('quiet refresh has one in-flight view, blocks racing actions and preserves unchanged option DOM',async()=>{

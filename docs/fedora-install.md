@@ -1,6 +1,6 @@
 # Fedora 44 GNOME — RPM installation
 
-**Fedora 44 x86_64, glibc 2.43+.** Current published RPM is [helper 0.2.8](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.8). Install extension 0.3.1 from the Chrome Web Store; the older Fedora helper does not provide the new TV pause/resume controls. Mac/Windows previews and the paused Safari extension are described [separately](cross-platform-preview.md), not Fedora package targets.
+**Fedora 44 x86_64, glibc 2.43+.** Use [helper 0.3.3](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.3.3) and install PearPlay from the Chrome Web Store. Supported authenticated Apple TV sessions have capability-gated pause/resume and read-only TV progress. Mac/Windows previews and the paused Safari extension are described [separately](cross-platform-preview.md), not Fedora package targets.
 
 ## Historical 0.2.5 graphical-install evidence — preserved
 
@@ -18,9 +18,9 @@ This rehearsal did not cast to a TV; the separate later Fedora/GNOME Chromium us
 
 ## Install the supplied RPM
 
-Download [the Fedora 0.2.8 RPM](https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.8/pearplay-helper-0.2.8-linux-x86_64.rpm) and [release checksums](https://github.com/jcarcinogen/PearPlay/releases/download/v0.2.8/SHA256SUMS). STATUS records anonymously downloaded hash-matching 0.2.8 assets. The graphical route below derives from the preserved 0.2.5 rehearsal, not a new 0.2.8 GUI-install pass.
+Download [the Fedora 0.3.3 RPM](https://github.com/jcarcinogen/PearPlay/releases/download/v0.3.3/pearplay-helper-0.3.3-linux-x86_64.rpm) and [release checksums](https://github.com/jcarcinogen/PearPlay/releases/download/v0.3.3/SHA256SUMS). The 0.3.3 RPM was built in an official Fedora 44 container from the verified Linux frozen stage. All 930 payload entries match; normal DNF container installation, rpm -V, frozen self-test and non-root native hello passed. Container evidence is not a new GNOME Software, desktop GUI, live discovery or receiver pass. The graphical steps below derive from the preserved 0.2.5 rehearsal.
 
-1. Compare `sha256sum pearplay-helper-0.2.8-linux-x86_64.rpm` with its entry in `SHA256SUMS`.
+1. Compare `sha256sum pearplay-helper-0.3.3-linux-x86_64.rpm` with its entry in `SHA256SUMS`.
 2. In Files, open the RPM with **Software Install / GNOME Software**. The historical invocation used `gnome-software --local-filename=/absolute/path/to/pearplay-helper-0.2.5-linux-x86_64.rpm`; substitute the actual downloaded filename for current installation. The desktop's recorded `application/x-rpm` association was `gnome-software-local-file-packagekit.desktop`; file-manager double-click itself was not automated.
 3. Choose **Install**, review the third-party-package warning, and approve normal administrator authentication. The package is unsigned; a checksum checks bytes, not publisher identity. Do not disable signature checks, SELinux, or the firewall.
 4. Open **PearPlay Setup** from the applications menu. Select only the browser you intend to connect. **Fully quit and reopen that browser**, then choose **Check connection** in the extension's Helper setup page.
@@ -28,7 +28,7 @@ Download [the Fedora 0.2.8 RPM](https://github.com/jcarcinogen/PearPlay/releases
 If GNOME Software reports an authorization failure, confirm that the package is absent with `rpm -q pearplay-helper`, then use the normal terminal path from the download directory:
 
 ```sh
-sudo dnf install ./pearplay-helper-0.2.8-linux-x86_64.rpm
+sudo dnf install ./pearplay-helper-0.3.3-linux-x86_64.rpm
 ```
 
 Do not extract the RPM and register its temporary executable: the package manager owns the stable `/opt/pearplay/PearPlayHelper/PearPlayHelper` path. The RPM also owns the desktop entry and icon. Browser registrations belong to the signed-in user, never root.
@@ -37,7 +37,7 @@ Do not extract the RPM and register its temporary executable: the package manage
 
 Use a native RPM browser. Acer's pre-existing Chromium and Google Chrome were Flatpaks and were deliberately not used; Fedora's native Chromium was installed alongside them for this test. Snap/Flatpak native messaging remains unsupported. No Flatpak override, host-spawn bridge, or personal-profile workaround is supplied.
 
-Install [PearPlay 0.3.1 from the Chrome Web Store](https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol), using production identity `eoadahoncjfpnennmkjifohclbafjkol`. Developer mode is not required. The catalog offers **Download for Fedora** for published helper 0.2.8; it remains a separate installation and does not gain TV pause/resume from an extension update. Native registration still requires full browser exit/reopen. Load unpacked is a developer option only.
+Install [PearPlay from the Chrome Web Store](https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol), using production identity `eoadahoncjfpnennmkjifohclbafjkol`. Developer mode is not required. The catalog offers **Download for Fedora** for helper 0.3.3. The Web Store updates only the extension; update the separate RPM to get read-only TV progress. End casting and fully quit browsers before the update; saved pairing is kept. Native registration still requires full browser exit/reopen. Load unpacked is a developer option only.
 
 Brave was not used in this historical Fedora rehearsal. Prior Linux Brave playback is separately owner-reported, not a new Fedora/candidate test or separately recorded audio result. A new Brave test must establish a native browser without changing personal data. Connection is not playback certification.
 

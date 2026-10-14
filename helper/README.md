@@ -2,7 +2,7 @@
 
 The Chrome extension/helper candidate targets Linux, Mac and Windows. Safari extension development is paused; no WebKit/AVPlayer/Mac relay or screen mirroring is part of this helper. See [cross-platform status](../docs/cross-platform-preview.md) for artifact versus source-only states and remaining gates.
 
-PearPlay extension 0.3.1 is published on the Chrome Web Store. Separate public helper 0.3.1 packages are available for Mac Apple silicon, Windows x64, Debian/Ubuntu x64 and Arch/Omarchy x64; Fedora retains helper 0.2.8. Mac and Windows Apple TV picture/sound have prior owner evidence; Windows pause/resume/end-session also passed. Unsigned Windows builds may be blocked by Application Control; trusted signing is not currently available. Mac remains unsigned/not notarized. See current STATUS and exact hashes; historical checkpoints are not current gates.
+PearPlay 0.3.3 uses a Chrome Web Store extension and separate helper packages for Mac Apple silicon, Windows x64, Debian/Ubuntu x64 and Arch/Omarchy x64; Fedora 44 also has helper 0.3.3 (glibc 2.43+); its RPM/container/native checks are separate from desktop and receiver acceptance. Mac and Windows Apple TV picture/sound have prior owner evidence; Windows pause/resume/end-session also passed. Unsigned Windows builds may be blocked by Application Control; trusted signing is not currently available. Mac remains unsigned/not notarized. See current STATUS and exact hashes; historical checkpoints are not current gates.
 
 ## Runtime and installation
 
@@ -54,3 +54,7 @@ node --test tests/extension/*.test.mjs tests/brand.test.mjs
 ```
 
 These are developer verification commands, not a statement this entire checkout currently passes or an instruction to install tools. Offline/injected protocol, filesystem, registry and transport tests differ from real frozen/runtime/native-browser and human-TV results. Source-only Windows mocks on Mac/Linux cannot establish native Windows DPAPI or installer success. New platform workers must supply exact artifact hashes and native reports; [release gates](../docs/helper-onboarding.md#release-gates) and the [self-service checklist](../docs/cross-platform-preview.md#self-service-tv-check--instructions-not-a-completed-result) remain explicit.
+
+## 0.3.3 TV remote behavior
+
+Supported authenticated Apple TV sessions expose pause/resume and read-only receiver progress. Seeking, jumps and volume remain unavailable. The worker retains active cast context across popup reopen and tab switches; preferred TV identity is stored locally, not the media URL. Deliberate browser mute targets only the original frame/document/video/source and current cast token. Upgrade the separate helper for progress; Web Store updates do not update native software.

@@ -69,7 +69,17 @@ select{text-overflow:ellipsis;padding-right:24px}
 #pin{flex:1;width:0}
 #pair{flex:none}
 #sessionControls{margin-top:8px}
-#sessionControls button{width:100%}
+#sessionControls #stop{flex:1}
+.tv-actions{display:flex;align-items:center;gap:8px;margin-top:8px}
+#tvTransport{display:flex;gap:8px;align-items:center}
+#tvTransport .icon{width:44px;height:44px}
+#tvTransport svg{width:22px;height:22px}
+#tvProgress{width:100%;height:8px;accent-color:var(--accent);display:block;margin:10px 0}
+#tvTimes{margin:0}
+#castAudio{margin-top:8px}
+#castAudio button{width:100%}
+#recover{margin-top:8px}
+#helperCompatibility{margin-top:8px}
 #sessionControls p{margin-top:4px}
 #firewallReview{width:100%;margin-top:8px;font-size:12px}
 #firewallConsent{width:auto;min-height:0;padding:0}
@@ -92,6 +102,8 @@ footer a:hover{box-shadow:0 0 0 1px var(--line)}
 footer img{display:block;width:154px;height:auto;max-width:100%}
 footer .coffee{gap:6px;padding:6px;font-size:11px;font-weight:650;white-space:nowrap}
 footer svg{width:20px;height:20px;flex:none}
+body[data-disconnected] #receiverSection,body[data-disconnected] #start{display:none}
+body[data-recovery] #browserControls{display:none}
 [hidden]{display:none!important}
 @media(prefers-reduced-motion:reduce){button{transition:none}}
 </style>
@@ -108,10 +120,10 @@ footer svg{width:20px;height:20px;flex:none}
 <section aria-label="Video selection">
   <nav id="videoNavigation" class="navigation" aria-label="Find videos"><button id="enable">Find videos</button><button id="browserReturn" aria-label="Return to browser video" title="Return to browser video" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M9 5H4v15h15v-5M13 4h7v7M20 4l-9 9"/></svg></button></nav>
   <select id="candidate" aria-label="Choose a video"></select>
-  <div id="selectedVideo" hidden><p class="eyebrow">Selected video</p>
+  <div id="selectedVideo" hidden><p id="videoContext" class="eyebrow">Selected video</p>
   <details id="videoInfo"><summary aria-label="Selected video details"><span id="identity">Choose a video</span></summary><p id="identityFull">No video selected.</p></details>
   </div>
-  <p id="tvPlaybackNotice" class="safety" role="status" hidden>Use your TV remote to pause or skip. PearPlay does not receive the TV’s timeline.</p>
+  <p id="tvPlaybackNotice" class="safety" role="status" hidden>TV controls appear below when available. Use the TV remote for seeking and volume.</p>
   <div id="browserControls" aria-label="Browser video controls"><div class="timeline"><input id="browserPosition" type="range" min="0" max="1" step="0.1" value="0" aria-label="Browser video position" aria-describedby="browserHint" disabled><div class="times"><span id="browserElapsed">—:—</span><span id="browserDuration">—:—</span></div><p id="browserHint">Choose a video to use playback controls.</p></div>
 <div class="transport">
 <button id="browserMute" type="button" class="icon" aria-label="Mute" title="Mute" disabled><span id="volumeGlyph" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m11 4-5 4H3v8h3l5 4Z"/><path d="M15 8a6 6 0 0 1 0 8M18 5a10 10 0 0 1 0 14"/></svg></span><span id="mutedGlyph" aria-hidden="true" hidden><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m11 4-5 4H3v8h3l5 4Z"/><path d="m16 9 6 6m0-6-6 6"/></svg></span></button>
@@ -136,14 +148,26 @@ footer svg{width:20px;height:20px;flex:none}
 <button id="start" class="primary">Send to TV</button>
 <span id="phase" role="status" aria-live="polite" data-state="idle">Opening…</span>
 <p id="tvStatus" role="status" aria-live="polite" aria-atomic="true"></p>
-<div id="sessionControls" hidden><div id="tvTransport" class="row" aria-label="TV playback controls" hidden><button id="pause" hidden>Pause TV</button><button id="resume" hidden>Resume TV</button></div><button id="stop">End helper session</button><p class="safety">If the TV keeps playing, use its remote.</p></div>
+<div id="sessionControls" hidden>
+  <div id="tvTimeline" hidden aria-label="TV progress, read only"><progress id="tvProgress" max="1" value="0" aria-label="TV playback progress"></progress><div id="tvTimes" class="times"><span id="tvElapsed">—:—</span><span id="tvDuration">—:—</span></div><p class="safety">Reported by the TV · use its remote to seek.</p></div>
+  <div class="tv-actions"><div id="tvTransport" class="row" aria-label="TV playback controls" hidden>
+    <button id="pause" hidden class="icon" aria-label="Pause TV" title="Pause TV"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg></button>
+    <button id="resume" hidden class="icon" aria-label="Resume TV" title="Resume TV"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m8 5 11 7-11 7Z"/></svg></button>
+  </div>
+  <button id="stop">End helper session</button></div>
+  <p class="safety">If the TV keeps playing, use its remote.</p>
+  <div id="castAudio" hidden><button id="castMute">Mute browser video</button><p class="safety">Only the original browser video. TV sound stays unchanged.</p></div>
+  <p id="castSourceHint" class="muted" hidden>Browser audio cannot be controlled for this stream. Use the original page’s player.</p>
+</div>
+<button id="recover" hidden>Try again</button>
+<p id="helperCompatibility" class="muted" hidden></p>
 <button id="firewallReview" type="button" hidden>Review TV firewall permission</button>
 <details id="helpDetails"><summary>Settings &amp; help</summary>
   <label class="jump-setting" for="browserJump">Skip interval<select id="browserJump"><option value="5">5 sec</option><option value="10" selected>10 sec</option><option value="15">15 sec</option><option value="30">30 sec</option></select></label>
-  <p class="muted">The timeline, playback buttons and Picture in Picture control the selected browser video, not the TV. Use the TV remote for TV playback. Some sites block browser controls; live videos need a seek window.</p>
+  <p class="muted">Before casting, the timeline and playback buttons control the browser video. During a TV session, supported TV controls replace them. TV progress is read-only; seeking and volume use the physical remote.</p>
   <details id="videoDetails"><summary>Video not showing up?</summary>
     <p class="muted">Reload this page, press play and look again. Only videos the TV can fetch directly can be sent.</p>
-    <p class="muted">Your video choice stays with this tab for up to 10 minutes after a search. Closing this popup does not switch it. Switching tabs shows that tab’s own choices. A browser restart clears choices. If the video or page changes, choose again; PearPlay never sends a replacement automatically.</p>
+    <p class="muted">Your video choice stays with this tab for up to 10 minutes after a search. Closing this popup does not switch it. An active TV session stays visible when you switch tabs. After it ends, this tab’s choices return. A browser restart clears choices. If the video or page changes, choose again; PearPlay never sends a replacement automatically.</p>
     <div class="row"><button id="rescan">Look again</button><button id="reload">Reload this page</button><button id="disable">Stop looking</button></div>
   </details>
   <details id="hostDetails"><summary>Connection and address</summary>
@@ -152,6 +176,7 @@ footer svg{width:20px;height:20px;flex:none}
     <label class="muted" for="host">TV address (optional)</label><input id="host" placeholder="Only if discovery finds nothing">
     <p class="muted">Paste an address, then press Find TVs or Enter.</p>
     <p id="state" class="muted"></p>
+    <p id="diagnostic" class="muted" hidden></p>
     <p class="muted">Other AirPlay TVs may appear, but playback compatibility is unverified. Audio-only speakers are not listed.</p>
     <p class="safety">Ending the helper session closes its connection; it does not confirm that the TV stopped. Use the physical remote if playback continues. TV pause/resume appear only when supported by the connected helper and active session. Use the TV remote for other playback controls; the browser-video timeline and Picture in Picture do not control the TV.</p>
   </details>

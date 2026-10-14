@@ -15,7 +15,7 @@ test('Store listing qualifies playback without naming trial sites or machines',(
 test('published Linux catalog offers the verified production packages without developer setup',async()=>{
   const catalog=JSON.parse(readFileSync(new URL('../../extension/releases.json',import.meta.url),'utf8'));
   // Catalog activation follows verified public helper-package publication.
-  const helperVersions={deb:'0.3.1',rpm:'0.2.8','pkg.tar.zst':'0.3.1'};
+  const helperVersions={deb:'0.3.3',rpm:'0.3.3','pkg.tar.zst':'0.3.3'};
   const id='eoadahoncjfpnennmkjifohclbafjkol';
   assert.equal(catalog.extensionId,id);
   assert.equal(catalog.localInstallerTest,undefined);
@@ -36,12 +36,12 @@ test('published Linux catalog offers the verified production packages without de
   assert.ok(html.indexOf(warning)<html.indexOf('<section id="installSection">'));
   const listing=readFileSync(new URL('../../docs/store-listing.md',import.meta.url),'utf8');
   assert.ok(listing.split('\n\n')[1].startsWith('**FLATPAK-INSTALLED VERSIONS OF GOOGLE CHROME AND CHROMIUM ARE NOT SUPPORTED.**'));
-  assert.match(html,/Ubuntu 22\.04/);
-  assert.match(html,/glibc 2\.35/);
+  assert.match(html,/Ubuntu 24\.04/);
+  assert.match(html,/glibc 2\.39/);
   assert.match(html,/sudo pacman -U/);
   assert.match(html,/Arch \/ Omarchy: step-by-step installation/);
   assert.ok(html.includes('Nothing appears while you type your password'));
-  assert.ok(html.includes('$HOME/Downloads/pearplay-helper-0.3.1-linux-x86_64.pkg.tar.zst'));
+  assert.ok(html.includes('$HOME/Downloads/pearplay-helper-0.3.3-linux-x86_64.pkg.tar.zst'));
   assert.match(html,/Fedora 44/);
   assert.match(html,/glibc 2\.43/);
   assert.match(html,/sudo dnf install/);

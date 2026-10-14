@@ -35,8 +35,8 @@ test('setup support badges are local, accessible and external only on click', as
   assert.match(footer, /src="tip-with-x-money.png"/);
   assert.equal([...footer.matchAll(/rel="noopener noreferrer"/g)].length, 2);
   assert.doesNotMatch(footer, /(?:src|srcset)="https?:|<script|<iframe/);
-  assert.match(html, /PearPlay 0\.3\.1 preview/);
-  assert.match(html, /TV seeking and volume are not supported/);
+  assert.match(html, /PearPlay 0\.3\.3\./);
+  assert.match(html, /TV seeking, jumps and volume are not supported/);
 });
 test('local-only stop is not labeled as confirmed TV control', async () => {
   const html = await read('popup.html');

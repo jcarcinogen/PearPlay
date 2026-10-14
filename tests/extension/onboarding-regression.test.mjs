@@ -5,7 +5,7 @@ import {mountSetup} from '../../extension/setup.mjs';
 test('setup retains platform security and separate connection/playback qualifications',()=>{
  const html=readFileSync(new URL('../../extension/setup.html',import.meta.url),'utf8');
  assert.match(html,/do not disable Gatekeeper or remove quarantine/i);
- assert.match(html,/do not disable SmartScreen or Defender/);
+ assert.match(html,/do not disable Smart App Control, SmartScreen or Defender/);
  assert.match(html,/do not disable package-signature checks/);
  assert.match(html,/connection check does not establish Mac TV playback/);
  assert.match(html,/connection check does not establish Windows TV playback/);

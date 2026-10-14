@@ -1,12 +1,25 @@
 (() => {
-  if (globalThis.__pearplay) { globalThis.__pearplay.scan(); return; }
+  if (globalThis.__pearplay) { globalThis.__pearplay.scan(true); return; }
   const ids = new WeakMap();
   const epochs = new WeakMap();
   let serial = 0;
   let live = new Map();
   let until = Date.now() + 600000;
   let timer;
-  async function scan() {
+  // Recover manifests fetched before Find videos began observing requests.
+  // Only deliberate scans read history; quiet polling must not renew old URLs.
+  function resources() {
+    const perf = globalThis.performance;
+    if (!perf?.getEntriesByType) return [];
+    const now = perf.now();
+    return perf.getEntriesByType('resource').slice(-2000).filter(e =>
+      typeof e.name === 'string' && e.name.length <= 16384 &&
+      /^https?:\/\/[^?#]+\.m3u8(?:[?#]|$)/i.test(e.name) &&
+      Number.isFinite(e.startTime) && e.startTime >= 0 &&
+      now >= e.startTime && now - e.startTime < 600000
+    ).slice(0, 100).map(e => ({url:e.name, at:perf.timeOrigin + e.startTime}));
+  }
+  async function scan(recover = false) {
     if (Date.now() > until) { clearInterval(timer); live.clear(); return; }
     const videos = [];
     live = new Map();
@@ -38,7 +51,7 @@
       }
     }
     try {
-      const result = await chrome.runtime.sendMessage({op: 'videos', videos});
+      const result = await chrome.runtime.sendMessage({op: 'videos', videos, ...(recover ? {resources:resources()} : {})});
       if (!result?.enabled) { clearInterval(timer); live.clear(); }
       else if (result.keepAlive === true) until = Date.now() + 600000;
     } catch { clearInterval(timer); live.clear(); }
@@ -46,7 +59,7 @@
   chrome.runtime.onMessage.addListener((m, _sender, reply) => {
     if (m.op === 'rescan') {
       until = Date.now() + 600000;
-      clearInterval(timer); timer = setInterval(scan, 1500); scan(); reply({ok: true}); return;
+      clearInterval(timer); timer = setInterval(scan, 1500); scan(true); reply({ok: true}); return;
     }
     if (!['validateVideo', 'localPause', 'localResume', 'browserControl'].includes(m.op)) return;
     const el = live.get(m.videoId);
@@ -108,5 +121,5 @@
     );
     return true;
   });
-  globalThis.__pearplay = {scan}; timer = setInterval(scan, 1500); scan();
+  globalThis.__pearplay = {scan}; timer = setInterval(scan, 1500); scan(true);
 })();

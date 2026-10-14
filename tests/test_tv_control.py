@@ -191,8 +191,11 @@ def test_host_capabilities_token_replacement_and_no_session_refusal():
         await asyncio.sleep(0)
         new = await host.handle(request('status'))
         assert new['tvControl']['session'] != token
+        writes_before_stale_command = len(sessions[-1][2])
         assert (await host.handle(request('pause', {'session': token})))['error'] == 'unsupported'
-        assert not sessions[-1][2]
+        assert len(sessions[-1][2]) == writes_before_stale_command
+        assert all(plistlib.loads(plistlib.loads(body)['params']['data'])['type'] == 'playbackInfo'
+                   for _, body, _ in sessions[-1][2])
         await host.close()
         assert 'tvControl' not in host.response('done')
     asyncio.run(check())

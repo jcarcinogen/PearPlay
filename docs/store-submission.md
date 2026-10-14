@@ -1,12 +1,12 @@
-# Chrome Web Store update — 0.3.1
+# Chrome Web Store update — 0.3.3
 
-Use existing item `eoadahoncjfpnennmkjifohclbafjkol`; do not create a second listing. The final release kit supplies the 0.3.1 ZIP, SHA256, listing text, reviewer/privacy fields and updated RGB PNG images with a one-click copy page.
+Use existing item `eoadahoncjfpnennmkjifohclbafjkol`; do not create a second listing. Use the verified 0.3.3 ZIP and its checksum from the release kit, plus [listing text](store-listing.md), privacy disclosures and images of the actual shipping controls.
 
-1. Confirm the release-kit public-download/Pages/ZIP checks passed. Use the new kit, not the older held candidate.
-2. In the existing item’s dashboard, upload `pearplay-0.3.1.zip`. If an unpublished Ready to publish draft locks upload, cancel that pending publish on the same item first.
-3. Confirm package version0.3.1, production identity and expected permissions. Paste [listing text](store-listing.md), privacy/permission explanations and reviewer notes from the kit.
-4. Upload the three 1280×800 screenshots, 440×280 tile and optional 1400×560 marquee. These show actual shipping controls with synthetic example data.
-5. Privacy policy: https://jcarcinogen.github.io/PearPlay/privacy.html. Website: https://jcarcinogen.github.io/PearPlay/. Keep required disclosures truthful.
-6. Scott submits for Google review. Leave automatic publishing off unless he explicitly chooses it. Read back submission state; GitHub release is not Store approval.
+1. Publish the separately authorized helper assets first, then verify anonymous downloads match the catalog checksums. Verify deployed website/privacy bytes against source. Publication is a separate authorization, not implied by candidate testing.
+2. On the existing item's dashboard, upload the verified 0.3.3 package. If Ready to publish locks Upload new package, cancel that publish on the same item before uploading.
+3. Confirm Package version 0.3.3, the production identity and unchanged permissions. Use the dashboard's actual Permissions justification and Data usage fields; do not invent a separate host-permission field.
+4. Use current actual-extension screenshots with safe example data. Do not show unsupported TV seeking/jumps/volume. Existing browser controls are before-casting controls.
+5. Privacy policy: https://jcarcinogen.github.io/PearPlay/privacy.html. Website: https://jcarcinogen.github.io/PearPlay/.
+6. Scott authorizes/submits the update. Follow his automatic-publication choice and read back the actual result; GitHub release state is not Store approval.
 
-**Current status: 0.3.1 is published.** The public Store Details page was verified showing 0.3.1, updated October 12, 2026. The checklist above is retained as the procedure for future updates, not an outstanding 0.3.1 submission task. Mac/Windows remain unsigned experimental; Windows policy may block installation. These limits must remain visible in the listing and reviewer notes.
+Mac/Windows remain unsigned experimental builds. Keep security, platform and receiver limitations visible. Web Store automatic updates install only the extension; users update the helper separately to get read-only TV progress.

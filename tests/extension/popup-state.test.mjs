@@ -33,7 +33,7 @@ for (const state of ['connecting','playing','paused','stopping']) {
   assert.equal(p.calls.some(c=>['hello','discover'].includes(c.op)),false);
   assert.equal(p.elements.get('stop').disabled,false);
   assert.equal(p.elements.get('sessionControls').hidden,false);
-  if(state==='paused') assert.match(p.elements.get('phase').textContent,/Helper reports paused/);
+  if(state==='paused') assert.match(p.elements.get('phase').textContent,/TV paused/);
   assert.doesNotMatch(p.elements.get('tvStatus').textContent,/Choose one|Looking for AirPlay TVs/);
   await p.elements.get('discover').onclick();
   await p.refresh();
@@ -66,8 +66,8 @@ test('visible phase distinguishes idle, empty and protocol playing without claim
   p.view.candidates=[];p.view.selected=null;await p.refresh();
   assert.equal(phase.dataset.state,'empty');assert.equal(p.elements.get('start').disabled,true);
   p.view.native.state='playing';await p.refresh();
-  assert.equal(phase.dataset.state,'playing');assert.match(phase.textContent,/Helper reports playing/);
-  assert.match(p.elements.get('tvStatus').textContent,/Helper reports playing/,'receiver status must not keep the stale Send instruction');
+  assert.equal(phase.dataset.state,'playing');assert.match(phase.textContent,/Playing on TV/);
+  assert.match(p.elements.get('tvStatus').textContent,/TV reports playing/,'receiver status must not keep the stale Send instruction');
   assert.equal(p.calls.some(c=>c.op==='localPause'),false);
 });
 test('accepted V1 shows Sent across popup reopen, prevents duplicate sends and never auto-pairs or pauses',async()=>{
@@ -113,7 +113,8 @@ test('playback failure displays a safe diagnostic instead of reconnect advice',a
  const p=await popup();p.view.native.state='error';p.view.native.error='transport_failed';
  p.view.native.diagnostic={stage:'await-playing',reason:'timeout'};await p.refresh();
  assert.match(p.elements.get('tvStatus').textContent,/TV did not confirm playback/);
- assert.match(p.elements.get('tvStatus').textContent,/await-playing \/ timeout/);
+ assert.match(p.elements.get('diagnostic').textContent,/await-playing \/ timeout/);
+ assert.equal(p.elements.get('diagnostic').hidden,false);
  assert.doesNotMatch(p.elements.get('tvStatus').textContent,/Reconnect/);
  p.view.native.diagnostic=null;await p.refresh();
  assert.match(p.elements.get('state').textContent,/Playback failed/);

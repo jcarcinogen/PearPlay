@@ -88,7 +88,7 @@
     if (native.error === 'transport_failed' || native.state === 'error' && native.diagnostic) {
       const d = native.diagnostic;
       const message = d?.stage === 'await-playing' ? 'The TV did not confirm playback.' : 'Playback failed between PearPlay and the TV.';
-      return message + (d ? ` Diagnostic: ${d.stage} / ${d.reason}${d.httpStatus ? ` / HTTP ${d.httpStatus}` : ''}.` : '') + ' Try a different video; TV compatibility and firewall settings may need checking.';
+      return message + ' Try a different video or review Settings & help.';
     }
     if (native.error === 'NATIVE_DISCONNECTED') return 'Helper not connected. Click Finish setup for installation and browser connection instructions.';
     if (native.error === 'receiver_unavailable') return 'This TV was found, but pairing or playback could not start. Press Find TVs and try again.';
@@ -96,7 +96,7 @@
     if (native.error === 'pairing_required') return 'Pairing is required. Press Show a new PIN, then enter the 4 digits shown on your TV.';
     if (accepted(native)) return 'Sent to TV — check the picture and sound. End the helper session before sending again.';
     if (!native.receivers?.length) return 'No AirPlay TVs yet. Click Find TVs.';
-    return ({ idle: 'Helper connected. Choose your TV.', connecting: 'Connecting to your TV…', playing: 'Helper reports playing (look at the TV to confirm).', paused: 'Helper reports paused. Use your TV remote to continue.', stopped: 'Helper session ended. Check the TV.', stopping: 'Ending the helper session…', error: 'Helper needs attention. Reconnect and try again.' })[native.state] ?? 'Check the TV and refresh its status.';
+    return ({ idle: 'Helper connected. Choose your TV.', connecting: 'Connecting to your TV…', playing: 'TV reports playing. Check the picture and sound.', paused: 'TV reports paused.', stopped: 'Helper session ended. Check the TV.', stopping: 'Ending the helper session…', error: 'Helper needs attention. Reconnect and try again.' })[native.state] ?? 'Check the TV and refresh its status.';
   };
   const rfc1918 = ip => {
     if (typeof ip !== 'string') return false;
@@ -146,6 +146,37 @@
     $('firewallConsent').hidden = !linux;
     for (const id of ['firewallAllow','firewallRemove','firewallRemoveIfPresent','firewallConsent']) $(id).disabled = !!s.firewallBusy;
   };
+  const time = seconds => {
+    if (!Number.isFinite(seconds) || seconds < 0) return '—:—';
+    const n = Math.floor(seconds), h = Math.floor(n / 3600), m = Math.floor(n / 60) % 60;
+    return `${h ? h + ':' : ''}${h ? String(m).padStart(2, '0') : m}:${String(n % 60).padStart(2, '0')}`;
+  };
+  const renderRemote = (s, disconnected) => {
+    const casting = isActiveCast(s.native), t = s.native.tvTimeline, control = s.native.tvControl;
+    const fresh = casting && control && t && t.session === control.session && t.receiver === control.receiver && t.canSeek === false && Number.isFinite(t.position) && t.position >= 0 && Number.isFinite(t.ageMs) && t.ageMs >= 0 && t.ageMs <= 10000;
+    $('tvTimeline').hidden = !fresh;
+    if (fresh) {
+      const bounded = Number.isFinite(t.duration) && t.duration > 0;
+      $('tvProgress').hidden = !bounded;
+      $('tvProgress').max = bounded ? t.duration : 1;
+      $('tvProgress').value = bounded ? Math.min(t.position, t.duration) : 0;
+      $('tvElapsed').textContent = time(t.position);
+      $('tvDuration').textContent = bounded ? time(t.duration) : 'Duration unavailable';
+    }
+    $('castAudio').hidden = !casting || !s.activeCast?.sourceAvailable;
+    $('castMute').textContent = s.activeCast?.browserMuted === true ? 'Unmute browser video' : 'Mute browser video';
+    $('castSourceHint').hidden = !casting || !!s.activeCast?.sourceAvailable;
+    const version = s.native.helperVersion;
+    const parts = typeof version === 'string' && /^\d+\.\d+\.\d+$/.test(version) ? version.split('.').map(Number) : null;
+    const current = parts && (parts[0] > 0 || parts[1] > 3 || parts[1] === 3 && parts[2] >= 3);
+    $('helperCompatibility').hidden = disconnected || !!current;
+    $('helperCompatibility').textContent = `${version ? 'Helper ' + version : 'Unknown helper'} · TV progress needs 0.3.3 or newer. See Setup.`;
+    $('recover').hidden = !disconnected && !s.native.error;
+    $('recover').textContent = disconnected ? 'Connect helper' : s.native.error === 'discovery_failed' || s.native.error === 'receiver_unavailable' ? 'Find TVs again' : 'View connection help';
+    const d = s.native.diagnostic;
+    $('diagnostic').hidden = !d;
+    $('diagnostic').textContent = d ? `Details: ${d.stage} / ${d.reason}${d.httpStatus ? ' / HTTP ' + d.httpStatus : ''}` : '';
+  };
   let currentView;
   let pendingActions = 0;
   let actionError = false;
@@ -166,13 +197,15 @@
       : ['connecting', 'stopping'].includes(s?.native.state) ? 'working'
       : ['playing','paused'].includes(s?.native.state) ? s.native.state
       : s?.enabled && !s.candidates.length ? 'empty' : 'idle';
-    const labels = { sent: 'Sent — check the TV', idle: 'Ready', working: 'Working…', empty: 'No video found yet', error: 'Needs attention', playing: 'Helper reports playing — check the TV', paused: 'Helper reports paused — check the TV' };
+    const labels = { sent: 'Sent — check the TV', idle: 'Ready', working: 'Working…', empty: 'No video found yet', error: 'Needs attention', playing: 'Playing on TV', paused: 'TV paused' };
     $('phase').dataset.state = state;
     $('phase').textContent = labels[state];
     $('tvStatus').classList?.toggle('error', state === 'error');
     const control=s?.native.tvControl;
     const canControl=!!control && control.receiver===s?.receiver && /^[0-9a-f]{32}$/.test(control.session) && ['playing','paused'].includes(s?.native.state) && ['pause','resume'].every(op=>s.native.capabilities.includes(op)) && !s.native.error;
     $('tvTransport').hidden=!canControl;
+    $('stop').disabled=blocked || !s?.native.capabilities.includes('stop');
+    $('castMute').disabled=blocked || !s?.activeCast?.sourceAvailable;
     for(const op of ['pause','resume']) {
       $(op).hidden=!canControl || s.native.state!==(op==='pause'?'playing':'paused');
       $(op).disabled=blocked || !canControl || $(op).hidden;
@@ -192,10 +225,12 @@
       const allowed = await allWebsitesAllowed();
       if (!active()) return;
       const nativeChanged = currentView?.native.state !== s.native.state || currentView?.native.error !== s.native.error || currentView?.native.session?.delivery !== s.native.session?.delivery || currentView?.native.receiverIssue !== s.native.receiverIssue;
-      if (!choices.has('candidate') && !s.selected && !s.selectionLost && s.candidates.length === 1) {
-        await send('select', { id: s.candidates[0].id });
+      const sendable = s.candidates.filter(c => c.sendable !== false);
+      const initial = s.candidates.length === 1 ? s.candidates[0] : sendable.length === 1 ? sendable[0] : null;
+      if (!isActiveCast(s.native) && !choices.has('candidate') && !s.selected && !s.selectionLost && initial) {
+        await send('select', { id: initial.id });
         if (!active()) return;
-        s.selected = s.candidates[0].id;
+        s.selected = initial.id;
       }
       options('candidate', s.candidates, choices.get('candidate')?.id ?? s.selected, 'Choose a video');
       options('receiver', s.native.receivers, choices.get('receiver')?.id ?? s.receiver, 'Choose an AirPlay TV');
@@ -209,18 +244,23 @@
       currentView = s;
       updatePhase();
       const c = s.candidates.find(item => item.id === s.selected);
-      $('selectedVideo').hidden = !c && !s.selectionLost;
-      const title = c?.label ?? (s.selectionLost ? 'Video changed — choose again' : 'Choose a video');
+      const casting = isActiveCast(s.native);
+      $('selectedVideo').hidden = !casting && !c && !s.selectionLost;
+      $('videoContext').textContent = casting ? 'TV session' : 'Selected video';
+      const title = casting ? s.activeCast?.title || 'Video sent to TV' : c?.label ?? (s.selectionLost ? 'Video changed — choose again' : 'Choose a video');
       $('identity').textContent = title;
-      $('identityFull').textContent = c?.label ?? (s.selectionLost ? 'Your previous video is no longer available. Choose a video deliberately before sending again.' : 'No video selected.');
+      $('identityFull').textContent = casting ? title : c?.label ?? (s.selectionLost ? 'Your previous video is no longer available. Choose a video deliberately before sending again.' : 'No video selected.');
       const disconnected = ['NATIVE_DISCONNECTED','NATIVE_TIMEOUT','INVALID_RESPONSE'].includes(s.native.error) || !s.native.capabilities.length;
+      document.body?.toggleAttribute('data-disconnected', disconnected);
+      document.body?.toggleAttribute('data-recovery', !disconnected && !!s.native.error);
       $('helperSetup').textContent = disconnected ? 'Finish setup' : 'Setup';
-      $('videoHint').hidden = !!s.candidates.length || !allowed;
+      $('videoHint').hidden = casting || !!s.candidates.length || !allowed;
       $('discover').disabled = disconnected;
       $('host').disabled = disconnected;
       globalThis.pearplayBrowserControls?.select(allowed ? c : null, {casting:['connecting','playing','paused','stopping'].includes(s.native.state) || accepted(s.native)});
-      sendReady = allowed && !disconnected && !!c && c.sendable !== false && s.native.receivers.some(r => r.identifier === s.receiver) && !accepted(s.native);
-      $('permissionBox').hidden = allowed;
+      renderRemote(s, disconnected);
+      sendReady = allowed && !disconnected && !!c && c.sendable !== false && s.native.receivers.some(r => r.identifier === s.receiver) && !casting;
+      $('permissionBox').hidden = allowed || casting;
       $('grantAll').disabled = allowed;
       $('enable').disabled = !allowed;
       $('rescan').disabled = !allowed;
@@ -243,13 +283,14 @@
       $('sessionControls').hidden = !(tvSession || pinStarted || pinReady);
       $('receiverSection').hidden = tvSession && !pinReady;
       $('chosenTV').hidden = !tvSession || pinReady;
-      $('chosenTV').textContent = 'AirPlay TV · ' + (s.native.receivers.find(r => r.identifier === s.receiver)?.label ?? 'Selected TV');
+      $('chosenTV').textContent = 'AirPlay TV · ' + (s.activeCast?.receiverName ?? s.native.receivers.find(r => r.identifier === s.receiver)?.label ?? 'Selected TV');
       for (const op of ['pause', 'resume', 'stop']) $(op).disabled = !s.native.capabilities.includes(op);
       viewConfirmed = true;
       updatePhase();
     } catch {
       if (!active()) return;
       viewConfirmed = false;
+      $('tvTimeline').hidden = true;
       notice('Extension unavailable. Reopen this window.');
       actionError = true;
       updatePhase();
@@ -374,9 +415,10 @@
     // Pairing is a separate step: keep the chosen title, remove redundant
     // selection/Send controls until the PIN has been handled.
     if (pinReady) globalThis.pearplayBrowserControls?.select(null);
-    $('videoNavigation').hidden = pinReady;
-    $('candidate').hidden = pinReady;
-    $('start').hidden = pinNeeded || pinReady;
+    const casting = isActiveCast(currentView?.native);
+    $('videoNavigation').hidden = pinReady || casting;
+    $('candidate').hidden = pinReady || casting;
+    $('start').hidden = pinNeeded || pinReady || casting;
     $('pairRestart').hidden = !pinNeeded || pinReady;
     $('pairBox').hidden = !pinReady;
   };
@@ -395,6 +437,17 @@
     showTVs(n === 1 ? 'TV found and selected. Choose a video, then send.' : n ? `Found ${n} AirPlay TVs. Choose one, then send.` : 'No video-capable AirPlay TV found. Check that AirPlay is enabled, the TV is awake, and both devices are on the same network. Then try Find TVs again.');
   };
   $('discover').onclick = act(findTVs);
+  $('castMute').onclick = act(() => {
+    if (!currentView?.activeCast?.sourceAvailable) throw Error('VIDEO_CHANGED_OR_UNCONFIRMED');
+    return send('castMute', {castId: currentView.activeCast.id, value: currentView.activeCast.browserMuted !== true});
+  });
+  $('recover').onclick = act(async () => {
+    const n = currentView?.native;
+    if (!n?.capabilities.length || ['NATIVE_DISCONNECTED','NATIVE_TIMEOUT','INVALID_RESPONSE'].includes(n.error)) return send('hello');
+    if (['discovery_failed','receiver_unavailable'].includes(n.error)) return findTVs();
+    $('helpDetails').open = true;
+    $('hostDetails').open = true;
+  });
   $('pairRestart').onclick = act(async () => {
     if (!currentView?.receiver || !pinNeeded || pinReady) return;
     const revision = ++pinRevision;

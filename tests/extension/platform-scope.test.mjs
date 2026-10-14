@@ -55,7 +55,7 @@ test('release catalog selects verified installers by platform, without a rehears
   assert.deepEqual(downloadsFor(catalog,{os:'mac',arch:'x86-64'},id),[]);
   const linux=downloadsFor(catalog,{os:'linux',arch:'x86-64'},id);assert.equal(linux.length,3);
   for(const item of catalog.downloads)assert.match(item.sha256,/^[a-f0-9]{64}$/);
-  for(const item of linux) assert.ok(item.url.startsWith(`https://github.com/jcarcinogen/PearPlay/releases/download/v${item.format==='rpm'?'0.2.8':'0.3.1'}/`));
+  for(const item of linux) assert.ok(item.url.startsWith(`https://github.com/jcarcinogen/PearPlay/releases/download/v${'0.3.3'}/`));
 });
 for(const os of ['cros','android','openbsd','unknown'])test(`unsupported OS ${os} cannot fetch catalog or request native/discovery`,async()=>{
   const {nodes,calls,fetches}=await mount({os,arch:'x86-64'},{extensionId:id,downloads:[]});

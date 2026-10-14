@@ -55,7 +55,7 @@ test('current product pages distinguish cross-platform preview from published su
 
 test('onboarding keeps the established manifest permissions and identity', () => {
   const m=JSON.parse(read('extension/manifest.json'));
-  assert.equal(m.version,'0.3.1');
+  assert.equal(m.version,'0.3.3');
   assert.deepEqual(m.permissions,['activeTab','scripting','webRequest','webNavigation','nativeMessaging','alarms','storage']);
   assert.deepEqual(m.optional_host_permissions,['http://*/*','https://*/*']);
 });

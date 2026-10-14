@@ -2,12 +2,12 @@
 
 **For people deliberately testing the PearPlay Mac preview.** The current package is for **Apple silicon Macs (M1 or later)**. No Intel Mac package is supplied. This is not an Apple-signed or notarized release. If you prefer not to make a security exception, **stop here and wait for a signed release**.
 
-> **Download:** get the Mac package and `SHA256SUMS` from the [0.3.1 release](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.3.1). Official Apple TV MP4 picture and sound were owner-tested on Mac Chrome; other AirPlay TVs remain playback unverified. This is still an unsigned preview.
+> **Download:** get the Mac package and `SHA256SUMS` from the [0.3.3 release](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.3.3). Official Apple TV MP4 picture and sound were owner-tested on Mac Chrome; other AirPlay TVs remain playback unverified. This is still an unsigned preview.
 
 ## 1. Check your Mac and the download
 
 1. Choose **Apple menu → About This Mac**. Look for an Apple M-series chip. An **Intel** processor is not supported by this package.
-2. Get `pearplay-helper-0.3.1-darwin-arm64-development.pkg` from the trusted 0.3.1 release. Keep its original filename. Do not use a file from an unsolicited message or another download site.
+2. Get `pearplay-helper-0.3.3-darwin-arm64-development.pkg` from the trusted 0.3.3 release. Keep its original filename. Do not use a file from an unsolicited message or another download site.
 3. Compare its SHA256 with the release’s **SHA256SUMS**. Open **Terminal**, type `shasum -a 256` followed by a space, drag the downloaded `.pkg` into Terminal, and press Return. Dragging inserts the path; it does not run the file. The long value must match exactly. A matching checksum detects a changed download; it **does not** provide Apple signing, notarization, or a guarantee of safety.
 4. End any current TV session and fully quit Chrome and Brave before installation. Do not replace an existing development installation if you do not know how it was installed—use its original removal instructions first.
 
@@ -53,7 +53,7 @@ The package supplies the helper’s Python runtime. You do not need to install P
 ## 5. Restart Chrome and check the connection
 
 1. Fully quit Chrome with **Chrome → Quit Google Chrome** (Command-Q), then reopen it. Closing a tab is not enough. Restart Brave too if you use it.
-2. Install [PearPlay 0.3.1 from the Chrome Web Store](https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol) and pin it to the toolbar. Developer mode and an unpacked extension folder are not required. The helper is still a separate installation.
+2. Install [PearPlay from the Chrome Web Store](https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol) and pin it to the toolbar. Developer mode and an unpacked extension folder are not required. The helper is still a separate installation.
 3. Click PearPlay in the toolbar, then **Setup → Check connection**.
 4. Wait for the connected message. A successful connection means the browser can talk to the helper; it does **not** mean your TV was found or that video and sound work.
 

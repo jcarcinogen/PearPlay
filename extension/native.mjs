@@ -26,10 +26,23 @@ function safeTVControl(m) {
  if(!m.ok||m.evidence!=='protocol'||!['playing','paused'].includes(m.state)||!['pause','resume'].every(op=>m.capabilities.includes(op))||!c||Object.keys(c).length!==2||typeof c.session!=='string'||! /^[0-9a-f]{32}$/.test(c.session)||typeof c.receiver!=='string'||!c.receiver.length||c.receiver.length>1024)return null;
  return {session:c.session,receiver:c.receiver};
 }
+function safeTVTimeline(m, tvControl) {
+ if(!tvControl||!m.tvTimeline||typeof m.tvTimeline!=='object')return null;
+ const t=m.tvTimeline; const {session,position,duration,ageMs}=t;
+ if(session!==tvControl.session||t.receiver!==undefined&&t.receiver!==tvControl.receiver||t.canSeek!==false)return null;
+ const receiver=tvControl.receiver;
+ if(typeof position!=='number'||!Number.isFinite(position)||position<0||position>31536000)return null;
+ if(duration!==null&&(typeof duration!=='number'||!Number.isFinite(duration)||duration<0||duration>31536000||position>duration+1))return null;
+ if(typeof ageMs!=='number'||!Number.isInteger(ageMs)||ageMs<0||ageMs>10000)return null;
+ const result={session,receiver,position,duration,canSeek:false,ageMs};
+ return result;
+}
 export class Native {
- constructor(connect,{timeout=15000,discoveryTimeout=25000,firewallTimeout=140000,pairingTimeout=35000}={}) {this.connect=connect;this.timeout=timeout;this.discoveryTimeout=discoveryTimeout;this.firewallTimeout=firewallTimeout;this.pairingTimeout=pairingTimeout;this.pending=new Map();this.serial=0;this.applied=0;this.port=null;this.state={state:'idle',evidence:'none',capabilities:[],receivers:[]};}
- view(){return structuredClone(this.state);}
- fail(code){this.state={state:'error',evidence:'none',capabilities:[],receivers:[],error:code};for(const p of this.pending.values()){clearTimeout(p.timer);p.reject(Error(code));}this.pending.clear();const old=this.port;this.port=null;old?.disconnect();}
+ constructor(connect,{timeout=15000,discoveryTimeout=25000,firewallTimeout=140000,pairingTimeout=35000,now=()=>Date.now()}={}) {this.now=now;this.timelineAt=0;this.listeners=new Set();this.connect=connect;this.timeout=timeout;this.discoveryTimeout=discoveryTimeout;this.firewallTimeout=firewallTimeout;this.pairingTimeout=pairingTimeout;this.pending=new Map();this.serial=0;this.applied=0;this.port=null;this.state={state:'idle',evidence:'none',capabilities:[],receivers:[]};}
+ view(){const result=structuredClone(this.state);if(result.tvTimeline){result.tvTimeline.ageMs+=Math.max(0,this.now()-this.timelineAt);if(result.tvTimeline.ageMs>10000)result.tvTimeline=null;}return result;}
+ onChange(listener){this.listeners.add(listener);return ()=>this.listeners.delete(listener);}
+ notify(){for(const listener of this.listeners){try{listener();}catch{}}}
+ fail(code){this.state={state:'error',evidence:'none',capabilities:[],receivers:[],error:code};for(const p of this.pending.values()){clearTimeout(p.timer);p.reject(Error(code));}this.pending.clear();const old=this.port;this.port=null;this.notify();old?.disconnect();}
  async request(op,args={}) {
  const keys=Object.keys(args);
  if(!ops.includes(op)|| (op==='start' ? !(keys.length===3&&typeof args.receiver==='string'&&args.receiver.length>0&&args.receiver.length<=1024&&literalIP(args.host)&&httpURL(args.url)) : op==='pair' ? !(keys.length===3&&typeof args.receiver==='string'&&args.receiver.length>0&&literalIP(args.host)&&/^\d{4}$/.test(args.pin)) : op==='pair_begin' ? !(keys.length===2&&typeof args.receiver==='string'&&args.receiver.length>0&&literalIP(args.host)) : op==='firewall' ? !(keys.length===3&&typeof args.receiver==='string'&&/^[0-9a-fA-F:-]{12,64}$/.test(args.receiver)&&literalIP(args.host)&&['check','allow','remove'].includes(args.action)) : op==='discover' ? !(keys.length===0 || keys.length===1&&literalIP(args.host)) : ['pause','resume'].includes(op) ? !(keys.length===1&&typeof args.session==='string'&&/^[0-9a-f]{32}$/.test(args.session)) : keys.length!==0)) throw Error('INVALID_REQUEST');
@@ -51,7 +64,9 @@ export class Native {
  const code=m.ok?null:(codes.includes(m.error)?m.error:'HELPER_ERROR');
  const preserve=m.ok&&pending&&['hello','status','discover'].includes(pending.op)&&this.state.error&&codes.includes(this.state.error)?this.state.error:null;
  const receiverIssue=preserve==='transport_failed'?this.state.receiverIssue??null:!m.ok&&m.error==='transport_failed'&&['unsupported_access','incomplete_advertisement','unsupported_protocol'].includes(m.receiverIssue)?m.receiverIssue:null;
- this.state={tvControl:preserve?null:safeTVControl(m),session:m.ok&&!preserve&&m.state==='connecting'&&m.evidence==='unverified'?safeSession(m.session):null,receiverIssue,state:m.ok?m.state:'error',evidence:m.evidence,capabilities:[...m.capabilities],receivers,error:preserve??code,firewallSupport:m.firewallSupport===true,diagnostic:m.state==='error'?safeDiagnostic(m.diagnostic):null,helperVersion:typeof m.helperVersion==='string'&&/^\d{1,4}\.\d{1,4}\.\d{1,4}$/.test(m.helperVersion)?m.helperVersion:null};
+ this.timelineAt=this.now();
+ this.state={tvControl:preserve?null:safeTVControl(m),tvTimeline:preserve?null:safeTVTimeline(m,safeTVControl(m)),session:m.ok&&!preserve&&m.state==='connecting'&&m.evidence==='unverified'?safeSession(m.session):null,receiverIssue,state:m.ok?m.state:'error',evidence:m.evidence,capabilities:[...m.capabilities],receivers,error:preserve??code,firewallSupport:m.firewallSupport===true,diagnostic:m.state==='error'?safeDiagnostic(m.diagnostic):null,helperVersion:typeof m.helperVersion==='string'&&/^\d{1,4}\.\d{1,4}\.\d{1,4}$/.test(m.helperVersion)?m.helperVersion:null};
+ this.notify();
  if(pending){clearTimeout(pending.timer);this.pending.delete(m.id);if(m.ok)pending.resolve(this.view());else pending.reject(Error(code));}
  }
 }

@@ -1,4 +1,4 @@
-# Windows helper 0.3.1 — unsigned engineering preview
+# Windows helper 0.3.3 — unsigned engineering preview
 
 ## Scope
 
@@ -8,7 +8,7 @@ The installer is a per-user, self-contained PyInstaller executable containing th
 
 ## Install and maintain
 
-Download `pearplay-helper-0.3.1-windows-x86_64-unsigned.exe` and the checksums from the [0.3.1 release](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.3.1). End casting and fully close Chrome first. Run as your ordinary signed-in Windows user; no administrator access is requested.
+Download `pearplay-helper-0.3.3-windows-x86_64-unsigned.exe` and the checksums from the [0.3.3 release](https://github.com/jcarcinogen/PearPlay/releases/tag/v0.3.3). End casting and fully close Chrome first. Run as your ordinary signed-in Windows user; no administrator access is requested.
 
 The branded PearPlay window offers **Install / update**, **Repair installation**, **Connect Chrome**, **Disconnect Chrome**, and **Remove helper**. Select an action, choose Continue, read the confirmation and confirm. Saved TV pairing is kept. Buttons and closing are disabled during a transaction. Fully quit and reopen Chrome after changes, then use **Check connection** in the extension. Registration alone is not proof of connection or playback.
 

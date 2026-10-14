@@ -1,101 +1,55 @@
 <!doctype html><html lang="en"><meta charset="utf-8"><base href="../../"><title>PearPlay README · local Markdown render</title><style>body{margin:0;background:#fff;color:#1f2328;font:16px/1.6 system-ui,sans-serif}main{max-width:980px;margin:auto;padding:40px}h1{font-size:34px;border-bottom:1px solid #d1d9e0}h2{margin-top:32px;border-bottom:1px solid #d1d9e0}a{color:#0969da}img{max-width:100%}pre{background:#f6f8fa;padding:16px;overflow:auto;border-radius:6px;font-size:13px}table{border-collapse:collapse}td,th{border:1px solid #d1d9e0;padding:8px}blockquote{margin:0;padding:0 18px;border-left:4px solid #d1d9e0}</style><main><p><img src="assets/brand/mark.svg" width="64" height="64" alt="PearPlay"></p>
 <h1>PearPlay</h1>
 <h3>Your browser’s video. Your Apple TV.</h3>
-<p>Send a compatible video stream from your browser directly to your Apple TV—without screen mirroring, re-encoding, or a cloud relay.</p>
-<p><strong>Development preview · Linux only · Separate local helper required</strong></p>
-<p><strong>Mac support is coming soon.</strong></p>
-<p><a href="#get-started">Get started</a> · <a href="#compatibility">Compatibility</a> · <a href="#limitations">Limitations</a> · <a href="#documentation">Documentation</a></p>
-<p>
-  <a href="https://x.com/scottito22"><img src="tip-with-x-money.svg" alt="Tip with X Money" width="190" height="30"></a>&nbsp;&nbsp;
-  <a href="https://ko-fi.com/scottangel"><img src="buy-me-a-coffee.svg" alt="Buy me a coffee on Ko-fi" width="190" height="30"></a>
-</p>
+<p>PearPlay is a Chrome extension for sending compatible web videos directly to Apple TV—without screen mirroring, re-encoding or a cloud relay. A separate local helper is required.</p>
+<p><strong><a href="https://jcarcinogen.github.io/PearPlay/">Website and getting started</a></strong> · <strong><a href="https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol">Add to Chrome</a></strong></p>
+<p><strong>PearPlay 0.3.3 · Linux, Mac and Windows Chrome · Separate local helper required.</strong> Install the extension from the Chrome Web Store and helper 0.3.3 for your computer. Fedora 44 also uses helper 0.3.3.</p>
+<p><a href="https://github.com/jcarcinogen/PearPlay/releases/tag/v0.3.3">Download helpers</a></p>
+<p><a href="https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol">Chrome Web Store</a> · <a href="docs/install.md">Installation guide</a></p>
+<p><a href="https://x.com/scottito22"><img src="tip-with-x-money.svg" alt="Tip with X Money" width="190" height="30"></a>&nbsp;&nbsp;<a href="https://ko-fi.com/scottangel"><img src="buy-me-a-coffee.svg" alt="Buy me a coffee on Ko-fi" width="190" height="30"></a></p>
 
-<p><img src="assets/landing/hero.png" width="960" alt="PearPlay branding, an extension popup using example data, and an illustration of a TV"></p>
-<p><em>Actual extension interface with example data. The screenshot is not evidence of live TV playback.</em></p>
-<h2>What PearPlay does</h2>
-<p>PearPlay connects a browser extension to <strong>PearPlay Helper</strong>, a small application running on your computer. You choose a video and an Apple TV; the helper sends the stream’s address to the TV. <strong>The Apple TV fetches the video directly from the website.</strong></p>
+<p><img src="assets/landing/hero.png" width="960" alt="PearPlay popup showing browser-video controls and Send to TV with example selections"></p>
+<p><em>Actual extension interface with example data—not a live playback screenshot.</em></p>
+<h2>What works</h2>
 <ul>
-<li><strong>No desktop mirroring or re-encoding.</strong> Your desktop stays on your computer.</li>
-<li><strong>No PearPlay account or cloud service.</strong> TV pairing credentials stay on your computer.</li>
-<li><strong>You choose when to send.</strong> Website access, video selection, and destination are explicit actions.</li>
-<li><strong>Guided helper setup.</strong> A first-run tab checks whether the helper is connected and explains installation, updates, and repair. Reopen it with <strong>Setup</strong> in the popup.</li>
-<li><strong>One helper, multiple browsers.</strong> The packaged helper can register with Chrome, Brave, and Chromium separately. Install the extension in each browser you want to use; pairing credentials are shared under the same operating-system user.</li>
+<li><strong>Official Apple TV:</strong> Mac Chrome pairing, MP4 picture and sound, and session ending were owner-tested with an earlier helper. Linux has prior owner-confirmed Apple TV playback in Chrome, Brave and Chromium; Chrome sound was separately confirmed.</li>
+<li><strong>Other AirPlay TVs: playback unverified.</strong> They may appear in discovery. Compatibility varies by TV and stream.</li>
+<li><strong>Windows preview:</strong> Chrome browser controls and Apple TV picture, sound, pause/resume and End helper session have passed recorded checks. The fully branded 0.3.1 installer passed exact-install/repair/update/removal and registry/hash checks on a clean hosted Windows runner. Windows security policy may block unsigned builds; the owner installed 0.3.3 after his explicit security-policy decision, not trusted signing. Trusted Windows signing is not currently available; stop if blocked rather than disabling security.</li>
+<li><strong>Mac preview:</strong> Apple silicon only, unsigned package and ad-hoc-signed app, not Apple Developer ID signed or notarized. Brave shares Chrome’s registration, but Mac Brave playback is unverified. No Intel Mac installer.</li>
 </ul>
-<p><strong><a href="https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol">Install PearPlay from the Chrome Web Store</a></strong> (currently 0.2.6), then install the separate <strong><a href="https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5">Linux helper 0.2.5</a></strong>. The compact 0.2.7 extension update is being prepared. Playback has been user-confirmed in Linux Chrome, Brave and Chromium on tested streams.</p>
-<p><strong>Release scope:</strong> the compact 0.2.7 popup uses existing helper 0.2.5 downloads. Helper changes in this checkout are unreleased; they do not establish a shipped firewall-management feature.</p>
-<h2>Compatibility</h2>
-<table>
-<thead>
-<tr>
-<th>Platform and browser</th>
-<th>What has been verified</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Linux + Chrome</strong></td>
-<td>Video and audio through the extension on a tested stream, including a pre-roll-to-program transition. Pairing, reconnect, and recasting have also been observed.</td>
-</tr>
-<tr>
-<td><strong>Mac</strong></td>
-<td><strong>Mac support is coming soon.</strong> Compatibility work is paused; not currently available.</td>
-</tr>
-<tr>
-<td><strong>Linux + Chromium</strong></td>
-<td>Video playback was user-confirmed in a separate test; audio and broader stream compatibility were not separately recorded.</td>
-</tr>
-<tr>
-<td><strong>Linux + Brave</strong></td>
-<td>Playback was user-confirmed in a separate test; audio and broader stream compatibility were not separately recorded.</td>
-</tr>
-</tbody>
-</table>
-<p>Windows is not supported. Other Chromium-based browsers, browser beta/dev channels, and Snap/Flatpak browser packages are not supported installer targets.</p>
-<p>Connection checks are not playback tests. Development package extraction tests do not establish that consumer installation, upgrades, and removal work on every system. See the <a href="assets/evidence/helper-onboarding-verification.md">verification record</a> and <a href="docs/helper-onboarding.md#release-gates">remaining release requirements</a>.</p>
+<p>The Safari extension is paused. Snap/Flatpak browsers, browser beta/dev channels, Linux/Windows ARM and Windows Edge/Brave are not advertised installer targets.</p>
 <h2>Get started</h2>
-<p>You need <strong>Linux x86_64</strong>, <strong>Chrome</strong>, and an <strong>Apple TV on the same local network</strong>. <a href="https://github.com/jcarcinogen/PearPlay/releases/tag/v0.2.5">Download the helper</a>: Ubuntu/Debian <code>.deb</code> (Ubuntu 24.04 baseline, glibc 2.39+) or Arch/Omarchy <code>.pkg.tar.zst</code> (glibc 2.44+). Fedora 44 <code>.rpm</code> is also available (glibc 2.43+). Python is bundled. No ARM package is available. Packages are unsigned; use the trusted release, compare its checksums, and keep normal package-manager security enabled.</p>
-<p>For the development version before its Store approval, get the extension source:</p>
-<pre><code class="language-sh">git clone https://github.com/jcarcinogen/PearPlay.git
-cd PearPlay
-</code></pre>
 <ol>
-<li>Open <code>chrome://extensions</code>, enable <strong>Developer mode</strong>, and load the checkout’s <code>extension/</code> directory.</li>
-<li>Install the downloaded helper with your distribution’s package manager, then open <strong>PearPlay Setup</strong> and select Chrome. The extension’s pinned public key matches the production helper; no manual extension-ID command is needed. See the <a href="docs/install.md">graphical and terminal installation steps</a>.</li>
-<li><strong>Fully quit and reopen Chrome.</strong> In the extension’s setup tab, select <strong>Check connection</strong>.</li>
-<li>Open a video page and use the PearPlay popup to send a compatible stream.</li>
+<li>Download the helper for your computer from <a href="https://github.com/jcarcinogen/PearPlay/releases/tag/v0.3.3">0.3.3 releases</a>. Compare its checksum with <code>SHA256SUMS</code>.</li>
+<li><strong>Mac Apple silicon:</strong> <code>pearplay-helper-0.3.3-darwin-arm64-development.pkg</code>. Follow the <a href="docs/mac-install.md">unsigned Mac guide with screenshots</a>.</li>
+<li><strong>Windows x86_64:</strong> <code>pearplay-helper-0.3.3-windows-x86_64-unsigned.exe</code>. Follow the <a href="docs/windows-helper.md">Windows guide</a>; keep SmartScreen and Defender enabled.</li>
+<li><strong>Ubuntu/Debian x86_64:</strong> 0.3.3 <code>.deb</code>, glibc 2.39+ baseline.</li>
+<li><strong>Arch/Omarchy:</strong> 0.3.3 <code>.pkg.tar.zst</code>, glibc 2.39+. <strong>Fedora 44:</strong> <a href="https://github.com/jcarcinogen/PearPlay/releases/tag/v0.3.3">0.3.3 RPM</a>, glibc 2.43+.</li>
+<li>Install the helper, open <strong>PearPlay Setup</strong>, and connect your browser. Python is bundled; no manual extension-ID command is needed. Mac Chrome and Brave share one connection, including disconnection. Windows installs for your Windows account.</li>
+<li><strong>Fully quit and reopen the browser.</strong> Closing a tab or reloading the extension is not enough.</li>
+<li>Install <strong><a href="https://chromewebstore.google.com/detail/pearplay/eoadahoncjfpnennmkjifohclbafjkol">PearPlay from the Chrome Web Store</a></strong>. Developer mode is not needed for the Store install. For local development only, the release ZIP can still be extracted and loaded unpacked; keep its extracted folder in place.</li>
+<li>In PearPlay’s <strong>Setup</strong> tab, select <strong>Check connection</strong>. Put the computer and TV on the same trusted network with AirPlay enabled.</li>
 </ol>
-<p>The <a href="docs/install.md">installation guide</a> covers browser registration, network permissions, troubleshooting, and removal. Linux may require a receiver-scoped firewall rule for AirPlay timing; do not disable your firewall. Mac support is coming soon.</p>
 <h2>Send a video</h2>
 <ol>
-<li><strong>Allow and find.</strong> In the popup, choose <strong>Allow all websites</strong>, start the website’s video, and select <strong>Find videos</strong>.</li>
-<li><strong>Choose the video and TV.</strong> Select the stream, connect the helper, and choose <strong>Find TVs</strong>. Pick a TV and enter its on-screen pairing PIN if asked.</li>
-<li><strong>Send.</strong> Select <strong>Send to TV</strong>. Check that the TV has picture and sound, then stop the browser video using the website’s controls if both are playing.</li>
+<li>Choose <strong>Allow all websites</strong>, start the website’s video, then <strong>Find videos</strong>.</li>
+<li>Select the video and <strong>Find TVs</strong>. Choose your Apple TV. Enter any on-screen PIN only in PearPlay’s masked <strong>TV PIN</strong> field, then <strong>Pair TV</strong>.</li>
+<li>Choose <strong>Send to TV</strong>. Check for picture and sound. Use <strong>Mute browser video</strong> to silence duplicate browser sound without muting the TV.</li>
+<li>Use <strong>End helper session</strong> when finished. If the TV keeps playing, stop it with its remote.</li>
 </ol>
-<p>One helper playback or pairing session can be active per operating-system user; end the session in the browser that started it before switching browsers.</p>
-<h2>Limitations</h2>
+<p>After a failed pairing, choose <strong>Show a new PIN</strong> and try again. Pairing never automatically sends a video.</p>
+<h2>Helper updates</h2>
+<p>The Web Store updates the extension, not the helper. If the popup says TV progress needs helper 0.3.3, open Setup and use the download for your computer. End casting, fully quit browsers, install/update the helper, reopen the browser and <strong>Check connection</strong>. Saved TV pairing is kept; no uninstall or pairing reset is needed.</p>
+<h2>Limits and privacy</h2>
 <ul>
-<li><strong>Not every website works.</strong> The Apple TV must be able to fetch an HTTP(S) media URL directly. Browser-only <code>blob:</code> URLs cannot be sent, and browser cookies are not transferred.</li>
-<li><strong>No DRM or access-control bypass.</strong> Geographic restrictions and normal ad delivery still apply. PearPlay does not block ads. Use media you are authorized to access.</li>
-<li><strong>End helper session</strong> closes the helper connection; it does <strong>not</strong> confirm that TV playback stopped.</li>
-<li><strong>All-sites access is currently required for discovery.</strong> The popup offers a per-site grant, but <strong>Find videos</strong> remains disabled without all-sites access.</li>
-<li><strong>Compatibility is limited to recorded results.</strong> A successful connection or “playing” status is not proof of picture and sound. Invalid/expired-stream handling and broader receiver lifecycle trials still need live verification.</li>
-<li><strong>Preview release.</strong> The Store extension and Linux helper downloads are available; 0.2.7 is a pending extension update. Only the documented x86_64 targets are offered; broader Linux browser/distribution testing remains open. Paused Mac work does not block Linux.</li>
+<li>Only directly fetchable HTTP(S) media works. Browser-only <code>blob:</code> URLs, cookies, DRM and access restrictions are not bypassed. Not every website or stream works. PearPlay does not block ads.</li>
+<li><strong>Browser controls:</strong> play/pause, timeline, 5/10/15/30-second jumps, mute and Picture in Picture before casting. These do not control the TV. <strong>TV controls:</strong> Pause TV / Resume TV with helper 0.3.1+ and a supported authenticated Apple TV session; read-only TV progress needs helper 0.3.3. The active cast survives popup reopening and tab switching. Deliberate <strong>Mute browser video</strong> targets only the original video, not your TV; no automatic mute or restoration. A preferred TV is remembered by identity and selected after rediscovery, not by saving media URLs. Fedora 44 helper 0.3.3 provides the same capability-gated controls. TV seeking, jumps and volume are unsupported; use the TV remote. <strong>End helper session</strong> closes the connection, not a universal TV-stop guarantee.</li>
+<li>All-sites access is currently required for discovery, even though a per-site grant is also offered.</li>
+<li>No PearPlay account, cloud relay or first-party telemetry uploader. The media site and TV still use the network; local control is not anonymity. See <a href="docs/privacy.md">privacy</a>.</li>
+<li>Pairing stays local to the OS user; Windows uses DPAPI protection. Pairings are not portable between OSes/users/computers. One helper session can be active per user.</li>
+<li>Keep normal OS and firewall protections enabled. Mac’s optional per-item <strong>Open Anyway</strong> is a deliberate trust decision, not notarization; stop on malware/damage warnings. Never disable Gatekeeper, remove quarantine or disable SmartScreen/Defender to install this preview.</li>
 </ul>
-<h2>Privacy</h2>
-<p>The extension communicates with a helper on your computer; the website delivers media directly to the TV. Pairing credentials are stored locally with user-only file permissions. The extension does not save the pairing PIN, and signed stream URLs are not included in screenshots or application logs.</p>
-<p>No telemetry endpoint or PearPlay account/cloud integration is present in the audited first-party extension and helper sources. Your browser, dependencies, media provider, and TV still use the network; local control does not make a stream anonymous. See the <a href="docs/claims.md#privacy-audit">privacy audit</a>.</p>
-<p>The optional X Money and Ko-fi links open external support pages only when selected. The popup’s badges are bundled locally; displaying them does not contact either service.</p>
 <h2>Documentation</h2>
-<ul>
-<li><a href="docs/install.md">Install, connect browsers, troubleshoot, and uninstall</a></li>
-<li><a href="docs/helper-onboarding.md">Packaged helper setup and release requirements</a></li>
-<li><a href="contract/v1.md">Control protocol and trust boundaries</a></li>
-<li><a href="helper/README.md">Helper implementation</a> · <a href="tests/">Tests</a></li>
-<li><a href="docs/claims.md">Playback evidence and claim audit</a> · <a href="assets/evidence/helper-onboarding-verification.md">Package/browser verification</a></li>
-<li><a href="https://jcarcinogen.github.io/PearPlay/">Website</a> · <a href="https://jcarcinogen.github.io/PearPlay/privacy.html">Privacy policy</a></li>
-<li><a href="assets/brand/README.md">Brand assets and reproducible rendering</a></li>
-</ul>
+<p><a href="docs/install.md">Install / repair / removal</a> · <a href="docs/mac-install.md">Mac screenshots</a> · <a href="docs/windows-helper.md">Windows helper</a> · <a href="docs/cross-platform-preview.md">Release scope</a> · <a href="helper/README.md">Helper</a> · <a href="contract/v1.md">Control contract</a> · <a href="tests/">Tests</a> · <a href="https://jcarcinogen.github.io/PearPlay/">Website</a></p>
 <h2>License and affiliation</h2>
-<p>PearPlay’s original code is available under the <a href="LICENSE">MIT License</a>. The experimental command adapter retains its <a href="spikes/002-command/LICENSE.md">own license and provenance</a>; third-party notices and dependency licenses still apply.</p>
-<p>PearPlay is independent and unaffiliated with Apple. The working name has not been trademark-cleared.</p>
-</main></html>
+<p>Original code: <a href="LICENSE">MIT</a>. The command adapter retains its <a href="spikes/002-command/LICENSE.md">license and provenance</a>; third-party notices apply. PearPlay is independent and unaffiliated with Apple. The working name has not been trademark-cleared.</p></main></html>

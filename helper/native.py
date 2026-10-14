@@ -10,7 +10,7 @@ import re
 import struct
 import sys
 
-VERSION = '0.3.1'
+VERSION = '0.3.3'
 
 async def native_stdio(output, factory=None):
     import sys
@@ -1021,6 +1021,9 @@ class Host:
         if control is not None and not error:
             result['tvControl'] = dict(control)
             result['capabilities'].extend(['pause', 'resume'])
+            timeline = self.transport.rate_control.timeline()
+            if timeline is not None:
+                result['tvTimeline'] = {**timeline, 'session': control['session']}
         if self.state == 'error' and self.diagnostic is not None:
             result['diagnostic'] = dict(self.diagnostic)
         if not error and self.state == 'connecting' and self.evidence == 'unverified' and self.session:
@@ -1086,6 +1089,9 @@ class Host:
         op, args = value['op'], value['args']
         if op not in self.capabilities and op not in ('firewall', 'pause', 'resume'): return self.response(identifier, 'unsupported')
         try:
+            if op == 'status' and self.tv_control() is not None:
+                await self.transport.rate_control.refresh_position()
+                return self.response(identifier)
             if op in ('pause', 'resume'):
                 identity = self.tv_control()
                 if not identity or args.get('session') != identity['session']:

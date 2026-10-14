@@ -35,13 +35,14 @@ export class Sessions {
     }
   }
   disable(id) { this.tabs.delete(id); }
-  enable(tabId) { this.sweep(); this.tabs.delete(tabId); if(this.tabs.size>=this.maxTabs) this.tabs.delete(this.tabs.keys().next().value); this.tabs.set(tabId, {revision:0,at:this.now(),requests:new Map(),parents:new Map(),frames:new Map(), candidates:[], selected:null, pageTitle:''}); }
+  enable(tabId) { this.sweep(); this.tabs.delete(tabId); if(this.tabs.size>=this.maxTabs) this.tabs.delete(this.tabs.keys().next().value); this.tabs.set(tabId, {revision:0,at:this.now(),requests:new Map(),parents:new Map(),frames:new Map(),resourceFloors:new Map(), candidates:[], selected:null, pageTitle:''}); }
   pageTitle(tabId, text) { const s=this.tabs.get(tabId); if(s) s.pageTitle=safeTitle(text); }
   commit({tabId, frameId, documentId, parentFrameId=-1}) {
-    this.sweep();const s=this.tabs.get(tabId);if(!s||!documentId)return;s.revision++;s.requests.clear();
-    if(frameId===0){s.frames.clear();s.parents.clear();s.candidates=[];}
+    this.sweep();const s=this.tabs.get(tabId);if(!s||!documentId)return;const sameDocument=s.frames.get(frameId)===documentId;s.revision++;s.requests.clear();
+    if(frameId===0){s.frames.clear();s.parents.clear();s.resourceFloors.clear();s.candidates=[];}
     else {const removed=new Set([frameId]);let changed=true;while(changed){changed=false;for(const [id,parent] of s.parents)if(removed.has(parent)&&!removed.has(id)){removed.add(id);changed=true;}}
-      for(const id of removed){s.frames.delete(id);s.parents.delete(id);}s.candidates=s.candidates.filter(c=>!removed.has(c.frameId));}
+      for(const id of removed){s.frames.delete(id);s.parents.delete(id);s.resourceFloors.delete(id);}s.candidates=s.candidates.filter(c=>!removed.has(c.frameId));}
+    if(sameDocument)s.resourceFloors.set(frameId,this.now());
     if(s.selected&&!s.candidates.some(c=>c.id===s.selected)){s.selected=null;s.selectionLost=true;}if(s.frames.size<128){s.frames.set(frameId,documentId);s.parents.set(frameId,parentFrameId);}
   }
   begin(e) {
@@ -66,15 +67,35 @@ export class Sessions {
     if(s.selected&&!s.candidates.some(c=>c.id===s.selected)){s.selected=null;s.selectionLost=true;}
     return keepAlive;
   }
-  observe(e) {
+  resources(e, items) {
+    if (!Array.isArray(items)) return;
+    const now = this.now();
+    const s = this.tabs.get(e.tabId);
+    if (!s || s.frames.get(e.frameId) !== e.documentId) return;
+    let floor = 0;
+    // A route change can leave descendant documents loaded. Their retained
+    // resource history must obey the ancestor's invalidation boundary too.
+    for (let frame = e.frameId, depth = 0; frame !== undefined && frame >= 0 && depth < 128; depth++) {
+      floor = Math.max(floor, s.resourceFloors.get(frame) ?? 0);
+      frame = s.parents.get(frame);
+    }
+    for (const r of items.slice(0, 100)) {
+      if (!r || !httpURL(r.url) || !/\.m3u8$/i.test(new URL(r.url).pathname) ||
+          !Number.isFinite(r.at) || r.at < floor || r.at > now || now - r.at >= this.ttl) continue;
+      // Exact frame/document checks remain in observe; never associate an HLS
+      // URL with a blob element or refresh its age just because Find ran again.
+      this.observe({...e, url:r.url}, r.at);
+    }
+  }
+  observe(e, at = this.now()) {
     this.sweep(); const s=this.tabs.get(e.tabId);
     if (!s || typeof e.documentId!=='string' || !s.frames.has(e.frameId) || !(httpURL(e.url)||e.videoId&&browserURL(e.url)) || s.frames.get(e.frameId)!==e.documentId) return;
     const format=browserURL(e.url)?'Browser video':sourceType(e);
     if (!format) return;
     const existing=s.candidates.find(c=>c.url===e.url && c.frameId===e.frameId && c.videoId===(e.videoId??null));
-    if(existing){existing.at=this.now();return;}
+    if(existing){existing.at=Math.max(existing.at,at);return;}
     if (!e.videoId && format==='HLS' && s.candidates.some(c=>!c.videoId && c.format==='HLS' && new URL(c.url).hostname===new URL(e.url).hostname)) return;
-    s.candidates.push({at:this.now(),format,url:e.url,frameId:e.frameId,documentId:e.documentId,videoId:e.videoId??null,title:safeTitle(e.title),id:`c${++this.next}`});
+    s.candidates.push({at,format,url:e.url,frameId:e.frameId,documentId:e.documentId,videoId:e.videoId??null,title:safeTitle(e.title),id:`c${++this.next}`});
     if(s.candidates.length>this.maxCandidates) s.candidates.shift();
     if(s.selected&&!s.candidates.some(c=>c.id===s.selected)){s.selected=null;s.selectionLost=true;}
   }
